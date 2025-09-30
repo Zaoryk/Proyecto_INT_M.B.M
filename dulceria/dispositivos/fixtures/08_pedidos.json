@@ -1,0 +1,13 @@
+[
+{
+  "model": "dispositivos.pedido",
+  "pk": 3,
+  "fields": {
+    "fecha": "2025-09-30",
+    "monto_total": 14600,
+    "usuario": 6,
+    "cliente": 7,
+    "ordendecompra": 5
+  }
+}
+]

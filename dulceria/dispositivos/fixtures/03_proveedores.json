@@ -1,0 +1,29 @@
+[
+{
+  "model": "dispositivos.proveedor",
+  "pk": 7,
+  "fields": {
+    "nombre": "Proveedor ABC S.A.",
+    "contacto": "Juan Pérez",
+    "email": "contacto@proveedorabc.com"
+  }
+},
+{
+  "model": "dispositivos.proveedor",
+  "pk": 8,
+  "fields": {
+    "nombre": "Distribuidora XYZ Ltda.",
+    "contacto": "María González",
+    "email": "ventas@xyz.com"
+  }
+},
+{
+  "model": "dispositivos.proveedor",
+  "pk": 9,
+  "fields": {
+    "nombre": "Dulces Nacionales S.A.",
+    "contacto": "Roberto Silva",
+    "email": "info@dulcesnacionales.cl"
+  }
+}
+]

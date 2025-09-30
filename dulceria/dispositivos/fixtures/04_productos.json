@@ -1,0 +1,35 @@
+[
+{
+  "model": "dispositivos.producto",
+  "pk": 7,
+  "fields": {
+    "nombre": "Chocolate Amargo 70%",
+    "lote": "LOTE-CHOCO-001",
+    "fecha_vencimiento": "2026-09-30",
+    "precio": 3500,
+    "stock": 150
+  }
+},
+{
+  "model": "dispositivos.producto",
+  "pk": 8,
+  "fields": {
+    "nombre": "Caramelo de Fruta Mix",
+    "lote": "LOTE-CARAM-001",
+    "fecha_vencimiento": "2026-09-30",
+    "precio": 1200,
+    "stock": 300
+  }
+},
+{
+  "model": "dispositivos.producto",
+  "pk": 9,
+  "fields": {
+    "nombre": "Gomitas de Ositos",
+    "lote": "LOTE-GOMI-001",
+    "fecha_vencimiento": "2026-09-30",
+    "precio": 1800,
+    "stock": 200
+  }
+}
+]

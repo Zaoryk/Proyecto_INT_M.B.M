@@ -1,0 +1,35 @@
+[
+{
+  "model": "dispositivos.movimientoinventario",
+  "pk": 7,
+  "fields": {
+    "tipo": "entrada",
+    "fecha": "2025-09-30",
+    "cantidad": "150",
+    "bodega": 5,
+    "producto": 7
+  }
+},
+{
+  "model": "dispositivos.movimientoinventario",
+  "pk": 8,
+  "fields": {
+    "tipo": "entrada",
+    "fecha": "2025-09-30",
+    "cantidad": "300",
+    "bodega": 5,
+    "producto": 8
+  }
+},
+{
+  "model": "dispositivos.movimientoinventario",
+  "pk": 9,
+  "fields": {
+    "tipo": "entrada",
+    "fecha": "2025-09-30",
+    "cantidad": "200",
+    "bodega": 5,
+    "producto": 9
+  }
+}
+]
