@@ -1,4 +1,3 @@
-# dispositivos/management/commands/generar_fixtures.py
 import os
 import sys
 import django
@@ -38,7 +37,7 @@ class Command(BaseCommand):
     help = 'Genera archivos fixtures para la aplicacion dispositivos'
 
     def handle(self, *args, **options):
-        self.stdout.write('Iniciando generacion de fixtures...')
+        self.stdout.write('Iniciando generacion de fixtures')
         
         # Crear directorio de fixtures si no existe
         fixtures_dir = os.path.join('dispositivos', 'fixtures')
@@ -62,7 +61,7 @@ class Command(BaseCommand):
         """Genera datos de prueba para el sistema"""
         User = get_user_model()
         
-        self.stdout.write('Limpiando datos existentes...')
+        self.stdout.write('Limpiando datos existentes')
         self.limpiar_datos()
         
         self.stdout.write('Creando usuarios...')
@@ -84,7 +83,7 @@ class Command(BaseCommand):
             last_name='Vendedor'
         )
 
-        self.stdout.write('Creando perfiles de usuario...')
+        self.stdout.write('Creando perfiles de usuario')
         # Crear perfiles
         PerfilUsuario.objects.create(
             user=admin_user,
@@ -100,7 +99,7 @@ class Command(BaseCommand):
             rol='cliente'
         )
 
-        self.stdout.write('Creando proveedores...')
+        self.stdout.write('Creando proveedores')
         # Crear proveedores
         proveedor1 = Proveedor.objects.create(
             nombre='Proveedor ABC S.A.',
@@ -123,7 +122,7 @@ class Command(BaseCommand):
             email='info@dulcesnacionales.cl'
         )
 
-        self.stdout.write('Creando productos...')
+        self.stdout.write('Creando productos')
         # Crear productos
         Producto.objects.create(
             nombre='Chocolate Amargo 70%',
@@ -172,7 +171,7 @@ class Command(BaseCommand):
     def exportar_fixtures(self):
         """Exporta los datos a archivos fixtures"""
         
-        self.stdout.write('Exportando a archivos JSON...')
+        self.stdout.write('Exportando a archivos JSON')
         
         # 00_proveedores.json
         proveedores = Proveedor.objects.all()
