@@ -3,7 +3,6 @@
 ![Django](https://img.shields.io/badge/Django-5.2.5-green?style=for-the-badge&logo=django)
 ![Python](https://img.shields.io/badge/Python-3.13+-blue?style=for-the-badge&logo=python)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?style=for-the-badge&logo=mysql)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 Sistema de gestión integral desarrollado en Django para la administración completa de una dulcería. Control de inventario, ventas, producción, compras y gestión de proveedores.
 
