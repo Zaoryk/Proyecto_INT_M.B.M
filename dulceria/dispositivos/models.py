@@ -6,7 +6,7 @@ class Proveedor(models.Model):
     nombre = models.CharField(max_length=100)
     contacto = models.CharField(max_length=100)
     telefono = models.CharField(max_length=20)
-    correo = models.EmailField()
+    email = models.EmailField()
 
     def __str__(self):
         return self.nombre
@@ -25,7 +25,7 @@ class Producto(models.Model):
 # Perfil de usuario extendido
 class PerfilUsuario(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    correo = models.CharField(max_length=200, blank=True, null=True)
+    email = models.CharField(max_length=200, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
     rol = models.CharField(max_length=50, choices=[('admin', 'Administrador'), ('cliente', 'Cliente')])
 
