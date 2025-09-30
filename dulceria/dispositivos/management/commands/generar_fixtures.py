@@ -2,6 +2,7 @@
 import os
 import sys
 import django
+from datetime import datetime, timedelta
 
 # Configurar Django ANTES de importar modelos
 try:
@@ -38,7 +39,7 @@ class Command(BaseCommand):
     help = 'Genera archivos fixtures para la aplicacion dispositivos'
 
     def handle(self, *args, **options):
-        self.stdout.write('Iniciando generacion de fixtures...')
+        self.stdout.write('Iniciando generacion de fixtures')
         
         # Crear directorio de fixtures si no existe
         fixtures_dir = os.path.join('dispositivos', 'fixtures')
@@ -62,46 +63,85 @@ class Command(BaseCommand):
         """Genera datos de prueba para el sistema"""
         User = get_user_model()
         
-        self.stdout.write('Limpiando datos existentes...')
+        self.stdout.write('Limpiando datos existentes')
         self.limpiar_datos()
         
         self.stdout.write('Creando usuarios...')
-        # Crear superusuario
-        admin_user = User.objects.create_superuser(
-            username='admin',
-            email='admin@empresa.com',
-            password='admin123',
-            first_name='Administrador',
-            last_name='Principal'
-        )
+        
+        # Crear o obtener superusuario
+        try:
+            admin_user = User.objects.get(username='admin')
+            self.stdout.write('Usuario admin ya existe, actualizando...')
+            admin_user.email = 'admin@empresa.com'
+            admin_user.first_name = 'Administrador'
+            admin_user.last_name = 'Principal'
+            admin_user.is_staff = True
+            admin_user.is_superuser = True
+            admin_user.set_password('admin123')
+            admin_user.save()
+        except User.DoesNotExist:
+            admin_user = User.objects.create_superuser(
+                username='admin',
+                email='admin@empresa.com',
+                password='admin123',
+                first_name='Administrador',
+                last_name='Principal'
+            )
+            self.stdout.write('Usuario admin creado')
 
-        # Crear usuario normal
-        vendedor_user = User.objects.create_user(
-            username='vendedor1',
-            email='vendedor@empresa.com',
-            password='vendedor123',
-            first_name='Carlos',
-            last_name='Vendedor'
-        )
+        # Crear o obtener usuario normal
+        try:
+            vendedor_user = User.objects.get(username='vendedor1')
+            self.stdout.write('Usuario vendedor1 ya existe, actualizando...')
+            vendedor_user.email = 'vendedor@empresa.com'
+            vendedor_user.first_name = 'Carlos'
+            vendedor_user.last_name = 'Vendedor'
+            vendedor_user.set_password('vendedor123')
+            vendedor_user.save()
+        except User.DoesNotExist:
+            vendedor_user = User.objects.create_user(
+                username='vendedor1',
+                email='vendedor@empresa.com',
+                password='vendedor123',
+                first_name='Carlos',
+                last_name='Vendedor'
+            )
+            self.stdout.write('Usuario vendedor1 creado')
 
-        self.stdout.write('Creando perfiles de usuario...')
-        # Crear perfiles
-        PerfilUsuario.objects.create(
-            user=admin_user,
-            email='admin@empresa.com',
-            telefono='+56912345678',
-            rol='admin'
-        )
+        self.stdout.write('Creando perfiles de usuario')
+        
+        # Crear o actualizar perfiles
+        try:
+            perfil_admin = PerfilUsuario.objects.get(user=admin_user)
+            perfil_admin.email = 'admin@empresa.com'
+            perfil_admin.rol = 'admin'
+            perfil_admin.save()
+            self.stdout.write('Perfil admin actualizado')
+        except PerfilUsuario.DoesNotExist:
+            PerfilUsuario.objects.create(
+                user=admin_user,
+                email='admin@empresa.com',
+                rol='admin'
+            )
+            self.stdout.write('Perfil admin creado')
 
-        PerfilUsuario.objects.create(
-            user=vendedor_user,
-            email='vendedor@empresa.com',
-            telefono='+56987654321',
-            rol='cliente'
-        )
+        try:
+            perfil_vendedor = PerfilUsuario.objects.get(user=vendedor_user)
+            perfil_vendedor.email = 'vendedor@empresa.com'
+            perfil_vendedor.rol = 'cliente'
+            perfil_vendedor.save()
+            self.stdout.write('Perfil vendedor actualizado')
+        except PerfilUsuario.DoesNotExist:
+            PerfilUsuario.objects.create(
+                user=vendedor_user,
+                email='vendedor@empresa.com',
+                rol='cliente'
+            )
+            self.stdout.write('Perfil vendedor creado')
 
-        self.stdout.write('Creando proveedores...')
-        # Crear proveedores
+        self.stdout.write('Creando proveedores')
+        
+        # Crear proveedores (siempre nuevos)
         proveedor1 = Proveedor.objects.create(
             nombre='Proveedor ABC S.A.',
             contacto='Juan Perez',
@@ -123,41 +163,50 @@ class Command(BaseCommand):
             email='info@dulcesnacionales.cl'
         )
 
-        self.stdout.write('Creando productos...')
-        # Crear productos
+        self.stdout.write('Creando productos')
+        
+        # Fecha de vencimiento (1 año desde hoy)
+        fecha_vencimiento = datetime.now() + timedelta(days=365)
+        
+        # Crear productos CON fecha_vencimiento
         Producto.objects.create(
             nombre='Chocolate Amargo 70%',
             precio=3500,
             stock=150,
-            proveedor=proveedor1
+            proveedor=proveedor1,
+            fecha_vencimiento=fecha_vencimiento
         )
 
         Producto.objects.create(
             nombre='Caramelo de Fruta Mix',
             precio=1200,
             stock=300,
-            proveedor=proveedor2
+            proveedor=proveedor2,
+            fecha_vencimiento=fecha_vencimiento
         )
 
         Producto.objects.create(
             nombre='Galletas de Mantequilla',
             precio=2800,
             stock=80,
-            proveedor=proveedor1
+            proveedor=proveedor1,
+            fecha_vencimiento=fecha_vencimiento
         )
 
         Producto.objects.create(
             nombre='Bombones Surtidos',
             precio=4200,
             stock=60,
-            proveedor=proveedor3
+            proveedor=proveedor3,
+            fecha_vencimiento=fecha_vencimiento
         )
 
         Producto.objects.create(
             nombre='Gomitas de Ositos',
             precio=1800,
             stock=200,
-            proveedor=proveedor2
+            proveedor=proveedor2,
+            fecha_vencimiento=fecha_vencimiento
         )
 
     def limpiar_datos(self):
@@ -166,13 +215,12 @@ class Command(BaseCommand):
         PerfilUsuario.objects.all().delete()
         Producto.objects.all().delete()
         Proveedor.objects.all().delete()
-        # No eliminar superusuarios existentes
-        User.objects.filter(is_superuser=False).delete()
+        # No eliminar usuarios existentes para evitar problemas
 
     def exportar_fixtures(self):
         """Exporta los datos a archivos fixtures"""
         
-        self.stdout.write('Exportando a archivos JSON...')
+        self.stdout.write('Exportando a archivos JSON')
         
         # 00_proveedores.json
         proveedores = Proveedor.objects.all()

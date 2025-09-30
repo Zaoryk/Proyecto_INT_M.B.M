@@ -20,7 +20,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         User = get_user_model()
         
-        print("Limpiando datos existentes...")
+        print("Limpiando datos existentes")
         PerfilUsuario.objects.all().delete()
         Producto.objects.all().delete()
         Proveedor.objects.all().delete()
@@ -31,7 +31,7 @@ class Command(BaseCommand):
         # Crear o obtener superusuario
         try:
             admin_user = User.objects.get(username='admin')
-            print("Usuario admin ya existe, actualizando...")
+            print("Usuario admin ya existe, actualizando")
             admin_user.email = 'admin@empresa.com'
             admin_user.first_name = 'Administrador'
             admin_user.last_name = 'Principal'
@@ -53,7 +53,7 @@ class Command(BaseCommand):
         # Crear o obtener usuario normal
         try:
             vendedor_user = User.objects.get(username='vendedor1')
-            print("Usuario vendedor1 ya existe, actualizando...")
+            print("Usuario vendedor1 ya existe, actualizando")
             vendedor_user.email = 'vendedor@empresa.com'
             vendedor_user.first_name = 'Carlos'
             vendedor_user.last_name = 'Vendedor'
@@ -68,7 +68,7 @@ class Command(BaseCommand):
                 last_name='Vendedor'
             )
 
-        # Crear o actualizar perfiles - SIN campo telefono
+        # Crear o actualizar perfiles
         try:
             perfil_admin = PerfilUsuario.objects.get(user=admin_user)
             perfil_admin.email = 'admin@empresa.com'

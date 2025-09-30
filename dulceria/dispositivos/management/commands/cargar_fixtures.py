@@ -1,9 +1,7 @@
-# dispositivos/management/commands/cargar_fixtures.py
 import os
 import sys
 import django
 
-# Configurar Django
 try:
     current_file = __file__
     commands_dir = os.path.dirname(current_file)
@@ -43,4 +41,4 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f'[ERROR] en {fixture}: {e}'))
 
-        self.stdout.write(self.style.SUCCESS('[EXITO] Todas las fixtures cargadas!'))
+        self.stdout.write(self.style.SUCCESS('[EXITO] Todas las fixtures cargadas'))
