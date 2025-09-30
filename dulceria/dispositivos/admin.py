@@ -9,7 +9,7 @@ class ProveedorAdmin(admin.ModelAdmin):
 
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'precio', 'stock', 'proveedor')
+    list_display = ('nombre','fecha_vencimiento', 'precio', 'stock', 'proveedor')
     list_filter = ('proveedor',)
     search_fields = ('nombre',)
 
