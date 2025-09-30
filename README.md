@@ -13,7 +13,7 @@ Gestión integral desarrollado en Django, incluye control de inventario, ventas,
 - Clonar el repositorio
 
 ```bash
-git clone <url-del-repositorio>
+git clone https://github.com/Zaoryk/Proyecto_INT_M.B.M.git
 cd Proyecto_INT_M.B.M/dulceria
 ```
 
