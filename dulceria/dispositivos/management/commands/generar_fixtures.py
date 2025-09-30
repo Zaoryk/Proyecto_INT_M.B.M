@@ -1,252 +1,84 @@
-# dispositivos/management/commands/generar_fixtures.py
 import os
 import sys
 import django
-from datetime import datetime, timedelta
 
-# Configurar Django ANTES de importar modelos
+# Configurar Django
 try:
-    # Calcular la ruta del proyecto Django
     current_file = __file__
     commands_dir = os.path.dirname(current_file)
     management_dir = os.path.dirname(commands_dir)
     apps_dir = os.path.dirname(management_dir)
     project_dir = os.path.dirname(apps_dir)
     
-    # Agregar al path y configurar Django
     sys.path.insert(0, project_dir)
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dulceria.settings')
     django.setup()
     
-    # AHORA importar los modelos
     from django.core.management.base import BaseCommand
     from django.core import serializers
-    from django.contrib.auth import get_user_model
-    from django.contrib.auth.models import User
-    from dispositivos.models import Proveedor, Producto, PerfilUsuario
+    from dispositivos.models import Usuario, Proveedor, Producto, Bodega, Cliente, PedidoDeVenta
     
-    print("[OK] Modulos importados correctamente")
+    print("[OK] Módulos importados correctamente")
     
 except ImportError as e:
-    print(f"[ERROR] Importando modulos: {e}")
-    print("Asegurate de que:")
-    print("1. Estas en el directorio correcto (donde esta manage.py)")
-    print("2. Tu virtual environment esta activado")
-    print("3. Django esta instalado")
+    print(f"[ERROR] Importando módulos: {e}")
     sys.exit(1)
 
 class Command(BaseCommand):
-    help = 'Genera archivos fixtures para la aplicacion dispositivos'
+    help = 'Genera archivos fixtures para los nuevos modelos'
 
     def handle(self, *args, **options):
-        self.stdout.write('Iniciando generacion de fixtures')
+        print("=== GENERANDO FIXTURES PARA NUEVOS MODELOS ===")
         
         # Crear directorio de fixtures si no existe
         fixtures_dir = os.path.join('dispositivos', 'fixtures')
         if not os.path.exists(fixtures_dir):
             os.makedirs(fixtures_dir)
-            self.stdout.write(f'[OK] Directorio creado: {fixtures_dir}')
+            print(f"[OK] Directorio creado: {fixtures_dir}")
         else:
-            self.stdout.write(f'[OK] Directorio ya existe: {fixtures_dir}')
+            print(f"[OK] Directorio ya existe: {fixtures_dir}")
 
-        # Generar datos de prueba
+        # Primero cargar datos de prueba
         self.generar_datos_prueba()
         
-        # Exportar a fixtures
+        # Luego exportar a fixtures
         self.exportar_fixtures()
         
-        self.stdout.write(self.style.SUCCESS('[EXITO] Fixtures generados exitosamente!'))
-        self.stdout.write('Archivos creados en: dispositivos/fixtures/')
-        self.stdout.write('Usuario admin: admin / admin123')
+        print("[EXITO] Fixtures generados exitosamente!")
+        print("Archivos creados en: dispositivos/fixtures/")
 
     def generar_datos_prueba(self):
-        """Genera datos de prueba para el sistema"""
-        User = get_user_model()
+        """Genera datos de prueba usando el script actualizado"""
+        print("--- Generando datos de prueba ---")
         
-        self.stdout.write('Limpiando datos existentes')
-        self.limpiar_datos()
-        
-        self.stdout.write('Creando usuarios...')
-        
-        # Crear o obtener superusuario
-        try:
-            admin_user = User.objects.get(username='admin')
-            self.stdout.write('Usuario admin ya existe, actualizando...')
-            admin_user.email = 'admin@empresa.com'
-            admin_user.first_name = 'Administrador'
-            admin_user.last_name = 'Principal'
-            admin_user.is_staff = True
-            admin_user.is_superuser = True
-            admin_user.set_password('admin123')
-            admin_user.save()
-        except User.DoesNotExist:
-            admin_user = User.objects.create_superuser(
-                username='admin',
-                email='admin@empresa.com',
-                password='admin123',
-                first_name='Administrador',
-                last_name='Principal'
-            )
-            self.stdout.write('Usuario admin creado')
-
-        # Crear o obtener usuario normal
-        try:
-            vendedor_user = User.objects.get(username='vendedor1')
-            self.stdout.write('Usuario vendedor1 ya existe, actualizando...')
-            vendedor_user.email = 'vendedor@empresa.com'
-            vendedor_user.first_name = 'Carlos'
-            vendedor_user.last_name = 'Vendedor'
-            vendedor_user.set_password('vendedor123')
-            vendedor_user.save()
-        except User.DoesNotExist:
-            vendedor_user = User.objects.create_user(
-                username='vendedor1',
-                email='vendedor@empresa.com',
-                password='vendedor123',
-                first_name='Carlos',
-                last_name='Vendedor'
-            )
-            self.stdout.write('Usuario vendedor1 creado')
-
-        self.stdout.write('Creando perfiles de usuario')
-        
-        # Crear o actualizar perfiles
-        try:
-            perfil_admin = PerfilUsuario.objects.get(user=admin_user)
-            perfil_admin.email = 'admin@empresa.com'
-            perfil_admin.rol = 'admin'
-            perfil_admin.save()
-            self.stdout.write('Perfil admin actualizado')
-        except PerfilUsuario.DoesNotExist:
-            PerfilUsuario.objects.create(
-                user=admin_user,
-                email='admin@empresa.com',
-                rol='admin'
-            )
-            self.stdout.write('Perfil admin creado')
-
-        try:
-            perfil_vendedor = PerfilUsuario.objects.get(user=vendedor_user)
-            perfil_vendedor.email = 'vendedor@empresa.com'
-            perfil_vendedor.rol = 'cliente'
-            perfil_vendedor.save()
-            self.stdout.write('Perfil vendedor actualizado')
-        except PerfilUsuario.DoesNotExist:
-            PerfilUsuario.objects.create(
-                user=vendedor_user,
-                email='vendedor@empresa.com',
-                rol='cliente'
-            )
-            self.stdout.write('Perfil vendedor creado')
-
-        self.stdout.write('Creando proveedores')
-        
-        # Crear proveedores (siempre nuevos)
-        proveedor1 = Proveedor.objects.create(
-            nombre='Proveedor ABC S.A.',
-            contacto='Juan Perez',
-            telefono='+56911223344',
-            email='contacto@proveedorabc.com'
-        )
-
-        proveedor2 = Proveedor.objects.create(
-            nombre='Distribuidora XYZ Ltda.',
-            contacto='Maria Gonzalez',
-            telefono='+56955667788',
-            email='ventas@xyz.com'
-        )
-
-        proveedor3 = Proveedor.objects.create(
-            nombre='Dulces Nacionales S.A.',
-            contacto='Roberto Silva',
-            telefono='+56999887766',
-            email='info@dulcesnacionales.cl'
-        )
-
-        self.stdout.write('Creando productos')
-        
-        # Fecha de vencimiento (1 año desde hoy)
-        fecha_vencimiento = datetime.now() + timedelta(days=365)
-        
-        # Crear productos CON fecha_vencimiento
-        Producto.objects.create(
-            nombre='Chocolate Amargo 70%',
-            precio=3500,
-            stock=150,
-            proveedor=proveedor1,
-            fecha_vencimiento=fecha_vencimiento
-        )
-
-        Producto.objects.create(
-            nombre='Caramelo de Fruta Mix',
-            precio=1200,
-            stock=300,
-            proveedor=proveedor2,
-            fecha_vencimiento=fecha_vencimiento
-        )
-
-        Producto.objects.create(
-            nombre='Galletas de Mantequilla',
-            precio=2800,
-            stock=80,
-            proveedor=proveedor1,
-            fecha_vencimiento=fecha_vencimiento
-        )
-
-        Producto.objects.create(
-            nombre='Bombones Surtidos',
-            precio=4200,
-            stock=60,
-            proveedor=proveedor3,
-            fecha_vencimiento=fecha_vencimiento
-        )
-
-        Producto.objects.create(
-            nombre='Gomitas de Ositos',
-            precio=1800,
-            stock=200,
-            proveedor=proveedor2,
-            fecha_vencimiento=fecha_vencimiento
-        )
-
-    def limpiar_datos(self):
-        """Limpia los datos existentes"""
-        User = get_user_model()
-        PerfilUsuario.objects.all().delete()
-        Producto.objects.all().delete()
-        Proveedor.objects.all().delete()
-        # No eliminar usuarios existentes para evitar problemas
+        # Usar el script de carga actualizado
+        from dispositivos.management.commands.cargar_datos_directo import Command as CargarDatos
+        cargador = CargarDatos()
+        cargador.handle()
 
     def exportar_fixtures(self):
         """Exporta los datos a archivos fixtures"""
+        print("--- Exportando a archivos JSON ---")
         
-        self.stdout.write('Exportando a archivos JSON')
+        # Exportar en orden de dependencias
+        modelos = [
+            ('00_usuarios.json', Usuario),
+            ('01_proveedores.json', Proveedor),
+            ('02_productos.json', Producto),
+            ('03_bodegas.json', Bodega),
+            ('04_clientes.json', Cliente),
+            ('05_pedidos_venta.json', PedidoDeVenta),
+        ]
         
-        # 00_proveedores.json
-        proveedores = Proveedor.objects.all()
-        with open('dispositivos/fixtures/00_proveedores.json', 'w', encoding='utf-8') as f:
-            data = serializers.serialize('json', proveedores, indent=2, ensure_ascii=False)
-            f.write(data)
-        self.stdout.write('[OK] 00_proveedores.json')
-
-        # 01_usuarios.json  
-        User = get_user_model()
-        usuarios = User.objects.all()
-        with open('dispositivos/fixtures/01_usuarios.json', 'w', encoding='utf-8') as f:
-            data = serializers.serialize('json', usuarios, indent=2, ensure_ascii=False)
-            f.write(data)
-        self.stdout.write('[OK] 01_usuarios.json')
-
-        # 02_perfiles.json
-        perfiles = PerfilUsuario.objects.all()
-        with open('dispositivos/fixtures/02_perfiles.json', 'w', encoding='utf-8') as f:
-            data = serializers.serialize('json', perfiles, indent=2, ensure_ascii=False)
-            f.write(data)
-        self.stdout.write('[OK] 02_perfiles.json')
-
-        # 03_productos.json
-        productos = Producto.objects.all()
-        with open('dispositivos/fixtures/03_productos.json', 'w', encoding='utf-8') as f:
-            data = serializers.serialize('json', productos, indent=2, ensure_ascii=False)
-            f.write(data)
-        self.stdout.write('[OK] 03_productos.json')
+        for archivo, modelo in modelos:
+            try:
+                objetos = modelo.objects.all()
+                if objetos.exists():
+                    with open(f'dispositivos/fixtures/{archivo}', 'w', encoding='utf-8') as f:
+                        data = serializers.serialize('json', objetos, indent=2, ensure_ascii=False)
+                        f.write(data)
+                    print(f"[OK] {archivo} - {objetos.count()} registros")
+                else:
+                    print(f"[AVISO] {archivo} - Sin datos para exportar")
+            except Exception as e:
+                print(f"[ERROR] en {archivo}: {e}")

@@ -1,3 +1,4 @@
+# dispositivos/management/commands/cargar_datos_directo.py
 import os
 import sys
 import django
@@ -10,7 +11,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dulceria.settings')
 django.setup()
 
 from django.core.management.base import BaseCommand
-from dispositivos.models import Usuario, Proveedor, Producto, Bodega, Receta
+from dispositivos.models import Usuario, Proveedor, Producto, Bodega, Cliente, PedidoDeVenta
 
 class Command(BaseCommand):
     help = 'Carga datos directamente en la base de datos con nuevos modelos'
@@ -35,8 +36,11 @@ class Command(BaseCommand):
         # Crear bodegas
         bodegas = self.crear_bodegas()
         
-        # Crear recetas
-        recetas = self.crear_recetas()
+        # Crear clientes
+        clientes = self.crear_clientes()
+        
+        # Crear pedidos de venta
+        self.crear_pedidos_venta(usuarios[1], clientes)
         
         print("¡Datos cargados exitosamente!")
         print("=== USUARIOS DISPONIBLES ===")
@@ -47,9 +51,10 @@ class Command(BaseCommand):
     def limpiar_datos(self):
         """Limpia los datos existentes"""
         # Limpiar en orden inverso de dependencias
+        PedidoDeVenta.objects.all().delete()
+        Cliente.objects.all().delete()
         Producto.objects.all().delete()
         Bodega.objects.all().delete()
-        Receta.objects.all().delete()
         Proveedor.objects.all().delete()
         Usuario.objects.all().delete()
 
@@ -215,29 +220,67 @@ class Command(BaseCommand):
             
         return bodegas_creadas
 
-    def crear_recetas(self):
-        """Crea recetas"""
-        print("--- Creando recetas ---")
+    def crear_clientes(self):
+        """Crea clientes"""
+        print("--- Creando clientes ---")
         
-        recetas_data = [
+        clientes_data = [
             {
-                'version': '1.0',
-                'insumos_necesarios': 18.50
+                'nombre': 'Supermercado Central',
+                'contacto': 'Laura Martínez',
+                'telefono': '+56911223344',
+                'email': 'compras@supercentral.cl',
+                'condiciones': 'Pago a 30 días'
             },
             {
-                'version': '2.1', 
-                'insumos_necesarios': 22.00
+                'nombre': 'Tienda Dulce Sabor',
+                'contacto': 'Pedro González',
+                'telefono': '+56955667788',
+                'email': 'pedro@dulcesabor.cl',
+                'condiciones': 'Pago contado'
+            },
+            {
+                'nombre': 'Distribuidora Norte',
+                'contacto': 'Ana López',
+                'telefono': '+56999887766',
+                'email': 'ana@distribuidoranorte.cl',
+                'condiciones': 'Pago a 45 días'
             }
         ]
         
-        recetas_creadas = []
-        for data in recetas_data:
-            receta, created = Receta.objects.get_or_create(
-                version=data['version'],
+        clientes_creados = []
+        for data in clientes_data:
+            cliente, created = Cliente.objects.get_or_create(
+                nombre=data['nombre'],
                 defaults=data
             )
-            status = "creada" if created else "ya existía"
-            print(f"✓ Receta versión {receta.version} ({status})")
-            recetas_creadas.append(receta)
+            status = "creado" if created else "ya existía"
+            print(f"✓ Cliente {cliente.nombre} ({status})")
+            clientes_creados.append(cliente)
             
-        return recetas_creadas
+        return clientes_creados
+
+    def crear_pedidos_venta(self, vendedor, clientes):
+        """Crea pedidos de venta"""
+        print("--- Creando pedidos de venta ---")
+        
+        # Crear pedido para el primer cliente
+        pedido_data = {
+            'fecha': datetime.now().date(),
+            'estado': 'confirmado',
+            'monto_total': 14600,
+            'usuario': vendedor
+        }
+        
+        try:
+            pedido, created = PedidoDeVenta.objects.get_or_create(
+                fecha=pedido_data['fecha'],
+                usuario=pedido_data['usuario'],
+                defaults=pedido_data
+            )
+            
+            if created:
+                print(f"✓ Pedido de venta creado - Cliente: {clientes[0].nombre} - Total: ${pedido.monto_total}")
+                
+        except Exception as e:
+            print(f"⚠ Error creando pedido de venta: {e}")
