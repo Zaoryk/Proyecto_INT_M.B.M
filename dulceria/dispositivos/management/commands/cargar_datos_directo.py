@@ -1,4 +1,3 @@
-# dispositivos/management/commands/cargar_datos_directo.py
 import os
 import sys
 import django
@@ -11,164 +10,234 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dulceria.settings')
 django.setup()
 
 from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
-from dispositivos.models import Proveedor, Producto, PerfilUsuario
+from dispositivos.models import Usuario, Proveedor, Producto, Bodega, Receta
 
 class Command(BaseCommand):
-    help = 'Carga datos directamente en la base de datos'
+    help = 'Carga datos directamente en la base de datos con nuevos modelos'
 
     def handle(self, *args, **options):
-        User = get_user_model()
+        print("=== CARGANDO DATOS CON NUEVOS MODELOS ===")
         
-        print("Limpiando datos existentes")
-        PerfilUsuario.objects.all().delete()
-        Producto.objects.all().delete()
-        Proveedor.objects.all().delete()
-        # NO eliminamos usuarios para evitar problemas
-
+        print("Limpiando datos existentes...")
+        self.limpiar_datos()
+        
         print("Creando datos...")
         
-        # Crear o obtener superusuario
-        try:
-            admin_user = User.objects.get(username='admin')
-            print("Usuario admin ya existe, actualizando")
-            admin_user.email = 'admin@empresa.com'
-            admin_user.first_name = 'Administrador'
-            admin_user.last_name = 'Principal'
-            admin_user.is_staff = True
-            admin_user.is_superuser = True
-            admin_user.set_password('admin123')
-            admin_user.save()
-        except User.DoesNotExist:
-            admin_user = User.objects.create_user(
-                username='admin',
-                email='admin@empresa.com',
-                password='admin123',
-                first_name='Administrador',
-                last_name='Principal',
-                is_staff=True,
-                is_superuser=True
-            )
-
-        # Crear o obtener usuario normal
-        try:
-            vendedor_user = User.objects.get(username='vendedor1')
-            print("Usuario vendedor1 ya existe, actualizando")
-            vendedor_user.email = 'vendedor@empresa.com'
-            vendedor_user.first_name = 'Carlos'
-            vendedor_user.last_name = 'Vendedor'
-            vendedor_user.set_password('vendedor123')
-            vendedor_user.save()
-        except User.DoesNotExist:
-            vendedor_user = User.objects.create_user(
-                username='vendedor1',
-                email='vendedor@empresa.com',
-                password='vendedor123',
-                first_name='Carlos',
-                last_name='Vendedor'
-            )
-
-        # Crear o actualizar perfiles
-        try:
-            perfil_admin = PerfilUsuario.objects.get(user=admin_user)
-            perfil_admin.email = 'admin@empresa.com'
-            perfil_admin.rol = 'admin'
-            perfil_admin.save()
-            print("Perfil admin actualizado")
-        except PerfilUsuario.DoesNotExist:
-            PerfilUsuario.objects.create(
-                user=admin_user,
-                email='admin@empresa.com',
-                rol='admin'
-            )
-            print("Perfil admin creado")
-
-        try:
-            perfil_vendedor = PerfilUsuario.objects.get(user=vendedor_user)
-            perfil_vendedor.email = 'vendedor@empresa.com'
-            perfil_vendedor.rol = 'cliente'
-            perfil_vendedor.save()
-            print("Perfil vendedor actualizado")
-        except PerfilUsuario.DoesNotExist:
-            PerfilUsuario.objects.create(
-                user=vendedor_user,
-                email='vendedor@empresa.com',
-                rol='cliente'
-            )
-            print("Perfil vendedor creado")
-
+        # Crear usuarios
+        usuarios = self.crear_usuarios()
+        
         # Crear proveedores
-        proveedor1, created = Proveedor.objects.get_or_create(
-            nombre='Proveedor ABC S.A.',
-            defaults={
+        proveedores = self.crear_proveedores()
+        
+        # Crear productos
+        productos = self.crear_productos(proveedores)
+        
+        # Crear bodegas
+        bodegas = self.crear_bodegas()
+        
+        # Crear recetas
+        recetas = self.crear_recetas()
+        
+        print("¡Datos cargados exitosamente!")
+        print("=== USUARIOS DISPONIBLES ===")
+        print("Administrador: admin123")
+        print("Vendedor: vendedor123") 
+        print("Comprador: comprador123")
+
+    def limpiar_datos(self):
+        """Limpia los datos existentes"""
+        # Limpiar en orden inverso de dependencias
+        Producto.objects.all().delete()
+        Bodega.objects.all().delete()
+        Receta.objects.all().delete()
+        Proveedor.objects.all().delete()
+        Usuario.objects.all().delete()
+
+    def crear_usuarios(self):
+        """Crea usuarios del sistema"""
+        print("--- Creando usuarios ---")
+        
+        usuarios_data = [
+            {
+                'nombre': 'Administrador Principal',
+                'rol': 'admin',
+                'permisos': 'superusuario',
+                'password': 'admin123',
+                'email': 'admin@empresa.com'
+            },
+            {
+                'nombre': 'Carlos Vendedor',
+                'rol': 'vendedor',
+                'permisos': 'ventas,consultas',
+                'password': 'vendedor123',
+                'email': 'vendedor@empresa.com'
+            },
+            {
+                'nombre': 'Ana Compradora', 
+                'rol': 'comprador',
+                'permisos': 'compras,proveedores',
+                'password': 'comprador123',
+                'email': 'comprador@empresa.com'
+            }
+        ]
+        
+        usuarios_creados = []
+        for data in usuarios_data:
+            usuario, created = Usuario.objects.get_or_create(
+                nombre=data['nombre'],
+                defaults=data
+            )
+            status = "creado" if created else "ya existía"
+            print(f"✓ Usuario {usuario.nombre} ({status})")
+            usuarios_creados.append(usuario)
+            
+        return usuarios_creados
+
+    def crear_proveedores(self):
+        """Crea proveedores"""
+        print("--- Creando proveedores ---")
+        
+        proveedores_data = [
+            {
+                'nombre': 'Proveedor ABC S.A.',
                 'contacto': 'Juan Pérez',
-                'telefono': '+56911223344',
-                'email': 'contacto@proveedorabc.com'
+                'condicionescomerciales': 'Pago a 30 días'
+            },
+            {
+                'nombre': 'Distribuidora XYZ Ltda.',
+                'contacto': 'María González', 
+                'condicionescomerciales': 'Pago contado 5% descuento'
+            },
+            {
+                'nombre': 'Dulces Nacionales S.A.',
+                'contacto': 'Roberto Silva',
+                'condicionescomerciales': 'Pago a 60 días'
             }
-        )
-        if created:
-            print("Proveedor 1 creado")
-        else:
-            print("Proveedor 1 ya existe")
+        ]
+        
+        proveedores_creados = []
+        for data in proveedores_data:
+            proveedor, created = Proveedor.objects.get_or_create(
+                nombre=data['nombre'],
+                defaults=data
+            )
+            status = "creado" if created else "ya existía"
+            print(f"✓ Proveedor {proveedor.nombre} ({status})")
+            proveedores_creados.append(proveedor)
+            
+        return proveedores_creados
 
-        proveedor2, created = Proveedor.objects.get_or_create(
-            nombre='Distribuidora XYZ Ltda.',
-            defaults={
-                'contacto': 'María González',
-                'telefono': '+56955667788',
-                'email': 'ventas@xyz.com'
-            }
-        )
-        if created:
-            print("Proveedor 2 creado")
-        else:
-            print("Proveedor 2 ya existe")
-
-        # Fechas de vencimiento (1 año desde hoy)
+    def crear_productos(self, proveedores):
+        """Crea productos"""
+        print("--- Creando productos ---")
+        
         fecha_vencimiento = datetime.now() + timedelta(days=365)
-
-        # Crear productos CON fecha_vencimiento
-        producto1, created = Producto.objects.get_or_create(
-            nombre='Chocolate Amargo 70%',
-            defaults={
+        
+        productos_data = [
+            {
+                'nombre': 'Chocolate Amargo 70%',
+                'lote': 'LOTE-CHOCO-001',
+                'fecha_vencimiento': fecha_vencimiento,
                 'precio': 3500,
                 'stock': 150,
-                'proveedor': proveedor1,
-                'fecha_vencimiento': fecha_vencimiento
-            }
-        )
-        if created:
-            print("Producto 1 creado")
-        else:
-            print("Producto 1 ya existe")
-
-        producto2, created = Producto.objects.get_or_create(
-            nombre='Caramelo de Fruta Mix',
-            defaults={
+                'proveedor': proveedores[0]  # Proveedor ABC
+            },
+            {
+                'nombre': 'Caramelo de Fruta Mix',
+                'lote': 'LOTE-CARAM-001',
+                'fecha_vencimiento': fecha_vencimiento,
                 'precio': 1200,
                 'stock': 300,
-                'proveedor': proveedor2,
-                'fecha_vencimiento': fecha_vencimiento
-            }
-        )
-        if created:
-            print("Producto 2 creado")
-        else:
-            print("Producto 2 ya existe")
-
-        producto3, created = Producto.objects.get_or_create(
-            nombre='Gomitas de Ositos',
-            defaults={
+                'proveedor': proveedores[1]  # Distribuidora XYZ
+            },
+            {
+                'nombre': 'Gomitas de Ositos',
+                'lote': 'LOTE-GOMI-001',
+                'fecha_vencimiento': fecha_vencimiento,
                 'precio': 1800,
                 'stock': 200,
-                'proveedor': proveedor2,
-                'fecha_vencimiento': fecha_vencimiento
+                'proveedor': proveedores[1]  # Distribuidora XYZ
+            },
+            {
+                'nombre': 'Galletas de Mantequilla',
+                'lote': 'LOTE-GALL-001', 
+                'fecha_vencimiento': fecha_vencimiento,
+                'precio': 2800,
+                'stock': 80,
+                'proveedor': proveedores[0]  # Proveedor ABC
+            },
+            {
+                'nombre': 'Bombones Surtidos',
+                'lote': 'LOTE-BOMB-001',
+                'fecha_vencimiento': fecha_vencimiento,
+                'precio': 4200,
+                'stock': 60,
+                'proveedor': proveedores[2]  # Dulces Nacionales
             }
-        )
-        if created:
-            print("Producto 3 creado")
-        else:
-            print("Producto 3 ya existe")
+        ]
+        
+        productos_creados = []
+        for data in productos_data:
+            producto, created = Producto.objects.get_or_create(
+                nombre=data['nombre'],
+                defaults=data
+            )
+            status = "creado" if created else "ya existía"
+            print(f"✓ Producto {producto.nombre} - ${producto.precio} ({status})")
+            productos_creados.append(producto)
+            
+        return productos_creados
 
-        print("¡Datos cargados exitosamente!")
-        print("Usuarios disponibles: admin / admin123, vendedor1 / vendedor123")
+    def crear_bodegas(self):
+        """Crea bodegas"""
+        print("--- Creando bodegas ---")
+        
+        bodegas_data = [
+            {
+                'nombre': 'Bodega Principal',
+                'ubicacion': 'Local Central'
+            },
+            {
+                'nombre': 'Bodega Secundaria',
+                'ubicacion': 'Almacén Norte'
+            }
+        ]
+        
+        bodegas_creadas = []
+        for data in bodegas_data:
+            bodega, created = Bodega.objects.get_or_create(
+                nombre=data['nombre'],
+                defaults=data
+            )
+            status = "creada" if created else "ya existía"
+            print(f"✓ Bodega {bodega.nombre} ({status})")
+            bodegas_creadas.append(bodega)
+            
+        return bodegas_creadas
+
+    def crear_recetas(self):
+        """Crea recetas"""
+        print("--- Creando recetas ---")
+        
+        recetas_data = [
+            {
+                'version': '1.0',
+                'insumos_necesarios': 18.50
+            },
+            {
+                'version': '2.1', 
+                'insumos_necesarios': 22.00
+            }
+        ]
+        
+        recetas_creadas = []
+        for data in recetas_data:
+            receta, created = Receta.objects.get_or_create(
+                version=data['version'],
+                defaults=data
+            )
+            status = "creada" if created else "ya existía"
+            print(f"✓ Receta versión {receta.version} ({status})")
+            recetas_creadas.append(receta)
+            
+        return recetas_creadas
