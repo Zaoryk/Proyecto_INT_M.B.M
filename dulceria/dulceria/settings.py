@@ -76,7 +76,7 @@ WSGI_APPLICATION = 'dulceria.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'dulceria',     
+        'NAME': 'mydb',     
         'USER': 'root',               
         'PASSWORD': '',               
         'HOST': '127.0.0.1',           
