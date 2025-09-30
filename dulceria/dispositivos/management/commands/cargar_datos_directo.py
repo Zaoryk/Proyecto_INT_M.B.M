@@ -13,7 +13,7 @@ django.setup()
 from django.core.management.base import BaseCommand
 from dispositivos.models import (
     ListarPrecios, Usuario, Producto, OrdenProduccion, Proveedor, 
-    OrdendeCompra, Bodega, MovimientoInventario, Costo, Cliente, Pedido
+    OrdenDeCompra, Bodega, MovimientoInventario, Costo, Cliente, Pedido
 )
 
 class Command(BaseCommand):
@@ -53,7 +53,7 @@ class Command(BaseCommand):
         OrdenProduccion.objects.all().delete()
         MovimientoInventario.objects.all().delete()
         Costo.objects.all().delete()
-        OrdendeCompra.objects.all().delete()
+        OrdenDeCompra.objects.all().delete()
         Producto.objects.all().delete()
         Bodega.objects.all().delete()
         Proveedor.objects.all().delete()
@@ -88,9 +88,9 @@ class Command(BaseCommand):
         print("--- Creando listas de precios ---")
         
         listas_data = [
-            {'canal': 'Mayorista', 'temporada': 'Verano 2025', 'valor': 2800, 'cliente_idcliente': clientes[0].idcliente},
-            {'canal': 'Minorista', 'temporada': 'Verano 2025', 'valor': 3200, 'cliente_idcliente': clientes[1].idcliente},
-            {'canal': 'Mayorista', 'temporada': 'Verano 2025', 'valor': 2700, 'cliente_idcliente': clientes[2].idcliente},
+            {'canal': 'Mayorista', 'temporada': 'Verano 2025', 'valor': 2800, 'cliente': clientes[0]},
+            {'canal': 'Minorista', 'temporada': 'Verano 2025', 'valor': 3200, 'cliente': clientes[1]},
+            {'canal': 'Mayorista', 'temporada': 'Verano 2025', 'valor': 2700, 'cliente': clientes[2]},
         ]
         
         listas_creadas = []
@@ -98,7 +98,7 @@ class Command(BaseCommand):
             lista, created = ListarPrecios.objects.get_or_create(
                 canal=data['canal'],
                 temporada=data['temporada'],
-                cliente_idcliente=data['cliente_idcliente'],
+                cliente=data['cliente'],
                 defaults=data
             )
             status = "creada" if created else "ya existía"
@@ -117,16 +117,14 @@ class Command(BaseCommand):
                 'rol': 'admin',
                 'password': 'admin123',
                 'email': 'admin@empresa.com',
-                'listarprecios_idlistarprecios': listas_precios[0].idlistarprecios,
-                'listarprecios_cliente_idcliente': listas_precios[0].cliente_idcliente
+                'listarprecios': listas_precios[0]
             },
             {
                 'nombre': 'Carlos Vendedor',
                 'rol': 'vendedor',
                 'password': 'vendedor123',
                 'email': 'vendedor@empresa.com',
-                'listarprecios_idlistarprecios': listas_precios[1].idlistarprecios,
-                'listarprecios_cliente_idcliente': listas_precios[1].cliente_idcliente
+                'listarprecios': listas_precios[1]
             },
         ]
         
@@ -248,7 +246,7 @@ class Command(BaseCommand):
         
         ordenes_creadas = []
         for data in ordenes_data:
-            orden, created = OrdendeCompra.objects.get_or_create(
+            orden, created = OrdenDeCompra.objects.get_or_create(
                 fecha=data['fecha'],
                 proveedor=data['proveedor'],
                 defaults=data
@@ -314,7 +312,7 @@ class Command(BaseCommand):
             movimiento_data = {
                 'tipo': 'entrada',
                 'fecha': datetime.now().date(),
-                'cantidad': str(producto.stock),
+                'cantidad': producto.stock,
                 'bodega': bodegas[0],
                 'producto': producto
             }

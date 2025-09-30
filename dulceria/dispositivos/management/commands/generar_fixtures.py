@@ -19,7 +19,7 @@ try:
     from django.core import serializers
     from dispositivos.models import (
         ListarPrecios, Usuario, Producto, OrdenProduccion, Proveedor, 
-        OrdendeCompra, Bodega, MovimientoInventario, Costo, Cliente, Pedido
+        OrdenDeCompra, Bodega, MovimientoInventario, Costo, Cliente, Pedido
     )
     
     print("[OK] Módulos importados correctamente")
@@ -72,7 +72,7 @@ class Command(BaseCommand):
             ('03_proveedores.json', Proveedor),
             ('04_productos.json', Producto),
             ('05_bodegas.json', Bodega),
-            ('06_ordenes_compra.json', OrdendeCompra),
+            ('06_ordenes_compra.json', OrdenDeCompra),
             ('07_ordenes_produccion.json', OrdenProduccion),
             ('08_pedidos.json', Pedido),
             ('09_movimientos_inventario.json', MovimientoInventario),
