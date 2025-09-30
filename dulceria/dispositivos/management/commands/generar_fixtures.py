@@ -1,3 +1,4 @@
+# dispositivos/management/commands/generar_fixtures.py
 import os
 import sys
 import django
@@ -16,7 +17,10 @@ try:
     
     from django.core.management.base import BaseCommand
     from django.core import serializers
-    from dispositivos.models import Usuario, Proveedor, Producto, Bodega, Cliente, PedidoDeVenta
+    from dispositivos.models import (
+        ListarPrecios, Usuario, Producto, OrdenProduccion, Proveedor, 
+        OrdendeCompra, Bodega, MovimientoInventario, Costo, Cliente, Pedido
+    )
     
     print("[OK] Módulos importados correctamente")
     
@@ -25,10 +29,10 @@ except ImportError as e:
     sys.exit(1)
 
 class Command(BaseCommand):
-    help = 'Genera archivos fixtures para los nuevos modelos'
+    help = 'Genera archivos fixtures para el nuevo esquema MySQL'
 
     def handle(self, *args, **options):
-        print("=== GENERANDO FIXTURES PARA NUEVOS MODELOS ===")
+        print("=== GENERANDO FIXTURES PARA NUEVO ESQUEMA MYSQL ===")
         
         # Crear directorio de fixtures si no existe
         fixtures_dir = os.path.join('dispositivos', 'fixtures')
@@ -62,12 +66,17 @@ class Command(BaseCommand):
         
         # Exportar en orden de dependencias
         modelos = [
-            ('00_usuarios.json', Usuario),
-            ('01_proveedores.json', Proveedor),
-            ('02_productos.json', Producto),
-            ('03_bodegas.json', Bodega),
-            ('04_clientes.json', Cliente),
-            ('05_pedidos_venta.json', PedidoDeVenta),
+            ('00_clientes.json', Cliente),
+            ('01_listas_precios.json', ListarPrecios),
+            ('02_usuarios.json', Usuario),
+            ('03_proveedores.json', Proveedor),
+            ('04_productos.json', Producto),
+            ('05_bodegas.json', Bodega),
+            ('06_ordenes_compra.json', OrdendeCompra),
+            ('07_ordenes_produccion.json', OrdenProduccion),
+            ('08_pedidos.json', Pedido),
+            ('09_movimientos_inventario.json', MovimientoInventario),
+            ('10_costos.json', Costo),
         ]
         
         for archivo, modelo in modelos:
