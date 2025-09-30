@@ -16,6 +16,6 @@ class ProductoAdmin(admin.ModelAdmin):
 
 @admin.register(PerfilUsuario)
 class PerfilUsuarioAdmin(admin.ModelAdmin):
-    list_display = ('user', 'telefono', 'email', 'rol')
+    list_display = ('user', 'email', 'rol')
     list_filter = ('rol',)
     search_fields = ('user__username', 'telefono')
