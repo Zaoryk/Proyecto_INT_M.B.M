@@ -3,7 +3,7 @@ from .models import Proveedor, Producto, PerfilUsuario
 
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'contacto', 'telefono', 'correo')
+    list_display = ('nombre', 'contacto', 'email')
     search_fields = ('nombre', 'contacto')
 
 
@@ -16,6 +16,6 @@ class ProductoAdmin(admin.ModelAdmin):
 
 @admin.register(PerfilUsuario)
 class PerfilUsuarioAdmin(admin.ModelAdmin):
-    list_display = ('user', 'telefono', 'correo', 'rol')
+    list_display = ('user', 'telefono', 'email', 'rol')
     list_filter = ('rol',)
     search_fields = ('user__username', 'telefono')
