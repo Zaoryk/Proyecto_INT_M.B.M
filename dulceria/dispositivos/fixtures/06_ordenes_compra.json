@@ -1,0 +1,22 @@
+[
+{
+  "model": "dispositivos.ordendecompra",
+  "pk": 5,
+  "fields": {
+    "fecha": "2025-09-30",
+    "estado": "pendiente",
+    "monto_total": 150000,
+    "proveedor": 7
+  }
+},
+{
+  "model": "dispositivos.ordendecompra",
+  "pk": 6,
+  "fields": {
+    "fecha": "2025-09-30",
+    "estado": "completada",
+    "monto_total": 200000,
+    "proveedor": 8
+  }
+}
+]

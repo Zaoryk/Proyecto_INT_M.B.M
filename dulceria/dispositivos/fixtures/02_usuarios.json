@@ -1,0 +1,24 @@
+[
+{
+  "model": "dispositivos.usuario",
+  "pk": 5,
+  "fields": {
+    "nombre": "Administrador Principal",
+    "rol": "admin",
+    "password": "admin123",
+    "email": "admin@empresa.com",
+    "listarprecios": 7
+  }
+},
+{
+  "model": "dispositivos.usuario",
+  "pk": 6,
+  "fields": {
+    "nombre": "Carlos Vendedor",
+    "rol": "vendedor",
+    "password": "vendedor123",
+    "email": "vendedor@empresa.com",
+    "listarprecios": 8
+  }
+}
+]
