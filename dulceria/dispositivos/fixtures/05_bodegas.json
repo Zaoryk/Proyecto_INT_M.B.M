@@ -1,0 +1,18 @@
+[
+{
+  "model": "dispositivos.bodega",
+  "pk": 5,
+  "fields": {
+    "nombre": "Bodega Principal",
+    "ubicacion": "Local Central"
+  }
+},
+{
+  "model": "dispositivos.bodega",
+  "pk": 6,
+  "fields": {
+    "nombre": "Bodega Secundaria",
+    "ubicacion": "Almacén Norte"
+  }
+}
+]

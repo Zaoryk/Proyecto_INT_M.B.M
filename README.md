@@ -62,3 +62,161 @@ python manage.py cargar_fixtures
 - **Administrador**: ```admin``` / ```admin123```
 - **Vendedor**: ```vendedor1``` / ```vendedor123```
 - **Comprador**: ```comprador1``` / ```comprador123```
+
+### BASE DE DATOS PARA COPIAR A WAMPSERVER
+
+```bash
+-- LIMPIAR Y RECREAR esquema completo (RECOMENDADO si no necesitas conservar datos)
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS; SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=0; SET FOREIGN_KEY_CHECKS=0;
+
+DROP DATABASE IF EXISTS `mydb`;
+CREATE DATABASE `mydb` DEFAULT CHARACTER SET utf8;
+USE `mydb`;
+
+-- Cliente
+CREATE TABLE `Cliente` (
+  `idCliente` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(100),
+  `tipo` VARCHAR(50),
+  PRIMARY KEY (`idCliente`)
+) ENGINE=InnoDB;
+
+-- ListarPrecios (referencia a Cliente)
+CREATE TABLE `ListarPrecios` (
+  `idListarPrecios` INT NOT NULL AUTO_INCREMENT,
+  `Canal` VARCHAR(50),
+  `Temporada` VARCHAR(45),
+  `Valor` INT,
+  `Cliente_idCliente` INT NOT NULL,
+  PRIMARY KEY (`idListarPrecios`),
+  INDEX `idx_ListarPrecios_Cliente` (`Cliente_idCliente`),
+  CONSTRAINT `fk_ListarPrecios_Cliente` FOREIGN KEY (`Cliente_idCliente`) REFERENCES `Cliente`(`idCliente`)
+) ENGINE=InnoDB;
+
+-- Usuario (id como PK Ãºnica)
+CREATE TABLE `Usuario` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(100),
+  `rol` VARCHAR(50),
+  `password` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(120),
+  `ListarPrecios_idListarPrecios` INT,
+  PRIMARY KEY (`id`),
+  INDEX `idx_Usuario_ListarPrecios` (`ListarPrecios_idListarPrecios`),
+  CONSTRAINT `fk_Usuario_ListarPrecios` FOREIGN KEY (`ListarPrecios_idListarPrecios`) REFERENCES `ListarPrecios`(`idListarPrecios`)
+) ENGINE=InnoDB;
+
+-- Producto
+CREATE TABLE `Producto` (
+  `idProducto` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(120),
+  `lote` VARCHAR(50),
+  `fecha_vencimiento` DATE,
+  `precio` INT,
+  `stock` INT,
+  PRIMARY KEY (`idProducto`),
+  UNIQUE KEY `lote_UNIQUE` (`lote`)
+) ENGINE=InnoDB;
+
+-- OrdenProduccion (referencias a Usuario.id y Producto.idProducto)
+CREATE TABLE `OrdenProduccion` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `fechaInicio` DATE,
+  `fechaFin` DATE,
+  `estado` VARCHAR(45),
+  `Usuario_id` INT NOT NULL,
+  `Producto_idProducto` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_OrdenUsuario` (`Usuario_id`),
+  INDEX `idx_OrdenProducto` (`Producto_idProducto`),
+  CONSTRAINT `fk_OrdenProduccion_Usuario` FOREIGN KEY (`Usuario_id`) REFERENCES `Usuario`(`id`),
+  CONSTRAINT `fk_OrdenProduccion_Producto` FOREIGN KEY (`Producto_idProducto`) REFERENCES `Producto`(`idProducto`)
+) ENGINE=InnoDB;
+
+-- Proveedor
+CREATE TABLE `Proveedor` (
+  `id_Proveedor` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(130),
+  `contacto` VARCHAR(200),
+  `email` VARCHAR(120),
+  PRIMARY KEY (`id_Proveedor`)
+) ENGINE=InnoDB;
+
+-- OrdendeCompra
+CREATE TABLE `OrdendeCompra` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `fecha` DATE,
+  `estado` VARCHAR(45),
+  `monto_total` INT,
+  `proveedor_id_proveedor` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_ordendeCompra_proveedor` (`proveedor_id_proveedor`),
+  CONSTRAINT `fk_ordendeCompra_proveedor` FOREIGN KEY (`proveedor_id_proveedor`) REFERENCES `Proveedor`(`id_Proveedor`)
+) ENGINE=InnoDB;
+
+-- Bodega
+CREATE TABLE `Bodega` (
+  `idBodega` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(120),
+  `ubicacion` VARCHAR(100),
+  PRIMARY KEY (`idBodega`)
+) ENGINE=InnoDB;
+
+-- MovimientoInventario
+CREATE TABLE `MovimientoInventario` (
+  `idMovimientoInventario` INT NOT NULL AUTO_INCREMENT,
+  `tipo` VARCHAR(45),
+  `fecha` DATE,
+  `cantidad` VARCHAR(45),
+  `Bodega_idBodega` INT NOT NULL,
+  `Producto_idProducto` INT NOT NULL,
+  PRIMARY KEY (`idMovimientoInventario`),
+  INDEX `idx_Mov_Bodega` (`Bodega_idBodega`),
+  INDEX `idx_Mov_Producto` (`Producto_idProducto`),
+  CONSTRAINT `fk_MovimientoInventario_Bodega` FOREIGN KEY (`Bodega_idBodega`) REFERENCES `Bodega`(`idBodega`),
+  CONSTRAINT `fk_MovimientoInventario_Producto` FOREIGN KEY (`Producto_idProducto`) REFERENCES `Producto`(`idProducto`)
+) ENGINE=InnoDB;
+
+-- Costo
+CREATE TABLE `Costo` (
+  `idCosto` INT NOT NULL AUTO_INCREMENT,
+  `tipo` VARCHAR(45),
+  `monto` INT,
+  `Producto_idProducto` INT NOT NULL,
+  PRIMARY KEY (`idCosto`),
+  INDEX `idx_Costo_Producto` (`Producto_idProducto`),
+  CONSTRAINT `fk_Costo_Producto` FOREIGN KEY (`Producto_idProducto`) REFERENCES `Producto`(`idProducto`)
+) ENGINE=InnoDB;
+
+-- Pedido
+CREATE TABLE `Pedido` (
+  `idPedido` INT NOT NULL AUTO_INCREMENT,
+  `fecha` DATE,
+  `monto_total` INT,
+  `Usuario_id` INT NOT NULL,
+  `Cliente_idCliente` INT NOT NULL,
+  `OrdendeCompra_id` INT,
+  PRIMARY KEY (`idPedido`),
+  INDEX `idx_Pedido_Usuario` (`Usuario_id`),
+  INDEX `idx_Pedido_Cliente` (`Cliente_idCliente`),
+  INDEX `idx_Pedido_OrdendeCompra` (`OrdendeCompra_id`),
+  CONSTRAINT `fk_Pedido_Usuario` FOREIGN KEY (`Usuario_id`) REFERENCES `Usuario`(`id`),
+  CONSTRAINT `fk_Pedido_Cliente` FOREIGN KEY (`Cliente_idCliente`) REFERENCES `Cliente`(`idCliente`),
+  CONSTRAINT `fk_Pedido_OrdendeCompra` FOREIGN KEY (`OrdendeCompra_id`) REFERENCES `OrdendeCompra`(`id`)
+) ENGINE=InnoDB;
+
+-- RecetaDetalle (solo FK a Producto; si necesitas FK a Receta, crea tabla Receta antes)
+CREATE TABLE `RecetaDetalle` (
+  `Receta_idReceta` INT NOT NULL,
+  `Producto_idProducto` INT NOT NULL,
+  `Producto_Bodega_idBodega` INT NOT NULL,
+  INDEX `idx_Receta_Producto` (`Producto_idProducto`, `Producto_Bodega_idBodega`),
+  INDEX `idx_Receta` (`Receta_idReceta`),
+  CONSTRAINT `fk_RecetaDetalle_Producto` FOREIGN KEY (`Producto_idProducto`) REFERENCES `Producto`(`idProducto`)
+) ENGINE=InnoDB;
+
+-- RESTAURAR flags
+SET FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+```

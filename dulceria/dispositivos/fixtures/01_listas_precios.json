@@ -1,0 +1,32 @@
+[
+{
+  "model": "dispositivos.listarprecios",
+  "pk": 7,
+  "fields": {
+    "canal": "Mayorista",
+    "temporada": "Verano 2025",
+    "valor": 2800,
+    "cliente": 7
+  }
+},
+{
+  "model": "dispositivos.listarprecios",
+  "pk": 8,
+  "fields": {
+    "canal": "Minorista",
+    "temporada": "Verano 2025",
+    "valor": 3200,
+    "cliente": 8
+  }
+},
+{
+  "model": "dispositivos.listarprecios",
+  "pk": 9,
+  "fields": {
+    "canal": "Mayorista",
+    "temporada": "Verano 2025",
+    "valor": 2700,
+    "cliente": 9
+  }
+}
+]

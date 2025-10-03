@@ -1,0 +1,29 @@
+[
+{
+  "model": "dispositivos.costo",
+  "pk": 7,
+  "fields": {
+    "tipo": "produccion",
+    "monto": 2100,
+    "producto": 7
+  }
+},
+{
+  "model": "dispositivos.costo",
+  "pk": 8,
+  "fields": {
+    "tipo": "produccion",
+    "monto": 720,
+    "producto": 8
+  }
+},
+{
+  "model": "dispositivos.costo",
+  "pk": 9,
+  "fields": {
+    "tipo": "produccion",
+    "monto": 1080,
+    "producto": 9
+  }
+}
+]

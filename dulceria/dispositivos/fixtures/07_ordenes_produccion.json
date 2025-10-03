@@ -1,0 +1,13 @@
+[
+{
+  "model": "dispositivos.ordenproduccion",
+  "pk": 3,
+  "fields": {
+    "fechainicio": "2025-09-30",
+    "fechafin": "2025-10-14",
+    "estado": "en_proceso",
+    "usuario": 5,
+    "producto": 7
+  }
+}
+]

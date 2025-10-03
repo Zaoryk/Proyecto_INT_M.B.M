@@ -1,3 +1,4 @@
+# dispositivos/management/commands/cargar_fixtures.py
 import os
 import sys
 import django
@@ -21,18 +22,23 @@ except ImportError as e:
     sys.exit(1)
 
 class Command(BaseCommand):
-    help = 'Carga todas las fixtures en orden para nuevos modelos'
+    help = 'Carga todas las fixtures en orden para nuevo esquema'
 
     def handle(self, *args, **options):
-        print("=== CARGANDO FIXTURES PARA NUEVOS MODELOS ===")
+        print("=== CARGANDO FIXTURES PARA NUEVO ESQUEMA MYSQL ===")
         
         fixtures = [
-            '00_usuarios',
-            '01_proveedores', 
-            '02_productos',
-            '03_bodegas',
-            '04_clientes',
-            '05_pedidos_venta'
+            '00_clientes',
+            '01_listas_precios',
+            '02_usuarios',
+            '03_proveedores',
+            '04_productos',
+            '05_bodegas',
+            '06_ordenes_compra',
+            '07_ordenes_produccion',
+            '08_pedidos',
+            '09_movimientos_inventario',
+            '10_costos'
         ]
 
         for fixture in fixtures:

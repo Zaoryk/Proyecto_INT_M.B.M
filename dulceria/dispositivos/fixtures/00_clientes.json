@@ -1,0 +1,26 @@
+[
+{
+  "model": "dispositivos.cliente",
+  "pk": 7,
+  "fields": {
+    "nombre": "Supermercado Central",
+    "tipo": "mayorista"
+  }
+},
+{
+  "model": "dispositivos.cliente",
+  "pk": 8,
+  "fields": {
+    "nombre": "Tienda Dulce Sabor",
+    "tipo": "minorista"
+  }
+},
+{
+  "model": "dispositivos.cliente",
+  "pk": 9,
+  "fields": {
+    "nombre": "Distribuidora Norte",
+    "tipo": "mayorista"
+  }
+}
+]
