@@ -88,11 +88,19 @@ class Proveedor(models.Model):
 
 
 class OrdenDeCompra(models.Model):
+    ESTADOS = [
+        ("no_iniciado", "No iniciado"),
+        ("en_proceso", "En proceso"),
+        ("cerrada", "Cerrada"),
+    ]
+
     id = models.AutoField(primary_key=True)
     fecha = models.DateField(blank=True, null=True)
-    estado = models.CharField(max_length=45, blank=True, null=True)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default="no_iniciado")
     monto_total = models.IntegerField(blank=True, null=True)
-    proveedor = models.ForeignKey(Proveedor, models.DO_NOTHING, db_column='proveedor_id_proveedor')
+    proveedor = models.ForeignKey(
+        "Proveedor", models.DO_NOTHING, db_column="proveedor_id_proveedor"
+    )
 
     class Meta:
         managed = False
