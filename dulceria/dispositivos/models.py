@@ -63,9 +63,12 @@ class MovimientoInventario(models.Model):
     idmovimiento = models.AutoField(db_column='idMovimientoInventario', primary_key=True)
     tipo = models.CharField(max_length=45, blank=True, null=True)
     fecha = models.DateField(blank=True, null=True)
-    cantidad = models.IntegerField(blank=True, null=True)
+    cantidad = models.PositiveIntegerField()
     bodega = models.ForeignKey(Bodega, models.DO_NOTHING, db_column='Bodega_idBodega')
     producto = models.ForeignKey(Producto, models.DO_NOTHING, db_column='Producto_idProducto')
+    def clean(self):
+        if self.tipo == "Salida" and self.cantidad > self.producto.stock:
+            raise ValidationError("No puedes registrar una salida mayor al stock disponible.")
 
     class Meta:
         managed = False
@@ -98,12 +101,25 @@ class OrdenDeCompra(models.Model):
 
 
 class Usuario(models.Model):
+    ROLES = [
+        ("administrador", "Administrador"),
+        ("operador_compras", "Operador de Compras"),
+        ("operador_inventario", "Operador de Inventario"),
+        ("operador_produccion", "Operador de Producción"),
+        ("operador_ventas", "Operador de Ventas"),
+        ("analista_financiero", "Analista Financiero"),
+    ]
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100, blank=True, null=True)
-    rol = models.CharField(max_length=50, blank=True, null=True)
+    rol = models.CharField(max_length=50, choices=ROLES, default="operador_ventas")
     password = models.CharField(max_length=255)
     email = models.CharField(max_length=120, blank=True, null=True)
-    listarprecios = models.ForeignKey(ListarPrecios, models.DO_NOTHING, db_column='ListarPrecios_idListarPrecios')
+
+
+    class Meta:
+        managed = False
+        db_table = "usuario"
+
 
     class Meta:
         managed = False
