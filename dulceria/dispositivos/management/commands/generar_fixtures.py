@@ -1,93 +1,93 @@
-# dispositivos/management/commands/generar_fixtures.py
-import os
-import sys
-import django
-
-# Configurar Django
-try:
-    current_file = __file__
-    commands_dir = os.path.dirname(current_file)
-    management_dir = os.path.dirname(commands_dir)
-    apps_dir = os.path.dirname(management_dir)
-    project_dir = os.path.dirname(apps_dir)
-    
-    sys.path.insert(0, project_dir)
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dulceria.settings')
-    django.setup()
-    
-    from django.core.management.base import BaseCommand
-    from django.core import serializers
-    from dispositivos.models import (
-        ListarPrecios, Usuario, Producto, OrdenProduccion, Proveedor, 
-        OrdenDeCompra, Bodega, MovimientoInventario, Costo, Cliente, Pedido
-    )
-    
-    print("[OK] Módulos importados correctamente")
-    
-except ImportError as e:
-    print(f"[ERROR] Importando módulos: {e}")
-    sys.exit(1)
+import json
+from datetime import date
+from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
-    help = 'Genera archivos fixtures para el nuevo esquema MySQL'
+    help = 'Genera fixtures para la dulcería Lilis'
 
     def handle(self, *args, **options):
-        print("=== GENERANDO FIXTURES PARA NUEVO ESQUEMA MYSQL ===")
+        fixtures = []
         
-        # Crear directorio de fixtures si no existe
-        fixtures_dir = os.path.join('dispositivos', 'fixtures')
-        if not os.path.exists(fixtures_dir):
-            os.makedirs(fixtures_dir)
-            print(f"[OK] Directorio creado: {fixtures_dir}")
-        else:
-            print(f"[OK] Directorio ya existe: {fixtures_dir}")
-
-        # Primero cargar datos de prueba
-        self.generar_datos_prueba()
-        
-        # Luego exportar a fixtures
-        self.exportar_fixtures()
-        
-        print("[EXITO] Fixtures generados exitosamente!")
-        print("Archivos creados en: dispositivos/fixtures/")
-
-    def generar_datos_prueba(self):
-        """Genera datos de prueba usando el script actualizado"""
-        print("--- Generando datos de prueba ---")
-        
-        # Usar el script de carga actualizado
-        from dispositivos.management.commands.cargar_datos_directo import Command as CargarDatos
-        cargador = CargarDatos()
-        cargador.handle()
-
-    def exportar_fixtures(self):
-        """Exporta los datos a archivos fixtures"""
-        print("--- Exportando a archivos JSON ---")
-        
-        # Exportar en orden de dependencias
-        modelos = [
-            ('00_clientes.json', Cliente),
-            ('01_listas_precios.json', ListarPrecios),
-            ('02_usuarios.json', Usuario),
-            ('03_proveedores.json', Proveedor),
-            ('04_productos.json', Producto),
-            ('05_bodegas.json', Bodega),
-            ('06_ordenes_compra.json', OrdenDeCompra),
-            ('07_ordenes_produccion.json', OrdenProduccion),
-            ('08_pedidos.json', Pedido),
-            ('09_movimientos_inventario.json', MovimientoInventario),
-            ('10_costos.json', Costo),
+        # Bodegas
+        bodegas = [
+            {"model": "dispositivos.bodega", "pk": 1, "fields": {"nombre": "BOD-CENTRAL", "ubicacion": "La Serena"}},
+            {"model": "dispositivos.bodega", "pk": 2, "fields": {"nombre": "BOD-SUR", "ubicacion": "Ovalle"}},
         ]
+        fixtures.extend(bodegas)
         
-        for archivo, modelo in modelos:
-            try:
-                objetos = modelo.objects.all()
-                if objetos.exists():
-                    with open(f'dispositivos/fixtures/{archivo}', 'w', encoding='utf-8') as f:
-                        data = serializers.serialize('json', objetos, indent=2, ensure_ascii=False)
-                        f.write(data)
-                    print(f"[OK] {archivo} - {objetos.count()} registros")
-                else:
-                    print(f"[AVISO] {archivo} - Sin datos para exportar")
-            except Exception as e:
-                print(f"[ERROR] en {archivo}: {e}")
+        # Clientes
+        clientes = [
+            {"model": "dispositivos.cliente", "pk": 1, "fields": {"nombre": "Supermercado Lider", "tipo": "Minorista"}},
+            {"model": "dispositivos.cliente", "pk": 2, "fields": {"nombre": "Feria La Serena", "tipo": "Mayorista"}},
+        ]
+        fixtures.extend(clientes)
+        
+        # Proveedores
+        proveedores = [
+            {"model": "dispositivos.proveedor", "pk": 1, "fields": {"nombre": "Proveedor Andino S.A.", "contacto": "Juan Pérez", "email": "contacto@andino.cl"}},
+            {"model": "dispositivos.proveedor", "pk": 2, "fields": {"nombre": "Electro Patagon SpA", "contacto": "María González", "email": "ventas@electropatagon.cl"}},
+        ]
+        fixtures.extend(proveedores)
+        
+        # Productos
+        productos = [
+            {"model": "dispositivos.producto", "pk": 1, "fields": {"nombre": "Chocolate Amargo 100g", "lote": "LOTE-CHOC-001", "fecha_vencimiento": "2025-12-31", "precio": 1500, "stock": 50}},
+            {"model": "dispositivos.producto", "pk": 2, "fields": {"nombre": "Caramelo Frutal 500g", "lote": "LOTE-CAR-001", "fecha_vencimiento": "2025-10-15", "precio": 800, "stock": 100}},
+        ]
+        fixtures.extend(productos)
+        
+        # ListarPrecios
+        listar_precios = [
+            {"model": "dispositivos.listarprecios", "pk": 1, "fields": {"canal": "Minorista", "temporada": "Normal", "valor": 1500, "cliente": 1}},
+            {"model": "dispositivos.listarprecios", "pk": 2, "fields": {"canal": "Mayorista", "temporada": "Promoción", "valor": 1300, "cliente": 2}},
+        ]
+        fixtures.extend(listar_precios)
+        
+        # Usuarios (SIN el campo listarprecios_idlistarprecios)
+        usuarios = [
+            {"model": "dispositivos.usuario", "pk": 1, "fields": {"nombre": "Admin Principal", "rol": "administrador", "password": "pbkdf2_sha256$600000$TEST$TEST", "email": "admin@dulcerialilis.cl"}},
+            {"model": "dispositivos.usuario", "pk": 2, "fields": {"nombre": "Operador Inventario", "rol": "operador_inventario", "password": "pbkdf2_sha256$600000$TEST$TEST", "email": "inventario@dulcerialilis.cl"}},
+        ]
+        fixtures.extend(usuarios)
+        
+        # Resto del código permanece igual...
+        # Costos
+        costos = [
+            {"model": "dispositivos.costo", "pk": 1, "fields": {"tipo": "Producción", "monto": 800, "producto": 1}},
+            {"model": "dispositivos.costo", "pk": 2, "fields": {"tipo": "Embalaje", "monto": 150, "producto": 1}},
+        ]
+        fixtures.extend(costos)
+        
+        # MovimientosInventario
+        movimientos = [
+            {"model": "dispositivos.movimientoinventario", "pk": 1, "fields": {"tipo": "Ingreso", "fecha": "2025-01-15", "cantidad": "100", "bodega": 1, "producto": 1}},
+            {"model": "dispositivos.movimientoinventario", "pk": 2, "fields": {"tipo": "Salida", "fecha": "2025-01-20", "cantidad": "50", "bodega": 1, "producto": 1}},
+        ]
+        fixtures.extend(movimientos)
+        
+        # OrdenesDeCompra
+        ordenes_compra = [
+            {"model": "dispositivos.ordendecompra", "pk": 1, "fields": {"fecha": "2025-01-05", "estado": "cerrada", "monto_total": 150000, "proveedor": 1}},
+            {"model": "dispositivos.ordendecompra", "pk": 2, "fields": {"fecha": "2025-01-18", "estado": "en_proceso", "monto_total": 80000, "proveedor": 2}},
+        ]
+        fixtures.extend(ordenes_compra)
+        
+        # OrdenesProduccion
+        ordenes_produccion = [
+            {"model": "dispositivos.ordenproduccion", "pk": 1, "fields": {"fechainicio": "2025-01-01", "fechafin": "2025-01-10", "estado": "Completada", "usuario": 2, "producto": 1}},
+        ]
+        fixtures.extend(ordenes_produccion)
+        
+        # Pedidos
+        pedidos = [
+            {"model": "dispositivos.pedido", "pk": 1, "fields": {"fecha": "2025-01-12", "monto_total": 45000, "usuario": 1, "cliente": 1, "ordendecompra": 1}},
+        ]
+        fixtures.extend(pedidos)
+        
+        # Guardar fixtures
+        with open('fixtures_dulceria.json', 'w', encoding='utf-8') as f:
+            json.dump(fixtures, f, indent=2, ensure_ascii=False)
+        
+        self.stdout.write(
+            self.style.SUCCESS(f'Fixtures generados: {len(fixtures)} registros en fixtures_dulceria.json')
+        )

@@ -1,0 +1,196 @@
+[
+  {
+    "model": "dispositivos.bodega",
+    "pk": 1,
+    "fields": {
+      "nombre": "BOD-CENTRAL",
+      "ubicacion": "La Serena"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 2,
+    "fields": {
+      "nombre": "BOD-SUR",
+      "ubicacion": "Ovalle"
+    }
+  },
+  {
+    "model": "dispositivos.cliente",
+    "pk": 1,
+    "fields": {
+      "nombre": "Supermercado Lider",
+      "tipo": "Minorista"
+    }
+  },
+  {
+    "model": "dispositivos.cliente",
+    "pk": 2,
+    "fields": {
+      "nombre": "Feria La Serena",
+      "tipo": "Mayorista"
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 1,
+    "fields": {
+      "nombre": "Proveedor Andino S.A.",
+      "contacto": "Juan Pérez",
+      "email": "contacto@andino.cl"
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 2,
+    "fields": {
+      "nombre": "Electro Patagon SpA",
+      "contacto": "María González",
+      "email": "ventas@electropatagon.cl"
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 1,
+    "fields": {
+      "nombre": "Chocolate Amargo 100g",
+      "lote": "LOTE-CHOC-001",
+      "fecha_vencimiento": "2025-12-31",
+      "precio": 1500,
+      "stock": 50
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 2,
+    "fields": {
+      "nombre": "Caramelo Frutal 500g",
+      "lote": "LOTE-CAR-001",
+      "fecha_vencimiento": "2025-10-15",
+      "precio": 800,
+      "stock": 100
+    }
+  },
+  {
+    "model": "dispositivos.listarprecios",
+    "pk": 1,
+    "fields": {
+      "canal": "Minorista",
+      "temporada": "Normal",
+      "valor": 1500,
+      "cliente": 1
+    }
+  },
+  {
+    "model": "dispositivos.listarprecios",
+    "pk": 2,
+    "fields": {
+      "canal": "Mayorista",
+      "temporada": "Promoción",
+      "valor": 1300,
+      "cliente": 2
+    }
+  },
+  {
+    "model": "dispositivos.usuario",
+    "pk": 1,
+    "fields": {
+      "nombre": "Admin Principal",
+      "rol": "administrador",
+      "password": "pbkdf2_sha256$600000$TEST$TEST",
+      "email": "admin@dulcerialilis.cl"
+    }
+  },
+  {
+    "model": "dispositivos.usuario",
+    "pk": 2,
+    "fields": {
+      "nombre": "Operador Inventario",
+      "rol": "operador_inventario",
+      "password": "pbkdf2_sha256$600000$TEST$TEST",
+      "email": "inventario@dulcerialilis.cl"
+    }
+  },
+  {
+    "model": "dispositivos.costo",
+    "pk": 1,
+    "fields": {
+      "tipo": "Producción",
+      "monto": 800,
+      "producto": 1
+    }
+  },
+  {
+    "model": "dispositivos.costo",
+    "pk": 2,
+    "fields": {
+      "tipo": "Embalaje",
+      "monto": 150,
+      "producto": 1
+    }
+  },
+  {
+    "model": "dispositivos.movimientoinventario",
+    "pk": 1,
+    "fields": {
+      "tipo": "Ingreso",
+      "fecha": "2025-01-15",
+      "cantidad": "100",
+      "bodega": 1,
+      "producto": 1
+    }
+  },
+  {
+    "model": "dispositivos.movimientoinventario",
+    "pk": 2,
+    "fields": {
+      "tipo": "Salida",
+      "fecha": "2025-01-20",
+      "cantidad": "50",
+      "bodega": 1,
+      "producto": 1
+    }
+  },
+  {
+    "model": "dispositivos.ordendecompra",
+    "pk": 1,
+    "fields": {
+      "fecha": "2025-01-05",
+      "estado": "cerrada",
+      "monto_total": 150000,
+      "proveedor": 1
+    }
+  },
+  {
+    "model": "dispositivos.ordendecompra",
+    "pk": 2,
+    "fields": {
+      "fecha": "2025-01-18",
+      "estado": "en_proceso",
+      "monto_total": 80000,
+      "proveedor": 2
+    }
+  },
+  {
+    "model": "dispositivos.ordenproduccion",
+    "pk": 1,
+    "fields": {
+      "fechainicio": "2025-01-01",
+      "fechafin": "2025-01-10",
+      "estado": "Completada",
+      "usuario": 2,
+      "producto": 1
+    }
+  },
+  {
+    "model": "dispositivos.pedido",
+    "pk": 1,
+    "fields": {
+      "fecha": "2025-01-12",
+      "monto_total": 45000,
+      "usuario": 1,
+      "cliente": 1,
+      "ordendecompra": 1
+    }
+  }
+]

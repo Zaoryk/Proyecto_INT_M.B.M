@@ -1,351 +1,306 @@
-# dispositivos/management/commands/cargar_datos_directo.py
-import os
-import sys
-import django
-from datetime import datetime, timedelta
-
-# Configurar Django
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-sys.path.append(BASE_DIR)
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dulceria.settings')
-django.setup()
-
+from datetime import date
 from django.core.management.base import BaseCommand
 from dispositivos.models import (
-    ListarPrecios, Usuario, Producto, OrdenProduccion, Proveedor, 
-    OrdenDeCompra, Bodega, MovimientoInventario, Costo, Cliente, Pedido
+    Bodega, Cliente, Producto, Costo, ListarPrecios, 
+    MovimientoInventario, Proveedor, OrdenDeCompra, 
+    Usuario, OrdenProduccion, Pedido
 )
 
 class Command(BaseCommand):
-    help = 'Carga datos directamente en la base de datos con nuevo esquema'
+    help = 'Crea datos de prueba directamente en la base de datos'
 
     def handle(self, *args, **options):
-        print("=== CARGANDO DATOS CON NUEVO ESQUEMA MYSQL ===")
-        
-        print("Limpiando datos existentes...")
-        self.limpiar_datos()
-        
-        print("Creando datos...")
-        
-        # Crear en orden de dependencias
-        clientes = self.crear_clientes()
-        listas_precios = self.crear_listas_precios(clientes)
-        usuarios = self.crear_usuarios(listas_precios)
-        proveedores = self.crear_proveedores()
-        productos = self.crear_productos()
-        bodegas = self.crear_bodegas()
-        ordenes_compra = self.crear_ordenes_compra(proveedores)
-        
-        # Crear datos que dependen de los anteriores
-        self.crear_ordenes_produccion(usuarios, productos)
-        self.crear_pedidos(usuarios, clientes, ordenes_compra)
-        self.crear_movimientos_inventario(bodegas, productos)
-        self.crear_costos(productos)
-        
-        print("¡Datos cargados exitosamente!")
-        print("=== USUARIOS DISPONIBLES ===")
-        print("Administrador: admin123")
-        print("Vendedor: vendedor123") 
-
-    def limpiar_datos(self):
-        """Limpia los datos existentes en orden inverso de dependencias"""
-        Pedido.objects.all().delete()
-        OrdenProduccion.objects.all().delete()
-        MovimientoInventario.objects.all().delete()
-        Costo.objects.all().delete()
-        OrdenDeCompra.objects.all().delete()
-        Producto.objects.all().delete()
-        Bodega.objects.all().delete()
-        Proveedor.objects.all().delete()
-        Usuario.objects.all().delete()
-        ListarPrecios.objects.all().delete()
-        Cliente.objects.all().delete()
-
-    def crear_clientes(self):
-        """Crea clientes"""
-        print("--- Creando clientes ---")
-        
-        clientes_data = [
-            {'nombre': 'Supermercado Central', 'tipo': 'mayorista'},
-            {'nombre': 'Tienda Dulce Sabor', 'tipo': 'minorista'},
-            {'nombre': 'Distribuidora Norte', 'tipo': 'mayorista'},
-        ]
-        
-        clientes_creados = []
-        for data in clientes_data:
-            cliente, created = Cliente.objects.get_or_create(
-                nombre=data['nombre'],
-                defaults=data
-            )
-            status = "creado" if created else "ya existía"
-            print(f"✓ Cliente {cliente.nombre} ({status})")
-            clientes_creados.append(cliente)
-            
-        return clientes_creados
-
-    def crear_listas_precios(self, clientes):
-        """Crea listas de precios"""
-        print("--- Creando listas de precios ---")
-        
-        listas_data = [
-            {'canal': 'Mayorista', 'temporada': 'Verano 2025', 'valor': 2800, 'cliente': clientes[0]},
-            {'canal': 'Minorista', 'temporada': 'Verano 2025', 'valor': 3200, 'cliente': clientes[1]},
-            {'canal': 'Mayorista', 'temporada': 'Verano 2025', 'valor': 2700, 'cliente': clientes[2]},
-        ]
-        
-        listas_creadas = []
-        for data in listas_data:
-            lista, created = ListarPrecios.objects.get_or_create(
-                canal=data['canal'],
-                temporada=data['temporada'],
-                cliente=data['cliente'],
-                defaults=data
-            )
-            status = "creada" if created else "ya existía"
-            print(f"✓ Lista precio {lista.canal} - {lista.temporada} ({status})")
-            listas_creadas.append(lista)
-            
-        return listas_creadas
-
-    def crear_usuarios(self, listas_precios):
-        """Crea usuarios"""
-        print("--- Creando usuarios ---")
-        
-        usuarios_data = [
-            {
-                'nombre': 'Administrador Principal',
-                'rol': 'admin',
-                'password': 'admin123',
-                'email': 'admin@empresa.com',
-                'listarprecios': listas_precios[0]
-            },
-            {
-                'nombre': 'Carlos Vendedor',
-                'rol': 'vendedor',
-                'password': 'vendedor123',
-                'email': 'vendedor@empresa.com',
-                'listarprecios': listas_precios[1]
-            },
-        ]
-        
-        usuarios_creados = []
-        for data in usuarios_data:
-            usuario, created = Usuario.objects.get_or_create(
-                nombre=data['nombre'],
-                defaults=data
-            )
-            status = "creado" if created else "ya existía"
-            print(f"✓ Usuario {usuario.nombre} ({status})")
-            usuarios_creados.append(usuario)
-            
-        return usuarios_creados
-
-    def crear_proveedores(self):
-        """Crea proveedores"""
-        print("--- Creando proveedores ---")
-        
-        proveedores_data = [
-            {'nombre': 'Proveedor ABC S.A.', 'contacto': 'Juan Pérez', 'email': 'contacto@proveedorabc.com'},
-            {'nombre': 'Distribuidora XYZ Ltda.', 'contacto': 'María González', 'email': 'ventas@xyz.com'},
-            {'nombre': 'Dulces Nacionales S.A.', 'contacto': 'Roberto Silva', 'email': 'info@dulcesnacionales.cl'},
-        ]
-        
-        proveedores_creados = []
-        for data in proveedores_data:
-            proveedor, created = Proveedor.objects.get_or_create(
-                nombre=data['nombre'],
-                defaults=data
-            )
-            status = "creado" if created else "ya existía"
-            print(f"✓ Proveedor {proveedor.nombre} ({status})")
-            proveedores_creados.append(proveedor)
-            
-        return proveedores_creados
-
-    def crear_productos(self):
-        """Crea productos"""
-        print("--- Creando productos ---")
-        
-        fecha_vencimiento = datetime.now() + timedelta(days=365)
-        
-        productos_data = [
-            {
-                'nombre': 'Chocolate Amargo 70%',
-                'lote': 'LOTE-CHOCO-001',
-                'fecha_vencimiento': fecha_vencimiento,
-                'precio': 3500,
-                'stock': 150
-            },
-            {
-                'nombre': 'Caramelo de Fruta Mix',
-                'lote': 'LOTE-CARAM-001',
-                'fecha_vencimiento': fecha_vencimiento,
-                'precio': 1200,
-                'stock': 300
-            },
-            {
-                'nombre': 'Gomitas de Ositos',
-                'lote': 'LOTE-GOMI-001',
-                'fecha_vencimiento': fecha_vencimiento,
-                'precio': 1800,
-                'stock': 200
-            },
-        ]
-        
-        productos_creados = []
-        for data in productos_data:
-            producto, created = Producto.objects.get_or_create(
-                nombre=data['nombre'],
-                defaults=data
-            )
-            status = "creado" if created else "ya existía"
-            print(f"✓ Producto {producto.nombre} - ${producto.precio} ({status})")
-            productos_creados.append(producto)
-            
-        return productos_creados
-
-    def crear_bodegas(self):
-        """Crea bodegas"""
-        print("--- Creando bodegas ---")
-        
-        bodegas_data = [
-            {'nombre': 'Bodega Principal', 'ubicacion': 'Local Central'},
-            {'nombre': 'Bodega Secundaria', 'ubicacion': 'Almacén Norte'},
-        ]
-        
-        bodegas_creadas = []
-        for data in bodegas_data:
-            bodega, created = Bodega.objects.get_or_create(
-                nombre=data['nombre'],
-                defaults=data
-            )
-            status = "creada" if created else "ya existía"
-            print(f"✓ Bodega {bodega.nombre} ({status})")
-            bodegas_creadas.append(bodega)
-            
-        return bodegas_creadas
-
-    def crear_ordenes_compra(self, proveedores):
-        """Crea órdenes de compra"""
-        print("--- Creando órdenes de compra ---")
-        
-        ordenes_data = [
-            {
-                'fecha': datetime.now().date(),
-                'estado': 'pendiente',
-                'monto_total': 150000,
-                'proveedor': proveedores[0]
-            },
-            {
-                'fecha': datetime.now().date(),
-                'estado': 'completada',
-                'monto_total': 200000,
-                'proveedor': proveedores[1]
-            },
-        ]
-        
-        ordenes_creadas = []
-        for data in ordenes_data:
-            orden, created = OrdenDeCompra.objects.get_or_create(
-                fecha=data['fecha'],
-                proveedor=data['proveedor'],
-                defaults=data
-            )
-            status = "creada" if created else "ya existía"
-            print(f"✓ Orden compra {orden.id} - ${orden.monto_total} ({status})")
-            ordenes_creadas.append(orden)
-            
-        return ordenes_creadas
-
-    def crear_ordenes_produccion(self, usuarios, productos):
-        """Crea órdenes de producción"""
-        print("--- Creando órdenes de producción ---")
-        
-        orden_data = {
-            'fechainicio': datetime.now().date(),
-            'fechafin': datetime.now().date() + timedelta(days=14),
-            'estado': 'en_proceso',
-            'usuario': usuarios[0],
-            'producto': productos[0]
-        }
+        self.stdout.write('Creando datos de prueba...')
         
         try:
-            orden, created = OrdenProduccion.objects.get_or_create(
-                fechainicio=orden_data['fechainicio'],
-                producto=orden_data['producto'],
-                defaults=orden_data
+            # 1. Bodegas
+            self.stdout.write('Creando bodegas')
+            bodega_central, created = Bodega.objects.get_or_create(
+                idbodega=1,
+                defaults={'nombre': 'BOD-CENTRAL', 'ubicacion': 'La Serena'}
             )
-            if created:
-                print(f"✓ Orden producción: {orden.producto.nombre}")
-        except Exception as e:
-            print(f"⚠ Error en orden producción: {e}")
-
-    def crear_pedidos(self, usuarios, clientes, ordenes_compra):
-        """Crea pedidos"""
-        print("--- Creando pedidos ---")
-        
-        pedido_data = {
-            'fecha': datetime.now().date(),
-            'monto_total': 14600,
-            'usuario': usuarios[1],
-            'cliente': clientes[0],
-            'ordendecompra': ordenes_compra[0]
-        }
-        
-        try:
-            pedido, created = Pedido.objects.get_or_create(
-                fecha=pedido_data['fecha'],
-                usuario=pedido_data['usuario'],
-                cliente=pedido_data['cliente'],
-                defaults=pedido_data
+            
+            bodega_sur, created = Bodega.objects.get_or_create(
+                idbodega=2,
+                defaults={'nombre': 'BOD-SUR', 'ubicacion': 'Ovalle'}
             )
-            if created:
-                print(f"✓ Pedido creado - Cliente: {pedido.cliente.nombre} - Total: ${pedido.monto_total}")
+            
+            # 2. Clientes
+            self.stdout.write('Creando clientes')
+            cliente1, created = Cliente.objects.get_or_create(
+                idcliente=1,
+                defaults={'nombre': 'Supermercado Lider', 'tipo': 'Minorista'}
+            )
+            
+            cliente2, created = Cliente.objects.get_or_create(
+                idcliente=2,
+                defaults={'nombre': 'Feria La Serena', 'tipo': 'Mayorista'}
+            )
+            
+            # 3. Proveedores
+            self.stdout.write('Creando proveedores')
+            proveedor1, created = Proveedor.objects.get_or_create(
+                id_proveedor=1,
+                defaults={
+                    'nombre': 'Proveedor Andino S.A.', 
+                    'contacto': 'Juan Pérez', 
+                    'email': 'contacto@andino.cl'
+                }
+            )
+            
+            proveedor2, created = Proveedor.objects.get_or_create(
+                id_proveedor=2,
+                defaults={
+                    'nombre': 'Electro Patagon SpA', 
+                    'contacto': 'María González', 
+                    'email': 'ventas@electropatagon.cl'
+                }
+            )
+            
+            # 4. Productos
+            self.stdout.write('Creando productos')
+            producto1, created = Producto.objects.get_or_create(
+                idproducto=1,
+                defaults={
+                    'nombre': 'Chocolate Amargo 100g',
+                    'lote': 'LOTE-CHOC-001',
+                    'fecha_vencimiento': date(2025, 12, 31),
+                    'precio': 1500,
+                    'stock': 50
+                }
+            )
+            
+            producto2, created = Producto.objects.get_or_create(
+                idproducto=2,
+                defaults={
+                    'nombre': 'Caramelo Frutal 500g',
+                    'lote': 'LOTE-CAR-001',
+                    'fecha_vencimiento': date(2025, 10, 15),
+                    'precio': 800,
+                    'stock': 100
+                }
+            )
+            
+            producto3, created = Producto.objects.get_or_create(
+                idproducto=3,
+                defaults={
+                    'nombre': 'Galletas Vainilla 200g',
+                    'lote': 'LOTE-GAL-001',
+                    'fecha_vencimiento': date(2025, 11, 20),
+                    'precio': 1200,
+                    'stock': 75
+                }
+            )
+            
+            # 5. ListarPrecios
+            self.stdout.write('Creando listas de precios')
+            listar_precio1, created = ListarPrecios.objects.get_or_create(
+                idlistarprecios=1,
+                defaults={
+                    'canal': 'Minorista',
+                    'temporada': 'Normal',
+                    'valor': 1500,
+                    'cliente': cliente1
+                }
+            )
+            
+            listar_precio2, created = ListarPrecios.objects.get_or_create(
+                idlistarprecios=2,
+                defaults={
+                    'canal': 'Mayorista',
+                    'temporada': 'Promoción',
+                    'valor': 1300,
+                    'cliente': cliente2
+                }
+            )
+            
+            # 6. Usuarios
+            self.stdout.write('Creando usuarios')
+            usuario_admin, created = Usuario.objects.get_or_create(
+                id=1,
+                defaults={
+                    'nombre': 'Admin Principal',
+                    'rol': 'administrador',
+                    'password': 'pbkdf2_sha256$600000$TEST$TEST',
+                    'email': 'admin@dulcerialilis.cl'
+                }
+            )
+            
+            usuario_inventario, created = Usuario.objects.get_or_create(
+                id=2,
+                defaults={
+                    'nombre': 'Operador Inventario',
+                    'rol': 'operador_inventario',
+                    'password': 'pbkdf2_sha256$600000$TEST$TEST',
+                    'email': 'inventario@dulcerialilis.cl'
+                }
+            )
+            
+            usuario_ventas, created = Usuario.objects.get_or_create(
+                id=3,
+                defaults={
+                    'nombre': 'Operador Ventas',
+                    'rol': 'operador_ventas',
+                    'password': 'pbkdf2_sha256$600000$TEST$TEST',
+                    'email': 'ventas@dulcerialilis.cl'
+                }
+            )
+            
+            # 7. Costos
+            self.stdout.write('Creando costos')
+            costo1, created = Costo.objects.get_or_create(
+                idcosto=1,
+                defaults={
+                    'tipo': 'Producción',
+                    'monto': 800,
+                    'producto': producto1
+                }
+            )
+            
+            costo2, created = Costo.objects.get_or_create(
+                idcosto=2,
+                defaults={
+                    'tipo': 'Embalaje',
+                    'monto': 150,
+                    'producto': producto1
+                }
+            )
+            
+            costo3, created = Costo.objects.get_or_create(
+                idcosto=3,
+                defaults={
+                    'tipo': 'Producción',
+                    'monto': 400,
+                    'producto': producto2
+                }
+            )
+            
+            # 8. Movimientos de Inventario
+            self.stdout.write('Creando movimientos de inventario')
+            movimiento1, created = MovimientoInventario.objects.get_or_create(
+                idmovimiento=1,
+                defaults={
+                    'tipo': 'Ingreso',
+                    'fecha': date(2025, 1, 15),
+                    'cantidad': '100',
+                    'bodega': bodega_central,
+                    'producto': producto1
+                }
+            )
+            
+            movimiento2, created = MovimientoInventario.objects.get_or_create(
+                idmovimiento=2,
+                defaults={
+                    'tipo': 'Salida',
+                    'fecha': date(2025, 1, 20),
+                    'cantidad': '50',
+                    'bodega': bodega_central,
+                    'producto': producto1
+                }
+            )
+            
+            movimiento3, created = MovimientoInventario.objects.get_or_create(
+                idmovimiento=3,
+                defaults={
+                    'tipo': 'Ingreso',
+                    'fecha': date(2025, 1, 10),
+                    'cantidad': '150',
+                    'bodega': bodega_central,
+                    'producto': producto2
+                }
+            )
+            
+            # 9. Órdenes de Compra
+            self.stdout.write('Creando órdenes de compra')
+            orden_compra1, created = OrdenDeCompra.objects.get_or_create(
+                id=1,
+                defaults={
+                    'fecha': date(2025, 1, 5),
+                    'estado': 'cerrada',
+                    'monto_total': 150000,
+                    'proveedor': proveedor1
+                }
+            )
+            
+            orden_compra2, created = OrdenDeCompra.objects.get_or_create(
+                id=2,
+                defaults={
+                    'fecha': date(2025, 1, 18),
+                    'estado': 'en_proceso',
+                    'monto_total': 80000,
+                    'proveedor': proveedor2
+                }
+            )
+            
+            # 10. Órdenes de Producción
+            self.stdout.write('Creando órdenes de producción')
+            orden_prod1, created = OrdenProduccion.objects.get_or_create(
+                id=1,
+                defaults={
+                    'fechainicio': date(2025, 1, 1),
+                    'fechafin': date(2025, 1, 10),
+                    'estado': 'Completada',
+                    'usuario': usuario_inventario,
+                    'producto': producto1
+                }
+            )
+            
+            orden_prod2, created = OrdenProduccion.objects.get_or_create(
+                id=2,
+                defaults={
+                    'fechainicio': date(2025, 1, 15),
+                    'fechafin': date(2025, 1, 25),
+                    'estado': 'En Proceso',
+                    'usuario': usuario_inventario,
+                    'producto': producto3
+                }
+            )
+            
+            # 11. Pedidos
+            self.stdout.write('Creando pedidos')
+            pedido1, created = Pedido.objects.get_or_create(
+                idpedido=1,
+                defaults={
+                    'fecha': date(2025, 1, 12),
+                    'monto_total': 45000,
+                    'usuario': usuario_ventas,
+                    'cliente': cliente1,
+                    'ordendecompra': orden_compra1
+                }
+            )
+            
+            pedido2, created = Pedido.objects.get_or_create(
+                idpedido=2,
+                defaults={
+                    'fecha': date(2025, 1, 19),
+                    'monto_total': 32000,
+                    'usuario': usuario_ventas,
+                    'cliente': cliente2,
+                    'ordendecompra': orden_compra2
+                }
+            )
+            
+            # Resumen
+            self.stdout.write(
+                self.style.SUCCESS('\n DATOS CARGADOS')
+            )
+            self.stdout.write("=" * 50)
+            self.stdout.write(f'Bodegas: {Bodega.objects.count()}')
+            self.stdout.write(f'Clientes: {Cliente.objects.count()}')
+            self.stdout.write(f'Productos: {Producto.objects.count()}')
+            self.stdout.write(f'Proveedores: {Proveedor.objects.count()}')
+            self.stdout.write(f'Usuarios: {Usuario.objects.count()}')
+            self.stdout.write(f'ListarPrecios: {ListarPrecios.objects.count()}')
+            self.stdout.write(f'Costos: {Costo.objects.count()}')
+            self.stdout.write(f'Movimientos: {MovimientoInventario.objects.count()}')
+            self.stdout.write(f'Órdenes Compra: {OrdenDeCompra.objects.count()}')
+            self.stdout.write(f'Órdenes Producción: {OrdenProduccion.objects.count()}')
+            self.stdout.write(f'Pedidos: {Pedido.objects.count()}')
+            self.stdout.write("=" * 50)
+            
         except Exception as e:
-            print(f"⚠ Error creando pedido: {e}")
-
-    def crear_movimientos_inventario(self, bodegas, productos):
-        """Crea movimientos de inventario"""
-        print("--- Creando movimientos de inventario ---")
-        
-        for producto in productos:
-            movimiento_data = {
-                'tipo': 'entrada',
-                'fecha': datetime.now().date(),
-                'cantidad': producto.stock,
-                'bodega': bodegas[0],
-                'producto': producto
-            }
-            
-            try:
-                movimiento, created = MovimientoInventario.objects.get_or_create(
-                    producto=movimiento_data['producto'],
-                    bodega=movimiento_data['bodega'],
-                    defaults=movimiento_data
-                )
-                if created:
-                    print(f"✓ Movimiento: {producto.nombre} - {movimiento.cantidad} unidades")
-            except Exception as e:
-                print(f"⚠ Error en movimiento inventario: {e}")
-
-    def crear_costos(self, productos):
-        """Crea costos asociados a productos"""
-        print("--- Creando costos ---")
-        
-        for producto in productos:
-            costo_data = {
-                'tipo': 'produccion',
-                'monto': producto.precio * 60 // 100,  # 60% del precio como costo
-                'producto': producto
-            }
-            
-            try:
-                costo, created = Costo.objects.get_or_create(
-                    producto=costo_data['producto'],
-                    tipo=costo_data['tipo'],
-                    defaults=costo_data
-                )
-                if created:
-                    print(f"✓ Costo: {producto.nombre} - ${costo.monto}")
-            except Exception as e:
-                print(f"⚠ Error en costo: {e}")
+            self.stdout.write(
+                self.style.ERROR(f'Error al cargar datos: {e}')
+            )
+            import traceback
+            self.stdout.write(self.style.ERROR(traceback.format_exc()))
