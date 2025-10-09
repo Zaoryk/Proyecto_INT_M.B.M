@@ -3,6 +3,22 @@ from django.core.exceptions import ValidationError
 from django import forms
 from dispositivos.models import Bodega, Cliente, Costo, ListarPrecios, MovimientoInventario, OrdenDeCompra, OrdenProduccion, Pedido, Producto, Proveedor, Usuario
 
+class ProductoForm(forms.ModelForm):
+    class Meta:
+            model = Producto
+            fields = '__all__'
+        
+    def clean_precio(self):
+            precio = self.cleaned_data.get('precio')
+            if precio and precio < 0:
+                raise ValidationError("El precio no puede ser negativo.")
+            return precio
+        
+    def clean_stock(self):
+            stock = self.cleaned_data.get('stock')
+            if stock and stock < 0:
+                raise ValidationError("El stock no puede ser negativo.")
+            return stock
 class MovimientoInventarioForm(forms.ModelForm):
     class Meta:
         model = MovimientoInventario
