@@ -39,9 +39,15 @@ cd Proyecto_INT_M.B.M/dulceria
 ```
 
 - Migrar y abrir servidor
+#### ES IMPORTANTE CORRER INIT_ROLES PARA ASIGNAR ROLES A LOS USUARIOS NUEVOS.
 ```python
 python manage.py makemigrations
 python manage.py migrate
+
+# Inicializar y crear los roles con sus usuarios
+python manage.py init_roles
+
+# Correr el servidor
 python manage.py runserver
 ```
 Acceder a: http://127.0.0.1:8000/admin/
@@ -60,8 +66,6 @@ python manage.py cargar_fixtures
 ### Usuarios de Prueba Creados:
 
 - **Administrador**: ```admin``` / ```admin123```
-- **Vendedor**: ```vendedor1``` / ```vendedor123```
-- **Comprador**: ```comprador1``` / ```comprador123```
 
 ### BASE DE DATOS PARA COPIAR A WAMPSERVER
 
