@@ -29,7 +29,7 @@ class MovimientoInventarioForm(forms.ModelForm):
         tipo = cleaned_data.get('tipo')
         cantidad = cleaned_data.get('cantidad')
         producto = cleaned_data.get('producto')
-        
+            
         # validación de sklalida mayor al stock disponible
         if tipo == "Salida" and producto and cantidad:
             if cantidad > producto.stock:

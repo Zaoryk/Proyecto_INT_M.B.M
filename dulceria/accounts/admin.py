@@ -76,7 +76,6 @@ class RoleModulePermissionAdmin(admin.ModelAdmin):
     )
 
 
-# Personalización del Admin de Usuario para facilitar asignación de roles
 class UserRoleInline(admin.StackedInline):
     """
     Muestra información del rol del usuario en el admin
@@ -87,8 +86,6 @@ class UserRoleInline(admin.StackedInline):
     verbose_name_plural = "Roles/Grupos"
     can_delete = True
 
-
-# Re-registrar User con la personalización
 admin.site.unregister(User)
 
 @admin.register(User)
