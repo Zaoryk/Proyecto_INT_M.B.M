@@ -37,8 +37,15 @@ Sistema de gestión integral desarrollado en Django para la administración comp
 git clone https://github.com/Zaoryk/Proyecto_INT_M.B.M.git
 cd Proyecto_INT_M.B.M/dulceria
 ```
+## ES NECESARIO CREAR UN SUPERUSUARIO ANTES DE CORRER EL SERVIDOR
+- Crear super usuario
+- 
+```python
+python manage.py createsuperuser
+```
 
 - Migrar y abrir servidor
+
 #### ES IMPORTANTE CORRER INIT_ROLES PARA ASIGNAR ROLES A LOS USUARIOS NUEVOS.
 ```python
 python manage.py makemigrations
@@ -53,6 +60,7 @@ python manage.py runserver
 Acceder a: http://127.0.0.1:8000/admin/
 
 - Si es necesario crear datos de ejemplo:
+
 #### ES OBLIGATORIO TENER EL SERVIDOR CORRIENDO ANTES DE EJECUTAR ESTOS COMANDOS.
 ```python
 # Opcion 1: Cargar datos directamente
@@ -62,10 +70,6 @@ python manage.py cargar_datos_directo
 python manage.py generar_fixtures
 python manage.py cargar_fixtures
 ```
-
-### Usuarios de Prueba Creados:
-
-- **Administrador**: ```admin``` / ```admin123```
 
 ### BASE DE DATOS PARA COPIAR A WAMPSERVER
 
