@@ -5,7 +5,6 @@ from django.conf import settings
 class Module(models.Model):
     """
     Representa un módulo del sistema ERP de Dulcería Lilis.
-    Ejemplos: Inventarios, Compras, Producción, Ventas, Costos
     """
     code = models.SlugField(max_length=50, unique=True, help_text="Código único del módulo (ej: 'inventarios')")
     name = models.CharField(max_length=100, help_text="Nombre descriptivo del módulo (ej: 'Inventarios')")
@@ -25,7 +24,6 @@ class Module(models.Model):
 class Role(models.Model):
     """
     Rol del sistema vinculado a un Group de Django.
-    Cada rol tiene permisos específicos sobre módulos.
     """
     group = models.OneToOneField(
         Group, 
@@ -46,7 +44,6 @@ class Role(models.Model):
 class RoleModulePermission(models.Model):
     """
     Define los permisos que un rol tiene sobre un módulo específico.
-    Permisos granulares: ver, agregar, modificar, eliminar
     """
     role = models.ForeignKey(
         Role, 
@@ -76,3 +73,20 @@ class RoleModulePermission(models.Model):
         if self.can_delete: perms.append("Eliminar")
         
         return f"{self.role} → {self.module} ({', '.join(perms) if perms else 'Sin permisos'})"
+
+
+# Módulos predefinidos del sistema
+MODULOS_SISTEMA = [
+    # Módulos de Dispositivos
+    ('bodegas', 'Bodegas', 'warehouse', 1),
+    ('clientes', 'Clientes', 'people', 2),
+    ('productos', 'Productos', 'inventory_2', 3),
+    ('proveedores', 'Proveedores', 'local_shipping', 4),
+    ('costos', 'Costos', 'attach_money', 5),
+    ('listar_precios', 'Listar Precios', 'price_check', 6),
+    ('movimiento_inventario', 'Movimiento Inventario', 'swap_horiz', 7),
+    ('orden_compra', 'Orden de Compra', 'shopping_cart', 8),
+    ('orden_produccion', 'Orden de Producción', 'build', 9),
+    ('pedidos', 'Pedidos', 'receipt', 10),
+    ('usuarios', 'Usuarios', 'person', 11),
+]
