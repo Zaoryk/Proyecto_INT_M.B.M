@@ -6,9 +6,7 @@ class Command(BaseCommand):
     help = 'Inicializa los módulos y roles del sistema'
 
     def handle(self, *args, **options):
-        # Módulos del sistema
         MODULOS_SISTEMA = [
-            # Módulos de Dispositivos
             ('bodegas', 'Bodegas', 'warehouse', 1),
             ('clientes', 'Clientes', 'people', 2),
             ('productos', 'Productos', 'inventory_2', 3),
@@ -21,8 +19,6 @@ class Command(BaseCommand):
             ('pedidos', 'Pedidos', 'receipt', 10),
             ('usuarios', 'Usuarios', 'person', 11),
         ]
-
-        # Crear módulos
         for code, name, icon, order in MODULOS_SISTEMA:
             module, created = Module.objects.get_or_create(
                 code=code,
@@ -36,7 +32,6 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write(self.style.SUCCESS(f'Módulo creado: {name}'))
 
-        # Roles predefinidos
         ROLES_SISTEMA = [
             ('administrador', 'Administrador del sistema con acceso completo'),
             ('operador_inventario', 'Operador de inventario - Gestión de bodegas, productos y movimientos'),
@@ -45,8 +40,6 @@ class Command(BaseCommand):
             ('operador_produccion', 'Operador de producción - Gestión de órdenes de producción'),
             ('analista_financiero', 'Analista financiero - Gestión de costos y precios'),
         ]
-
-        # Crear roles y permisos
         for group_name, description in ROLES_SISTEMA:
             group, created = Group.objects.get_or_create(name=group_name)
             role, role_created = Role.objects.get_or_create(
@@ -57,9 +50,7 @@ class Command(BaseCommand):
             if role_created:
                 self.stdout.write(self.style.SUCCESS(f'Rol creado: {group_name}'))
 
-                # Asignar permisos según el rol
                 if group_name == 'administrador':
-                    # Acceso completo a todos los módulos
                     for module in Module.objects.all():
                         RoleModulePermission.objects.create(
                             role=role,
@@ -71,7 +62,6 @@ class Command(BaseCommand):
                         )
                 
                 elif group_name == 'operador_inventario':
-                    # Permisos para módulos de inventario
                     inventario_modules = ['bodegas', 'productos', 'movimiento_inventario']
                     for module_code in inventario_modules:
                         module = Module.objects.get(code=module_code)
@@ -81,11 +71,10 @@ class Command(BaseCommand):
                             can_view=True,
                             can_add=True,
                             can_change=True,
-                            can_delete=False  # No puede eliminar registros
+                            can_delete=False 
                         )
                 
                 elif group_name == 'operador_compras':
-                    # Permisos para módulos de compras
                     compras_modules = ['proveedores', 'orden_compra']
                     for module_code in compras_modules:
                         module = Module.objects.get(code=module_code)
@@ -99,7 +88,6 @@ class Command(BaseCommand):
                         )
                 
                 elif group_name == 'operador_ventas':
-                    # Permisos para módulos de ventas
                     ventas_modules = ['clientes', 'pedidos', 'listar_precios']
                     for module_code in ventas_modules:
                         module = Module.objects.get(code=module_code)
@@ -113,7 +101,6 @@ class Command(BaseCommand):
                         )
                 
                 elif group_name == 'operador_produccion':
-                    # Permisos para módulos de producción
                     produccion_modules = ['orden_produccion', 'productos']
                     for module_code in produccion_modules:
                         module = Module.objects.get(code=module_code)
@@ -127,7 +114,6 @@ class Command(BaseCommand):
                         )
                 
                 elif group_name == 'analista_financiero':
-                    # Permisos para módulos financieros
                     finanzas_modules = ['costos', 'listar_precios']
                     for module_code in finanzas_modules:
                         module = Module.objects.get(code=module_code)

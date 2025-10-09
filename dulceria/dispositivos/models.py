@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
 
 class Bodega(models.Model):
     idbodega = models.AutoField(db_column='idBodega', primary_key=True)
