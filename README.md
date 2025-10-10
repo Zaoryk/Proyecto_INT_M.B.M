@@ -39,7 +39,7 @@ cd Proyecto_INT_M.B.M/dulceria
 ```
 ## ES NECESARIO CREAR UN SUPERUSUARIO ANTES DE CORRER EL SERVIDOR
 - Crear super usuario
-- 
+
 ```python
 python manage.py createsuperuser
 ```
