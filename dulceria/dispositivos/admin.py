@@ -4,13 +4,12 @@ from django import forms
 from accounts.models import RoleModulePermission
 from dispositivos.models import Bodega, Cliente, Costo, ListarPrecios, MovimientoInventario, OrdenDeCompra, OrdenProduccion, Pedido, Producto, Proveedor, Usuario
 
-# ========== MIXIN PARA CONTROL DE PERMISOS ==========
 
 class PermissionMixin:
     """
     Mixin para controlar permisos basados en roles y módulos
     """
-    module_code = None  # Debe ser definido en cada admin
+    module_code = None 
     
     def has_module_permission(self, request):
         """Verifica si el usuario tiene permiso para ver el módulo"""
@@ -69,8 +68,6 @@ class PermissionMixin:
             can_delete=True
         ).exists()
 
-# ========== FORMS CON VALIDACIONES ==========
-
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
@@ -99,14 +96,12 @@ class MovimientoInventarioForm(forms.ModelForm):
         cantidad = cleaned_data.get('cantidad')
         producto = cleaned_data.get('producto')
             
-        # Validación de salida mayor al stock disponible
         if tipo == "Salida" and producto and cantidad:
             if cantidad > producto.stock:
                 raise ValidationError({
                     'cantidad': f"No puedes registrar una salida mayor al stock disponible. Stock actual: {producto.stock}"
                 })
         
-        # Validación por cantidad positiva
         if cantidad and cantidad <= 0:
             raise ValidationError({
                 'cantidad': "La cantidad debe ser un número positivo mayor a cero."
@@ -158,14 +153,11 @@ class PedidoForm(forms.ModelForm):
             raise ValidationError("El monto total no puede ser negativo.")
         return monto_total
 
-# ========== INLINES SIMPLES ==========
-
 class MovimientoInventarioInline(admin.TabularInline):
     model = MovimientoInventario
     extra = 1
     fields = ("tipo", "fecha", "cantidad")
 
-# ========== ADMIN CLASSES CON PERMISOS Y FILTROS ==========
 
 @admin.register(Producto)
 class ProductoAdmin(PermissionMixin, admin.ModelAdmin):
@@ -238,7 +230,6 @@ class MovimientoInventarioAdmin(PermissionMixin, admin.ModelAdmin):
             return ['producto']
         return []
 
-# ========== ADMIN CLASSES BÁSICAS CON PERMISOS Y FILTROS ==========
 
 @admin.register(Usuario)
 class UsuarioAdmin(PermissionMixin, admin.ModelAdmin):
