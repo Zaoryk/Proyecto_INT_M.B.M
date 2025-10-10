@@ -99,14 +99,14 @@ class MovimientoInventarioForm(forms.ModelForm):
         cantidad = cleaned_data.get('cantidad')
         producto = cleaned_data.get('producto')
             
-        # validación de salida mayor al stock disponible
+        # Validación de salida mayor al stock disponible
         if tipo == "Salida" and producto and cantidad:
             if cantidad > producto.stock:
                 raise ValidationError({
                     'cantidad': f"No puedes registrar una salida mayor al stock disponible. Stock actual: {producto.stock}"
                 })
         
-        # validacion por cantidad positiva, aka mayor a 0
+        # Validación por cantidad positiva
         if cantidad and cantidad <= 0:
             raise ValidationError({
                 'cantidad': "La cantidad debe ser un número positivo mayor a cero."
@@ -114,198 +114,75 @@ class MovimientoInventarioForm(forms.ModelForm):
         
         return cleaned_data
 
+# ========== INLINES SIMPLES ==========
+
 class MovimientoInventarioInline(admin.TabularInline):
     model = MovimientoInventario
-    form = MovimientoInventarioForm
     extra = 1
-    fields = ("tipo", "fecha", "cantidad", "bodega", "producto")
-
-    def get_formset(self, request, obj=None, **kwargs):
-        formset = super().get_formset(request, obj, **kwargs)
-
-        # pero si tamos editando un producto en especificio, esto limita las opciones
-        if obj and isinstance(obj, Producto):
-            formset.form.base_fields['producto'].queryset = Producto.objects.filter(idproducto=obj.idproducto)
-            formset.form.base_fields['producto'].initial = obj
-        
-        return formset
-
-# validacion de orden de compra :3, ya que no puede ser un monto negativo
-class OrdenDeCompraForm(forms.ModelForm):
-    class Meta:
-        model = OrdenDeCompra
-        fields = '__all__'
-    
-    def clean_monto_total(self):
-        monto_total = self.cleaned_data.get('monto_total')
-        if monto_total and monto_total < 0:
-            raise ValidationError("El monto total no puede ser negativo.")
-        return monto_total
-
-# validación de costo
-class CostoForm(forms.ModelForm):
-    class Meta:
-        model = Costo
-        fields = '__all__'
-    
-    def clean_monto(self):
-        monto = self.cleaned_data.get('monto')
-        if monto and monto < 0:
-            raise ValidationError("El monto del costo no puede ser negativo.")
-        return monto
-
-# nada puede ser monto negativo asi que ,,,, lol
-class ListarPreciosForm(forms.ModelForm):
-    class Meta:
-        model = ListarPrecios
-        fields = '__all__'
-    
-    def clean_valor(self):
-        valor = self.cleaned_data.get('valor')
-        if valor and valor < 0:
-            raise ValidationError("El valor no puede ser negativo.")
-        return valor
-    
-class PedidoForm(forms.ModelForm):
-    class Meta:
-        model = Pedido
-        fields = '__all__'
-    
-    def clean_monto_total(self):
-        monto_total = self.cleaned_data.get('monto_total')
-        if monto_total and monto_total < 0:
-            raise ValidationError("El monto total no puede ser negativo.")
-        return monto_total
+    fields = ("tipo", "fecha", "cantidad")
 
 # ========== ADMIN CLASSES CON PERMISOS ==========
 
-# admin para producto con inline
 @admin.register(Producto)
 class ProductoAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'productos'
     form = ProductoForm
-    list_display = ("nombre", "precio", "stock", "lote", "fecha_vencimiento")
-    list_filter = ("fecha_vencimiento",)
-    search_fields = ("nombre", "lote")
+    list_display = ("nombre", "precio", "stock")
+    search_fields = ("nombre",)
     inlines = [MovimientoInventarioInline]
-    
-    def get_inline_instances(self, request, obj=None):
-        # esto sirve para mostrar el inline si estamos editando UN producto existente
-        # y si el usuario tiene permisos de cambio
-        if obj and self.has_change_permission(request, obj):
-            return [MovimientoInventarioInline(self.model, self.admin_site)]
-        return []
 
-# admin para OrdenDeCompra con validaciones
 @admin.register(OrdenDeCompra)
 class OrdenDeCompraAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'orden_compra'
-    form = OrdenDeCompraForm
     list_display = ("id", "proveedor", "fecha", "estado", "monto_total")
-    list_filter = ("estado", "fecha", "proveedor")
-    search_fields = ("id", "proveedor__nombre")
     actions = ["marcar_en_proceso", "marcar_cerrada", "marcar_no_iniciado"]
 
     @admin.action(description="Marcar seleccionadas como No iniciadas")
     def marcar_no_iniciado(self, request, queryset):
-        if not self.has_change_permission(request):
-            from django.contrib import messages
-            messages.error(request, "No tienes permisos para modificar órdenes de compra.")
-            return
-        updated = queryset.update(estado="no_iniciado")
-        self.message_user(request, f"{updated} órdenes marcadas como 'No iniciadas'.")
+        queryset.update(estado="no_iniciado")
 
     @admin.action(description="Marcar seleccionadas como En Proceso")
     def marcar_en_proceso(self, request, queryset):
-        if not self.has_change_permission(request):
-            from django.contrib import messages
-            messages.error(request, "No tienes permisos para modificar órdenes de compra.")
-            return
-        updated = queryset.update(estado="en_proceso")
-        self.message_user(request, f"{updated} órdenes marcadas como 'En proceso'.")
+        queryset.update(estado="en_proceso")
 
     @admin.action(description="Marcar seleccionadas como Cerrada")
     def marcar_cerrada(self, request, queryset):
-        if not self.has_change_permission(request):
-            from django.contrib import messages
-            messages.error(request, "No tienes permisos para modificar órdenes de compra.")
-            return
-        updated = queryset.update(estado="cerrada")
-        self.message_user(request, f"{updated} órdenes marcadas como 'Cerradas'.")
+        queryset.update(estado="cerrada")
 
-# admin para Costo con validaciones
-@admin.register(Costo)
-class CostoAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'costos'
-    form = CostoForm
-    list_display = ("tipo", "monto", "producto")
-    list_filter = ("tipo", "producto")
-    search_fields = ("tipo", "producto__nombre")
-
-# admin para ListarPrecios con validaciones
-@admin.register(ListarPrecios)
-class ListarPreciosAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'listar_precios'
-    form = ListarPreciosForm
-    list_display = ("cliente", "canal", "temporada", "valor")
-    list_filter = ("canal", "temporada", "cliente")
-    search_fields = ("cliente__nombre", "canal")
-
-# admin para Pedido con validaciones
-@admin.register(Pedido)
-class PedidoAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'pedidos'
-    form = PedidoForm
-    list_display = ("idpedido", "fecha", "cliente", "monto_total", "usuario")
-    list_filter = ("fecha", "cliente", "usuario")
-    search_fields = ("cliente__nombre", "usuario__nombre")
-
-# admin para MovimientoInventario con validaciones
-@admin.register(MovimientoInventario)
-class MovimientoInventarioAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'movimiento_inventario'
-    form = MovimientoInventarioForm
-    list_display = ("tipo", "fecha", "producto", "cantidad", "bodega")
-    list_filter = ("tipo", "fecha", "bodega")
-    search_fields = ("producto__nombre", "bodega__nombre")
-    
-    def get_readonly_fields(self, request, obj=None):
-        # si el movimiento existe solamente hacerlo modo lectura
-        if obj:
-            return ['producto']
-        return []
-
-# ========== ADMIN CLASSES BÁSICAS CON PERMISOS ==========
-
-@admin.register(Usuario)
-class UsuarioAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'usuarios'
-    list_display = ("nombre", "email", "rol")
-    list_filter = ("rol",)
-    search_fields = ("nombre", "email")
-
-@admin.register(Proveedor)
-class ProveedorAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'proveedores'
-    list_display = ("nombre", "email", "contacto")
-    search_fields = ("nombre", "email")
-
-@admin.register(Bodega)
-class BodegaAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'bodegas'
-    list_display = ("nombre", "ubicacion")
-    search_fields = ("nombre", "ubicacion")
+# ========== REGISTROS BÁSICOS CON PERMISOS ==========
 
 @admin.register(Cliente)
 class ClienteAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'clientes'
-    list_display = ("nombre", "tipo")
-    list_filter = ("tipo",)
-    search_fields = ("nombre",)
+
+@admin.register(Bodega)
+class BodegaAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'bodegas'
+
+@admin.register(ListarPrecios)
+class ListarPreciosAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'listar_precios'
+
+@admin.register(Costo)
+class CostoAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'costos'
+
+@admin.register(MovimientoInventario)
+class MovimientoInventarioAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'movimiento_inventario'
 
 @admin.register(OrdenProduccion)
 class OrdenProduccionAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'orden_produccion'
-    list_display = ("id", "fechainicio", "fechafin", "estado", "producto", "usuario")
-    list_filter = ("estado", "fechainicio", "fechafin")
-    search_fields = ("producto__nombre", "usuario__nombre")
+
+@admin.register(Pedido)
+class PedidoAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'pedidos'
+
+@admin.register(Proveedor)
+class ProveedorAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'proveedores'
+
+@admin.register(Usuario)
+class UsuarioAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'usuarios'
