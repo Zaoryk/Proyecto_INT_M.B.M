@@ -114,6 +114,50 @@ class MovimientoInventarioForm(forms.ModelForm):
         
         return cleaned_data
 
+class OrdenDeCompraForm(forms.ModelForm):
+    class Meta:
+        model = OrdenDeCompra
+        fields = '__all__'
+    
+    def clean_monto_total(self):
+        monto_total = self.cleaned_data.get('monto_total')
+        if monto_total and monto_total < 0:
+            raise ValidationError("El monto total no puede ser negativo.")
+        return monto_total
+
+class CostoForm(forms.ModelForm):
+    class Meta:
+        model = Costo
+        fields = '__all__'
+    
+    def clean_monto(self):
+        monto = self.cleaned_data.get('monto')
+        if monto and monto < 0:
+            raise ValidationError("El monto del costo no puede ser negativo.")
+        return monto
+
+class ListarPreciosForm(forms.ModelForm):
+    class Meta:
+        model = ListarPrecios
+        fields = '__all__'
+    
+    def clean_valor(self):
+        valor = self.cleaned_data.get('valor')
+        if valor and valor < 0:
+            raise ValidationError("El valor no puede ser negativo.")
+        return valor
+
+class PedidoForm(forms.ModelForm):
+    class Meta:
+        model = Pedido
+        fields = '__all__'
+    
+    def clean_monto_total(self):
+        monto_total = self.cleaned_data.get('monto_total')
+        if monto_total and monto_total < 0:
+            raise ValidationError("El monto total no puede ser negativo.")
+        return monto_total
+
 # ========== INLINES SIMPLES ==========
 
 class MovimientoInventarioInline(admin.TabularInline):
@@ -121,68 +165,110 @@ class MovimientoInventarioInline(admin.TabularInline):
     extra = 1
     fields = ("tipo", "fecha", "cantidad")
 
-# ========== ADMIN CLASSES CON PERMISOS ==========
+# ========== ADMIN CLASSES CON PERMISOS Y FILTROS ==========
 
 @admin.register(Producto)
 class ProductoAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'productos'
     form = ProductoForm
-    list_display = ("nombre", "precio", "stock")
-    search_fields = ("nombre",)
+    list_display = ("nombre", "precio", "stock", "lote", "fecha_vencimiento")
+    list_filter = ("fecha_vencimiento",)
+    search_fields = ("nombre", "lote")
     inlines = [MovimientoInventarioInline]
 
 @admin.register(OrdenDeCompra)
 class OrdenDeCompraAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'orden_compra'
+    form = OrdenDeCompraForm
     list_display = ("id", "proveedor", "fecha", "estado", "monto_total")
+    list_filter = ("estado", "fecha", "proveedor")
+    search_fields = ("id", "proveedor__nombre")
     actions = ["marcar_en_proceso", "marcar_cerrada", "marcar_no_iniciado"]
 
     @admin.action(description="Marcar seleccionadas como No iniciadas")
     def marcar_no_iniciado(self, request, queryset):
-        queryset.update(estado="no_iniciado")
+        updated = queryset.update(estado="no_iniciado")
+        self.message_user(request, f"{updated} órdenes marcadas como 'No iniciadas'.")
 
     @admin.action(description="Marcar seleccionadas como En Proceso")
     def marcar_en_proceso(self, request, queryset):
-        queryset.update(estado="en_proceso")
+        updated = queryset.update(estado="en_proceso")
+        self.message_user(request, f"{updated} órdenes marcadas como 'En proceso'.")
 
     @admin.action(description="Marcar seleccionadas como Cerrada")
     def marcar_cerrada(self, request, queryset):
-        queryset.update(estado="cerrada")
-
-# ========== REGISTROS BÁSICOS CON PERMISOS ==========
-
-@admin.register(Cliente)
-class ClienteAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'clientes'
-
-@admin.register(Bodega)
-class BodegaAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'bodegas'
-
-@admin.register(ListarPrecios)
-class ListarPreciosAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'listar_precios'
+        updated = queryset.update(estado="cerrada")
+        self.message_user(request, f"{updated} órdenes marcadas como 'Cerradas'.")
 
 @admin.register(Costo)
 class CostoAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'costos'
+    form = CostoForm
+    list_display = ("tipo", "monto", "producto")
+    list_filter = ("tipo", "producto")
+    search_fields = ("tipo", "producto__nombre")
 
-@admin.register(MovimientoInventario)
-class MovimientoInventarioAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'movimiento_inventario'
-
-@admin.register(OrdenProduccion)
-class OrdenProduccionAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'orden_produccion'
+@admin.register(ListarPrecios)
+class ListarPreciosAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'listar_precios'
+    form = ListarPreciosForm
+    list_display = ("cliente", "canal", "temporada", "valor")
+    list_filter = ("canal", "temporada", "cliente")
+    search_fields = ("cliente__nombre", "canal")
 
 @admin.register(Pedido)
 class PedidoAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'pedidos'
+    form = PedidoForm
+    list_display = ("idpedido", "fecha", "cliente", "monto_total", "usuario")
+    list_filter = ("fecha", "cliente", "usuario")
+    search_fields = ("cliente__nombre", "usuario__nombre")
 
-@admin.register(Proveedor)
-class ProveedorAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'proveedores'
+@admin.register(MovimientoInventario)
+class MovimientoInventarioAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'movimiento_inventario'
+    form = MovimientoInventarioForm
+    list_display = ("tipo", "fecha", "producto", "cantidad", "bodega")
+    list_filter = ("tipo", "fecha", "bodega")
+    search_fields = ("producto__nombre", "bodega__nombre")
+    
+    def get_readonly_fields(self, request, obj=None):
+        # Si el movimiento existe, hacer el producto de solo lectura
+        if obj:
+            return ['producto']
+        return []
+
+# ========== ADMIN CLASSES BÁSICAS CON PERMISOS Y FILTROS ==========
 
 @admin.register(Usuario)
 class UsuarioAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'usuarios'
+    list_display = ("nombre", "email", "rol")
+    list_filter = ("rol",)
+    search_fields = ("nombre", "email")
+
+@admin.register(Proveedor)
+class ProveedorAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'proveedores'
+    list_display = ("nombre", "email", "contacto")
+    search_fields = ("nombre", "email")
+
+@admin.register(Bodega)
+class BodegaAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'bodegas'
+    list_display = ("nombre", "ubicacion")
+    search_fields = ("nombre", "ubicacion")
+
+@admin.register(Cliente)
+class ClienteAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'clientes'
+    list_display = ("nombre", "tipo")
+    list_filter = ("tipo",)
+    search_fields = ("nombre",)
+
+@admin.register(OrdenProduccion)
+class OrdenProduccionAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'orden_produccion'
+    list_display = ("id", "fechainicio", "fechafin", "estado", "producto", "usuario")
+    list_filter = ("estado", "fechainicio", "fechafin")
+    search_fields = ("producto__nombre", "usuario__nombre")
