@@ -37,12 +37,7 @@ Sistema de gestión integral desarrollado en Django para la administración comp
 git clone https://github.com/Zaoryk/Proyecto_INT_M.B.M.git
 cd Proyecto_INT_M.B.M/dulceria
 ```
-## ES NECESARIO CREAR UN SUPERUSUARIO ANTES DE CORRER EL SERVIDOR
-- Crear super usuario
 
-```python
-python manage.py createsuperuser
-```
 
 - Migrar y abrir servidor
 
@@ -50,6 +45,10 @@ python manage.py createsuperuser
 ```python
 python manage.py makemigrations
 python manage.py migrate
+
+# ES NECESARIO CREAR UN SUPERUSUARIO ANTES DE CORRER EL SERVIDOR
+
+python manage.py createsuperuser
 
 # Inicializar y crear los roles con sus usuarios
 python manage.py init_roles
