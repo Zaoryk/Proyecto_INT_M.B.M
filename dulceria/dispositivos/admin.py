@@ -156,7 +156,7 @@ class PedidoForm(forms.ModelForm):
 class MovimientoInventarioInline(admin.TabularInline):
     model = MovimientoInventario
     extra = 1
-    fields = ("tipo", "fecha", "cantidad")
+    fields = ("tipo", "fecha", "cantidad", "bodega") 
 
 
 @admin.register(Producto)

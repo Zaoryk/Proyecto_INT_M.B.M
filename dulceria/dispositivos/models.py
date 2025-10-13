@@ -64,7 +64,13 @@ class MovimientoInventario(models.Model):
     tipo = models.CharField(max_length=45, blank=True, null=True)
     fecha = models.DateField(blank=True, null=True)
     cantidad = models.PositiveIntegerField()
-    bodega = models.ForeignKey(Bodega, models.DO_NOTHING, db_column='Bodega_idBodega')
+    bodega = models.ForeignKey(
+    Bodega,
+    models.DO_NOTHING,
+    db_column='Bodega_idBodega',
+    null=True, blank=True  
+)
+
     producto = models.ForeignKey(Producto, models.DO_NOTHING, db_column='Producto_idProducto')
     def clean(self):
         if self.tipo == "Salida" and self.cantidad > self.producto.stock:
