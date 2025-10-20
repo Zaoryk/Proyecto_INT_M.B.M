@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Usuarios</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f9fb;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .formulario {
+      flex: 1;
+      min-width: 300px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .formulario h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .botones {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .guardar {
+      background-color: #0d6efd;
+      color: white;
+    }
+
+    .limpiar {
+      background-color: #adb5bd;
+      color: white;
+    }
+
+    /* Tabla */
+    .tabla {
+      flex: 2;
+      min-width: 400px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .tabla-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .tabla-header input, .tabla-header select, .tabla-header button {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .tabla-header button {
+      background-color: #198754;
+      color: white;
+      cursor: pointer;
+      border: none;
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f4f6;
+    }
+
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .estado {
+      padding: 4px 10px;
+      border-radius: 12px;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .activo { background-color: #28a745; }
+    .inactivo { background-color: #ffc107; color: #333; }
+    .bloqueado { background-color: #dc3545; }
+
+    .acciones button {
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .editar {
+      background-color: #0d6efd;
+      color: white;
+    }
+
+    .eliminar {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .referencia {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- FORMULARIO -->
+    <div class="formulario">
+      <h2>Formulario de Usuario</h2>
+      <form id="formUsuario">
+        <label>Username (requerido)</label>
+        <input type="text" name="username" placeholder="j.cortes" required>
+
+        <label>Email (requerido)</label>
+        <input type="email" name="email" placeholder="usuario@dominio.com" required>
+
+        <label>Nombres</label>
+        <input type="text" name="nombres" placeholder="Jorge">
+
+        <label>Apellidos</label>
+        <input type="text" name="apellidos" placeholder="Cortés">
+
+        <label>Teléfono</label>
+        <input type="text" name="telefono" placeholder="+56 9 1234 5678">
+
+        <label>Estado y acceso</label>
+        <select name="estado" required>
+          <option value="">Seleccione...</option>
+          <option value="ACTIVO" selected>ACTIVO</option>
+          <option value="INACTIVO">INACTIVO</option>
+          <option value="BLOQUEADO">BLOQUEADO</option>
+        </select>
+
+        <label>MFA habilitado</label>
+        <input type="number" name="mfa" placeholder="0 o 1" min="0" max="1">
+
+        <label>Último acceso (solo lectura)</label>
+        <input type="text" readonly value="-">
+
+        <label>Sesiones activas (solo lectura)</label>
+        <input type="text" readonly value="0">
+
+        <div class="botones">
+          <button type="submit" class="guardar">Guardar</button>
+          <button type="reset" class="limpiar">Limpiar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- TABLA -->
+    <div class="tabla">
+      <div class="tabla-header">
+        <h2>Usuarios</h2>
+        <div>
+          <input type="text" placeholder="Buscar por username">
+          <select>
+            <option>Rol: todos</option>
+          </select>
+          <select>
+            <option>Estado: todos</option>
+          </select>
+          <button>Exportar a Excel</button>
+        </div>
+      </div>
+
+      <form id="tablaUsuarios">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Teléfono</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>MFA</th>
+              <th>Último acceso</th>
+              <th>Sesiones</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>admin</td>
+              <td>admin@empresa.cl</td>
+              <td>Admin</td>
+              <td>Root</td>
+              <td>+56 9 1111 1111</td>
+              <td>ADMIN</td>
+              <td><span class="estado activo">ACTIVO</span></td>
+              <td>Si</td>
+              <td>2025-09-10 08:12</td>
+              <td>2</td>
+              <td class="acciones">
+                <button type="button" class="editar">Editar</button>
+                <button type="button" class="eliminar">Eliminar</button>
+              </td>
+            </tr>
+            <tr>
+              <td>auditor1</td>
+              <td>auditor@empresa.cl</td>
+              <td>Ana</td>
+              <td>Revisor</td>
+              <td>—</td>
+              <td>AUDITOR</td>
+              <td><span class="estado inactivo">INACTIVO</span></td>
+              <td>No</td>
+              <td>2025-08-31 19:44</td>
+              <td>0</td>
+              <td class="acciones">
+                <button type="button" class="editar">Editar</button>
+                <button type="button" class="eliminar">Eliminar</button>
+              </td>
+            </tr>
+            <tr>
+              <td>oper1</td>
+              <td>operador@empresa.cl</td>
+              <td>Oscar</td>
+              <td>Operaciones</td>
+              <td>+56 9 2222 2222</td>
+              <td>OPERADOR</td>
+              <td><span class="estado bloqueado">BLOQUEADO</span></td>
+              <td>No</td>
+              <td>—</td>
+              <td>0</td>
+              <td class="acciones">
+                <button type="button" class="editar">Editar</button>
+                <button type="button" class="eliminar">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div>
+  </div>
+
+  <div class="referencia">*** Diseño solo referencial ***</div>
+
+  <script>
+    // Prevenir envío real del formulario
+    document.getElementById("formUsuario").addEventListener("submit", function(e) {
+      e.preventDefault();
+      alert("✅ Formulario enviado (simulado). No se guardan datos.");
+    });
+
+    // Botones de editar y eliminar (simulados)
+    document.querySelectorAll(".editar").forEach(btn => {
+      btn.addEventListener("click", () => alert("📝 Editar usuario (simulado)"));
+    });
+
+    document.querySelectorAll(".eliminar").forEach(btn => {
+      btn.addEventListener("click", () => alert("🗑️ Eliminar usuario (simulado)"));
+    });
+  </script>
+
+</body>
+</html>
