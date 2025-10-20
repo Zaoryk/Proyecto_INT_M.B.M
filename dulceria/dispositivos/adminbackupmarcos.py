@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django import forms
-from dispositivos.models import Bodega, Cliente, Costo, ListarPrecios, MovimientoInventario, OrdenDeCompra, OrdenProduccion, Pedido, Producto, Proveedor, Usuario
+from dulceria.dispositivos.modelsbackup import Bodega, Cliente, Costo, ListarPrecios, MovimientoInventario, OrdenDeCompra, OrdenProduccion, Pedido, Producto, Proveedor, Usuario
 
 class ProductoForm(forms.ModelForm):
     class Meta:

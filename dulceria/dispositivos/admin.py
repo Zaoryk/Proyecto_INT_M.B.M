@@ -2,8 +2,11 @@ from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django import forms
 from accounts.models import RoleModulePermission
-from dispositivos.models import Bodega, Cliente, Costo, ListarPrecios, MovimientoInventario, OrdenDeCompra, OrdenProduccion, Pedido, Producto, Proveedor, Usuario
-
+from dispositivos.models import (
+    Usuario, Producto, Proveedor, ProductoProveedor, Bodega, Cliente, 
+    Costo, ListarPrecios, MovimientoInventario, OrdenDeCompra, 
+    OrdenProduccion, Pedido
+)
 
 class PermissionMixin:
     """
@@ -68,23 +71,52 @@ class PermissionMixin:
             can_delete=True
         ).exists()
 
+# Forms actualizados
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
         fields = '__all__'
         
-    def clean_precio(self):
-        precio = self.cleaned_data.get('precio')
-        if precio and precio < 0:
-            raise ValidationError("El precio no puede ser negativo.")
-        return precio
+    def clean_stock_minimo(self):
+        stock_minimo = self.cleaned_data.get('stock_minimo')
+        if stock_minimo and stock_minimo < 0:
+            raise ValidationError("El stock mínimo no puede ser negativo.")
+        return stock_minimo
         
-    def clean_stock(self):
-        stock = self.cleaned_data.get('stock')
-        if stock and stock < 0:
-            raise ValidationError("El stock no puede ser negativo.")
-        return stock
+    def clean_factor_conversion(self):
+        factor_conversion = self.cleaned_data.get('factor_conversion')
+        if factor_conversion and factor_conversion < 0:
+            raise ValidationError("El factor de conversión no puede ser negativo.")
+        return factor_conversion
+        
+    def clean_impuesto_iva(self):
+        impuesto_iva = self.cleaned_data.get('impuesto_iva')
+        if impuesto_iva and impuesto_iva < 0:
+            raise ValidationError("El impuesto IVA no puede ser negativo.")
+        return impuesto_iva
 
+class ProveedorForm(forms.ModelForm):
+    class Meta:
+        model = Proveedor
+        fields = '__all__'
+
+class ProductoProveedorForm(forms.ModelForm):
+    class Meta:
+        model = ProductoProveedor
+        fields = '__all__'
+    
+    def clean_cantidad(self):
+        cantidad = self.cleaned_data.get('cantidad')
+        if cantidad and cantidad < 0:
+            raise ValidationError("La cantidad no puede ser negativa.")
+        return cantidad
+
+class UsuarioForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = '__all__'
+
+# Forms existentes que se mantienen
 class MovimientoInventarioForm(forms.ModelForm):
     class Meta:
         model = MovimientoInventario
@@ -97,9 +129,10 @@ class MovimientoInventarioForm(forms.ModelForm):
         producto = cleaned_data.get('producto')
             
         if tipo == "Salida" and producto and cantidad:
-            if cantidad > producto.stock:
+            # Esta validación podría necesitar ajustarse según la nueva estructura
+            if hasattr(producto, 'stock') and cantidad > producto.stock:
                 raise ValidationError({
-                    'cantidad': f"No puedes registrar una salida mayor al stock disponible. Stock actual: {producto.stock}"
+                    'cantidad': f"No puedes registrar una salida mayor al stock disponible."
                 })
         
         if cantidad and cantidad <= 0:
@@ -153,44 +186,65 @@ class PedidoForm(forms.ModelForm):
             raise ValidationError("El monto total no puede ser negativo.")
         return monto_total
 
+# Inlines
+class ProductoProveedorInline(admin.TabularInline):
+    model = ProductoProveedor
+    extra = 1
+    form = ProductoProveedorForm
+
 class MovimientoInventarioInline(admin.TabularInline):
     model = MovimientoInventario
     extra = 1
-    fields = ("tipo", "fecha", "cantidad", "bodega") 
+    fields = ("tipo", "fecha", "cantidad", "bodega")
 
+# Admin classes para las nuevas tablas
+@admin.register(Usuario)
+class UsuarioAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'usuarios'
+    form = UsuarioForm
+    list_display = ("username", "email", "nombre", "apellido", "rol", "estado", "mfa_habilitado")
+    list_filter = ("rol", "estado", "mfa_habilitado")
+    search_fields = ("username", "email", "nombre", "apellido")
 
 @admin.register(Producto)
 class ProductoAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'productos'
     form = ProductoForm
-    list_display = ("nombre", "precio", "stock", "lote", "fecha_vencimiento")
-    list_filter = ("fecha_vencimiento",)
-    search_fields = ("nombre", "lote")
-    inlines = [MovimientoInventarioInline]
+    list_display = ("sku", "nombre", "categoria", "uom_compra", "uom_venta", "stock_minimo")
+    list_filter = ("categoria",)
+    search_fields = ("sku", "nombre", "categoria")
+    inlines = [ProductoProveedorInline, MovimientoInventarioInline]
 
-@admin.register(OrdenDeCompra)
-class OrdenDeCompraAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'orden_compra'
-    form = OrdenDeCompraForm
-    list_display = ("id", "proveedor", "fecha", "estado", "monto_total")
-    list_filter = ("estado", "fecha", "proveedor")
-    search_fields = ("id", "proveedor__nombre")
-    actions = ["marcar_en_proceso", "marcar_cerrada", "marcar_no_iniciado"]
+@admin.register(Proveedor)
+class ProveedorAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'proveedores'
+    form = ProveedorForm
+    list_display = ("rut_nif", "razon_social", "nombre_fantasia", "email", "estado", "usuario")
+    list_filter = ("estado", "pais")
+    search_fields = ("rut_nif", "razon_social", "nombre_fantasia", "email")
+    inlines = [ProductoProveedorInline]
 
-    @admin.action(description="Marcar seleccionadas como No iniciadas")
-    def marcar_no_iniciado(self, request, queryset):
-        updated = queryset.update(estado="no_iniciado")
-        self.message_user(request, f"{updated} órdenes marcadas como 'No iniciadas'.")
+@admin.register(ProductoProveedor)
+class ProductoProveedorAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'producto_proveedor'
+    form = ProductoProveedorForm
+    list_display = ("producto", "proveedor", "tipo_movimiento", "cantidad", "fecha_movimiento")
+    list_filter = ("tipo_movimiento", "fecha_movimiento")
+    search_fields = ("producto__nombre", "proveedor__razon_social")
 
-    @admin.action(description="Marcar seleccionadas como En Proceso")
-    def marcar_en_proceso(self, request, queryset):
-        updated = queryset.update(estado="en_proceso")
-        self.message_user(request, f"{updated} órdenes marcadas como 'En proceso'.")
+# Admin classes existentes que se mantienen (con pequeños ajustes)
+@admin.register(Bodega)
+class BodegaAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'bodegas'
+    list_display = ("nombre", "ubicacion")
+    search_fields = ("nombre", "ubicacion")
 
-    @admin.action(description="Marcar seleccionadas como Cerrada")
-    def marcar_cerrada(self, request, queryset):
-        updated = queryset.update(estado="cerrada")
-        self.message_user(request, f"{updated} órdenes marcadas como 'Cerradas'.")
+@admin.register(Cliente)
+class ClienteAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'clientes'
+    list_display = ("nombre", "tipo")
+    list_filter = ("tipo",)
+    search_fields = ("nombre",)
 
 @admin.register(Costo)
 class CostoAdmin(PermissionMixin, admin.ModelAdmin):
@@ -208,14 +262,6 @@ class ListarPreciosAdmin(PermissionMixin, admin.ModelAdmin):
     list_filter = ("canal", "temporada", "cliente")
     search_fields = ("cliente__nombre", "canal")
 
-@admin.register(Pedido)
-class PedidoAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'pedidos'
-    form = PedidoForm
-    list_display = ("idpedido", "fecha", "cliente", "monto_total", "usuario")
-    list_filter = ("fecha", "cliente", "usuario")
-    search_fields = ("cliente__nombre", "usuario__nombre")
-
 @admin.register(MovimientoInventario)
 class MovimientoInventarioAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'movimiento_inventario'
@@ -225,37 +271,33 @@ class MovimientoInventarioAdmin(PermissionMixin, admin.ModelAdmin):
     search_fields = ("producto__nombre", "bodega__nombre")
     
     def get_readonly_fields(self, request, obj=None):
-        # Si el movimiento existe, hacer el producto de solo lectura
         if obj:
             return ['producto']
         return []
 
+@admin.register(OrdenDeCompra)
+class OrdenDeCompraAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'orden_compra'
+    form = OrdenDeCompraForm
+    list_display = ("id", "proveedor", "fecha", "estado", "monto_total")
+    list_filter = ("estado", "fecha", "proveedor")
+    search_fields = ("id", "proveedor__razon_social")
+    actions = ["marcar_en_proceso", "marcar_cerrada", "marcar_no_iniciado"]
 
-@admin.register(Usuario)
-class UsuarioAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'usuarios'
-    list_display = ("nombre", "email", "rol")
-    list_filter = ("rol",)
-    search_fields = ("nombre", "email")
+    @admin.action(description="Marcar seleccionadas como No iniciadas")
+    def marcar_no_iniciado(self, request, queryset):
+        updated = queryset.update(estado="no_iniciado")
+        self.message_user(request, f"{updated} órdenes marcadas como 'No iniciadas'.")
 
-@admin.register(Proveedor)
-class ProveedorAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'proveedores'
-    list_display = ("nombre", "email", "contacto")
-    search_fields = ("nombre", "email")
+    @admin.action(description="Marcar seleccionadas como En Proceso")
+    def marcar_en_proceso(self, request, queryset):
+        updated = queryset.update(estado="en_proceso")
+        self.message_user(request, f"{updated} órdenes marcadas como 'En proceso'.")
 
-@admin.register(Bodega)
-class BodegaAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'bodegas'
-    list_display = ("nombre", "ubicacion")
-    search_fields = ("nombre", "ubicacion")
-
-@admin.register(Cliente)
-class ClienteAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'clientes'
-    list_display = ("nombre", "tipo")
-    list_filter = ("tipo",)
-    search_fields = ("nombre",)
+    @admin.action(description="Marcar seleccionadas como Cerrada")
+    def marcar_cerrada(self, request, queryset):
+        updated = queryset.update(estado="cerrada")
+        self.message_user(request, f"{updated} órdenes marcadas como 'Cerradas'.")
 
 @admin.register(OrdenProduccion)
 class OrdenProduccionAdmin(PermissionMixin, admin.ModelAdmin):
@@ -263,3 +305,11 @@ class OrdenProduccionAdmin(PermissionMixin, admin.ModelAdmin):
     list_display = ("id", "fechainicio", "fechafin", "estado", "producto", "usuario")
     list_filter = ("estado", "fechainicio", "fechafin")
     search_fields = ("producto__nombre", "usuario__nombre")
+
+@admin.register(Pedido)
+class PedidoAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'pedidos'
+    form = PedidoForm
+    list_display = ("idpedido", "fecha", "cliente", "monto_total", "usuario")
+    list_filter = ("fecha", "cliente", "usuario")
+    search_fields = ("cliente__nombre", "usuario__nombre")

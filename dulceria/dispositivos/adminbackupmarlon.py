@@ -1,5 +1,5 @@
 from django.contrib import admin
-from dispositivos.models import Bodega, Cliente, Costo, ListarPrecios, MovimientoInventario, OrdenDeCompra, OrdenProduccion, Pedido, Producto, Proveedor, Usuario
+from dulceria.dispositivos.modelsbackup import Bodega, Cliente, Costo, ListarPrecios, MovimientoInventario, OrdenDeCompra, OrdenProduccion, Pedido, Producto, Proveedor, Usuario
 
 class MovimientoInventarioInline(admin.TabularInline):
     model = MovimientoInventario
