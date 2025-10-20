@@ -150,12 +150,3 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.WARNING(f'No se pudo generar el resumen: {e}')
             )
-
-# Comando alternativo para desarrollo - carga fixtures específicos
-def cargar_fixture_rapido(fixture_file='fixtures_dulceria.json'):
-    """Función auxiliar para cargar fixtures rápidamente"""
-    if os.path.exists(fixture_file):
-        call_command('loaddata', fixture_file)
-        print(f"Fixture {fixture_file} cargado exitosamente!")
-    else:
-        print(f"Archivo {fixture_file} no encontrado")
