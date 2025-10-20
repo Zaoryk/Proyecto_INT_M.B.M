@@ -138,3 +138,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Configuraciones de sesión
+
+# duración de la cookie de sesión (en segundos)
+SESSION_COOKIE_AGE = 60*60*2 # 2 horas 
+# sesión expira al cerrar el navegador?
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+# cada vez que se hace una petición, se actualiza la expiración
+SESSION_SAVE_EVERY_REQUEST = False
+# seguridad de las cookies
+SESSION_COOKIE_SECURE = True # en producción con HTTPS
+# sólo enviar la cookie en el mismo sitio (protección CSRF) / Lax por defecto en Django
+SESSION_COOKIE_SAMESITE = 'Lax' # o 'Strict'/'None'(+Secure)
