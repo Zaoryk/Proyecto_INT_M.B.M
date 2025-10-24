@@ -23,7 +23,7 @@ from dispositivos.views import dashboard, formularioUsuario, gestionProductos, g
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("accounts.urls")),
-    path("dashboard", dashboard, name="dashboard"),
+    path("", dashboard, name="dashboard"),
     path("formulariousuario/", formularioUsuario, name="Formulario"),
     path("gestionproductos/", gestionProductos, name="Productos"),
     path("gestionproveedores/", gestionProveedores, name="Proveedores"),
