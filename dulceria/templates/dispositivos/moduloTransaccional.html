@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Módulo Transaccional (Inventario Productos-Proveedores)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container my-4">
+    <h4><strong>Módulo Transaccional (Inventario Productos-Proveedores)</strong></h4>
+    <p>Gestiona los <strong>movimientos de inventario</strong> y mantiene la trazabilidad:</p>
+    <ul>
+      <li><strong>Tipos de movimiento:</strong> ingresos, salidas, ajustes, devoluciones, transferencias.</li>
+      <li><strong>Datos del movimiento:</strong> fecha, tipo, producto, proveedor, bodega, cantidad.</li>
+      <li><strong>Control avanzado:</strong> manejo por lotes, series y fechas de vencimiento.</li>
+    </ul>
+
+    <!-- Indicadores resumen -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h6 class="card-title">Movimientos (hoy)</h6>
+            <span class="h5">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h6 class="card-title">Stock total demo</h6>
+            <span class="h5">8</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h6 class="card-title">Productos únicos</h6>
+            <span class="h5">1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULARIO DE MOVIMIENTO -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form>
+          <ul class="nav nav-tabs mb-3" id="movTab" role="tablist">
+            <li class="nav-item">
+              <button class="nav-link active" id="tab-datos" data-bs-toggle="tab"
+                data-bs-target="#datos-mov" type="button" role="tab">
+                1. Datos del movimiento
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="tab-avanzado" data-bs-toggle="tab"
+                data-bs-target="#control-avanzado" type="button" role="tab">
+                2. Control avanzado
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="tab-referencias" data-bs-toggle="tab"
+                data-bs-target="#referencias" type="button" role="tab">
+                3. Referencias/Observaciones
+              </button>
+            </li>
+          </ul>
+          <!-- Tab contenido -->
+          <div class="tab-content" id="movTabContent">
+            <!-- Tab 1 -->
+            <div class="tab-pane fade show active" id="datos-mov" role="tabpanel">
+              <div class="row mb-3">
+                <div class="col-md-3">
+                  <label class="form-label">Fecha</label>
+                  <input type="datetime-local" class="form-control" value="2025-09-11T15:18">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Tipo</label>
+                  <select class="form-select">
+                    <option>Seleccione...</option>
+                    <option>Ingreso</option>
+                    <option>Salida</option>
+                    <option>Ajuste</option>
+                    <option>Devolución</option>
+                    <option>Transferencia</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Producto</label>
+                  <input type="text" class="form-control" value="SKU-0001">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Cantidad</label>
+                  <input type="number" class="form-control">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Proveedor</label>
+                  <input type="text" class="form-control" placeholder="RUT o razón social">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Bodega</label>
+                  <input type="text" class="form-control" value="BOD-CENTRAL">
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary">Guardar movimiento</button>
+              <button type="reset" class="btn btn-secondary">Limpiar</button>
+            </div>
+            <!-- Tab 2 -->
+            <div class="tab-pane fade" id="control-avanzado" role="tabpanel">
+              <div class="row mb-3">
+                <div class="col-md-2 form-check ms-2">
+                  <input type="checkbox" class="form-check-input" id="checkLote">
+                  <label class="form-check-label" for="checkLote">Manejo por lotes</label>
+                </div>
+                <div class="col-md-2 form-check">
+                  <input type="checkbox" class="form-check-input" id="checkSerie">
+                  <label class="form-check-label" for="checkSerie">Manejo por series</label>
+                </div>
+                <div class="col-md-2 form-check">
+                  <input type="checkbox" class="form-check-input" id="checkPerecible">
+                  <label class="form-check-label" for="checkPerecible">Perecible (vencimiento)</label>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Lote</label>
+                  <input type="text" class="form-control" placeholder="L-2025-001">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Serie</label>
+                  <input type="text" class="form-control" placeholder="SN123456789">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Fecha vencimiento</label>
+                  <input type="date" class="form-control" placeholder="dd-mm-aaaa">
+                </div>
+              </div>
+              <small class="text-muted ms-2">
+                Las banderas (lote/serie/vencimiento) normalmente vienen desde la ficha del producto; aquí se permiten por demo.
+              </small>
+              <button type="button" class="btn btn-primary mt-3">Guardar movimiento</button>
+              <button type="reset" class="btn btn-secondary mt-3">Limpiar</button>
+            </div>
+            <!-- Tab 3 -->
+            <div class="tab-pane fade" id="referencias" role="tabpanel">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Doc. referencia</label>
+                  <input type="text" class="form-control" placeholder="OC-123 / FAC-456 / GUIA-789">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Motivo (ajustes/devoluciones)</label>
+                  <input type="text" class="form-control" placeholder="Diferencia inventario, devolución cliente, etc.">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Observaciones</label>
+                <textarea class="form-control" rows="2" placeholder="Notas de operación, recibo, daño, etc."></textarea>
+              </div>
+              <button type="button" class="btn btn-primary">Guardar movimiento</button>
+              <button type="reset" class="btn btn-secondary">Limpiar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Tabla de movimientos -->
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Movimientos</h5>
+        <div class="d-flex mb-2 flex-wrap align-items-center">
+          <input class="form-control me-2" type="text" placeholder="Buscar por SKU, pro..." style="max-width:175px;">
+          <select class="form-select me-2" style="max-width:130px;">
+            <option>Tipo: todos</option>
+            <option>Ingreso</option>
+            <option>Salida</option>
+            <option>Ajuste</option>
+            <option>Devolución</option>
+            <option>Transferencia</option>
+          </select>
+          <input class="form-control me-2" type="date" style="max-width:140px;">
+          <input class="form-control me-2" type="date" style="max-width:140px;">
+          <button class="btn btn-outline-primary">Exportar a Excel</button>
+        </div>
+        <table class="table table-bordered table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>SKU</th>
+              <th>Proveedor</th>
+              <th>Bodega</th>
+              <th>Cantidad</th>
+              <th>Lote</th>
+              <th>Serie</th>
+              <th>Vence</th>
+              <th>Doc Ref</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2025-09-10 09:30</td>
+              <td><span class="badge bg-success">ingreso</span></td>
+              <td>SKU-0001</td>
+              <td>76.543.210-5</td>
+              <td>BOD-CENTRAL</td>
+              <td>+10</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>OC-101</td>
+              <td>
+                <button class="btn btn-sm btn-secondary me-1">Editar</button>
+                <button class="btn btn-sm btn-danger">Eliminar</button>
+              </td>
+            </tr>
+            <tr>
+              <td>2025-09-10 15:00</td>
+              <td><span class="badge bg-danger">salida</span></td>
+              <td>SKU-0001</td>
+              <td>—</td>
+              <td>BOD-CENTRAL</td>
+              <td>-2</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>FAC-900</td>
+              <td>
+                <button class="btn btn-sm btn-secondary me-1">Editar</button>
+                <button class="btn btn-sm btn-danger">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

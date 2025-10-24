@@ -18,10 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from dispositivos.views import dashboard
+from dispositivos.views import dashboard, formularioUsuario, gestionProductos, gestionProveedores, moduloTransaccional
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("", include("accounts.urls")), # login/logout
-    path("", dashboard, name="dashboard"), # dashboard principal
+    path("", include("accounts.urls")),
+    path("dashboard", dashboard, name="dashboard"),
+    path("formulariousuario/", formularioUsuario, name="Formulario"),
+    path("gestionproductos/", gestionProductos, name="Productos"),
+    path("gestionproveedores/", gestionProveedores, name="Proveedores"),
+    path("modulotransaccional/", moduloTransaccional, name="Transaccional"),
 ]

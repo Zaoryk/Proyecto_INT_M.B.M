@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Módulo Proveedores (Maestro)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container my-4">
+    <div class="card mb-4">
+      <div class="card-body">
+        <form>
+          <ul class="nav nav-tabs mb-3" id="proveedorTab" role="tablist">
+            <li class="nav-item">
+              <button class="nav-link active" id="tab-id-contacto" data-bs-toggle="tab"
+                data-bs-target="#id-contacto" type="button" role="tab">
+                1. Identificación y contacto
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="tab-direccion" data-bs-toggle="tab"
+                data-bs-target="#direccion-comercial" type="button" role="tab">
+                2. Dirección y comercial
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="tab-relacion-productos" data-bs-toggle="tab"
+                data-bs-target="#relacion-productos" type="button" role="tab">
+                3. Relación con productos
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="proveedorTabContent">
+            <!-- Tab 1: Identificación y contacto -->
+            <div class="tab-pane fade show active" id="id-contacto" role="tabpanel">
+              <div class="row mb-3">
+                <div class="col-md-3">
+                  <label class="form-label">ID</label>
+                  <input type="text" class="form-control" value="(autogenerado)" readonly>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">RUT/NIF</label>
+                  <input type="text" class="form-control" value="76.543.210-5">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Razón social</label>
+                  <input type="text" class="form-control" value="Proveedor S.A.">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Nombre de fantasía</label>
+                  <input type="text" class="form-control" value="ProveeMax">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-control" value="contacto@proveedor.cl">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Teléfono</label>
+                  <input type="text" class="form-control" value="+56 2 2345 6789">
+                </div>
+                <div class="col-md-6 mt-3">
+                  <label class="form-label">Sitio Web</label>
+                  <input type="url" class="form-control" value="https://proveedor.cl">
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary">Guardar</button>
+              <button type="reset" class="btn btn-secondary">Limpiar</button>
+            </div>
+
+            <!-- Tab 2: Dirección y comercial -->
+            <div class="tab-pane fade" id="direccion-comercial" role="tabpanel">
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <label class="form-label">Dirección</label>
+                  <input type="text" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Ciudad</label>
+                  <input type="text" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">País</label>
+                  <input type="text" class="form-control">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <label class="form-label">Plazo de pago</label>
+                  <input type="text" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Moneda</label>
+                  <input type="text" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Descuentos</label>
+                  <input type="text" class="form-control">
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary">Guardar</button>
+              <button type="reset" class="btn btn-secondary">Limpiar</button>
+            </div>
+
+            <!-- Tab 3: Relación con productos -->
+            <div class="tab-pane fade" id="relacion-productos" role="tabpanel">
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <label class="form-label">Proveedor preferente</label>
+                  <select class="form-select">
+                    <option>Sí</option>
+                    <option>No</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Costos</label>
+                  <input type="text" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Lead time</label>
+                  <input type="text" class="form-control">
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary">Guardar</button>
+              <button type="reset" class="btn btn-secondary">Limpiar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tabla de proveedores -->
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Proveedores</h5>
+        <div class="d-flex mb-2">
+          <input class="form-control me-2" type="text" placeholder="Buscar por RUT/NIF o razón social..." style="max-width:250px;">
+          <button class="btn btn-outline-primary">Exportar a Excel</button>
+        </div>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>RUT/NIF</th>
+              <th>Razón social</th>
+              <th>Estado</th>
+              <th>Email</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>76.543.210-5</td>
+              <td>Proveedor Andino S.A.</td>
+              <td><span class="badge bg-success">ACTIVO</span></td>
+              <td>contacto@andespro.cl</td>
+              <td>
+                <button class="btn btn-sm btn-secondary me-2">Editar</button>
+                <button class="btn btn-sm btn-danger">Eliminar</button>
+              </td>
+            </tr>
+            <tr>
+              <td>55.111.222-3</td>
+              <td>Electro Patagon SpA</td>
+              <td><span class="badge bg-danger">BLOQUEADO</span></td>
+              <td>ventas@epat.cl</td>
+              <td>
+                <button class="btn btn-sm btn-secondary me-2">Editar</button>
+                <button class="btn btn-sm btn-danger">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
