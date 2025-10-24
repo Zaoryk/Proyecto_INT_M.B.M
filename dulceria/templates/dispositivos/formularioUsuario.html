@@ -1,163 +1,162 @@
 {% extends "accounts/base.html" %}
 {% block content %}
-<div>
-</div>
+<style>
+.card {
+  border-radius: 16px !important;
+}
+input, select {
+  border-radius: 8px !important;
+}
+.table th, .table td {
+  vertical-align: middle;
+}
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+.btn-acciones {
+  min-width: 85px;
+}
+</style>
 <div class="row">
-  <!-- Formulario usuario -->
+  <!-- Formulario Usuario -->
   <div class="col-md-4">
-    <div class="card mb-4">
+    <div class="card mb-4 shadow-sm border-0">
       <div class="card-body">
-        <h5 class="card-title mb-3">Formulario de Usuario</h5>
-        <form>
+        <h5 class="card-title mb-3 fw-bold">
+          {% if edit_mode %}Editar usuario{% else %}Nuevo usuario{% endif %}
+        </h5>
+        <form method="post" autocomplete="off">
+          {% csrf_token %}
+          {% if edit_mode %}
+            <input type="hidden" name="edit_id" value="{{ edit_id }}">
+          {% endif %}
           <div class="mb-3">
-            <label class="form-label">username <span class="text-muted small">(requerido, único)</span></label>
-            <input type="text" class="form-control" placeholder="j.cortes" required>
+            <label class="form-label">Username <span class="text-muted small">(requerido, único)</span></label>
+            <input type="text" class="form-control" name="username" value="{{ form.username.value|default_if_none:'' }}" required />
           </div>
           <div class="mb-3">
-            <label class="form-label">email <span class="text-muted small">(requerido, único)</span></label>
-            <input type="email" class="form-control" placeholder="usuario@dominio.com" required>
+            <label class="form-label">Email <span class="text-muted small">(requerido, único)</span></label>
+            <input type="email" class="form-control" name="email" value="{{ form.email.value|default_if_none:'' }}" required />
           </div>
           <div class="row">
             <div class="col">
-              <label class="form-label">nombres <span class="text-muted small">(requerido)</span></label>
-              <input type="text" class="form-control" placeholder="Jorge" required>
+              <label class="form-label">Nombres <span class="text-muted small">(requerido)</span></label>
+              <input type="text" class="form-control" name="nombre" value="{{ form.nombre.value|default_if_none:'' }}" required />
             </div>
             <div class="col">
-              <label class="form-label">apellidos <span class="text-muted small">(requerido)</span></label>
-              <input type="text" class="form-control" placeholder="Contés" required>
+              <label class="form-label">Apellidos <span class="text-muted small">(requerido)</span></label>
+              <input type="text" class="form-control" name="apellido" value="{{ form.apellido.value|default_if_none:'' }}" required />
             </div>
+          </div>
+          <div class="mb-3 mt-2">
+            <label class="form-label">Rol</label>
+            <select class="form-select" name="rol" required>
+              {% for value, text in form.rol.field.choices %}
+                <option value="{{ value }}"{% if form.rol.value == value %} selected{% endif %}>{{ text }}</option>
+              {% endfor %}
+            </select>
           </div>
           <div class="mb-3">
-            <label class="form-label">telefono <span class="text-muted small">(opcional)</span></label>
-            <input type="text" class="form-control" placeholder="+56 9 1234 5678">
+            <label class="form-label">Estado</label>
+            <select class="form-select" name="estado" required>
+              {% for value, text in form.estado.field.choices %}
+                <option value="{{ value }}"{% if form.estado.value == value %} selected{% endif %}>{{ text }}</option>
+              {% endfor %}
+            </select>
           </div>
-          <div class="mt-3 border-top pt-3">
-            <label class="form-label">Rol <span class="text-muted small">(requerido)</span></label>
-            <select class="form-select mb-2" required>
-              <option>Seleccione...</option>
-              <option>ADMIN</option>
-              <option>AUDITOR</option>
-              <option>OPERADOR</option>
+          <div class="mb-3">
+            <label class="form-label">MFA habilitado</label>
+            <select class="form-select" name="mfa_habilitado" required>
+              {% for value, text in form.mfa_habilitado.field.choices %}
+                <option value="{{ value }}"{% if form.mfa_habilitado.value == value %} selected{% endif %}>{{ text }}</option>
+              {% endfor %}
             </select>
-            <label class="form-label">estado <span class="text-muted small">(requerido; default: ACTIVO)</span></label>
-            <select class="form-select mb-2" required>
-              <option>ACTIVO</option>
-              <option>INACTIVO</option>
-              <option>BLOQUEADO</option>
-            </select>
-            <div class="mb-2">
-              <label class="form-label">MFA habilitado <span class="text-muted small">(requerido; default: 0)</span></label>
-              <select class="form-select">
-                <option value="0" selected>0 (deshabilitado)</option>
-                <option value="1">1 (habilitado)</option>
-              </select>
-            </div>
-            <div class="mb-2">
-              <label class="form-label">último acceso <span class="text-muted small">(solo lectura)</span></label>
-              <input type="text" class="form-control" readonly value="">
-            </div>
-            <div class="mb-2">
-              <label class="form-label">sesiones activas <span class="text-muted small">(solo lectura)</span></label>
-              <input type="number" class="form-control" readonly value="0">
-            </div>
           </div>
           <div class="d-flex justify-content-end mt-4">
-            <button type="submit" class="btn btn-primary me-2">Guardar</button>
-            <button type="reset" class="btn btn-secondary">Limpiar</button>
+            <button type="submit" class="btn btn-primary me-2">
+              {% if edit_mode %}Actualizar{% else %}Guardar{% endif %}
+            </button>
+            {% if edit_mode %}
+              <a href="{% url 'Formulario' %}" class="btn btn-outline-secondary">Cancelar</a>
+            {% else %}
+              <button type="reset" class="btn btn-outline-secondary">Limpiar</button>
+            {% endif %}
           </div>
         </form>
       </div>
     </div>
   </div>
-  
+
   <!-- Tabla de usuarios -->
   <div class="col-md-8">
-    <div class="card">
+    <div class="card shadow-sm border-0">
       <div class="card-body">
-        <h5 class="card-title mb-3">Usuarios</h5>
-        <div class="d-flex flex-wrap mb-3">
+        <h5 class="card-title mb-3 fw-bold">Usuarios</h5>
+        <div class="d-flex flex-wrap mb-3 gap-2">
           <input type="text" class="form-control me-2 mb-2" placeholder="Buscar por username" style="max-width:200px;">
-          <select class="form-select me-2 mb-2" style="max-width:120px;">
+          <select class="form-select me-2 mb-2" style="max-width:130px;">
             <option>Rol: todos</option>
             <option>ADMIN</option>
             <option>AUDITOR</option>
             <option>OPERADOR</option>
           </select>
-          <select class="form-select me-2 mb-2" style="max-width:140px;">
+          <select class="form-select me-2 mb-2" style="max-width:130px;">
             <option>Estado: todos</option>
             <option>ACTIVO</option>
             <option>INACTIVO</option>
             <option>BLOQUEADO</option>
           </select>
-          <button class="btn btn-outline-primary mb-2">Exportar a Excel</button>
+          <button class="btn btn-outline-primary ms-auto mb-2">
+            <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+          </button>
         </div>
         <div class="table-responsive">
-          <table class="table align-middle table-bordered">
+          <table class="table align-middle table-hover table-bordered rounded">
             <thead class="table-light">
-              <tr>
+              <tr class="align-middle text-center">
                 <th>Username</th>
                 <th>Email</th>
                 <th>Nombre</th>
                 <th>Apellido</th>
-                <th>Teléfono</th>
                 <th>Rol</th>
                 <th>Estado</th>
                 <th>MFA</th>
-                <th>Último acceso</th>
-                <th>Sesiones</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
+              {% for usuario in usuarios %}
               <tr>
-                <td>admin</td>
-                <td>admin@empresa.cl</td>
-                <td>Admin</td>
-                <td>Root</td>
-                <td>+56 9 1111 1111</td>
-                <td>ADMIN</td>
-                <td><span class="badge bg-success">ACTIVO</span></td>
-                <td>Sí</td>
-                <td>2025-09-10 08:12</td>
-                <td>2</td>
+                <td>{{ usuario.username }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>{{ usuario.nombre }}</td>
+                <td>{{ usuario.apellido }}</td>
+                <td>{{ usuario.get_rol_display }}</td>
                 <td>
-                  <button class="btn btn-sm btn-secondary mb-1">Editar</button>
-                  <button class="btn btn-sm btn-danger mb-1">Eliminar</button>
+                  <span class="badge {% if usuario.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %}">
+                    {{ usuario.get_estado_display }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge {% if usuario.mfa_habilitado == 'habilitado' %}bg-primary{% else %}bg-secondary{% endif %}">
+                    {{ usuario.get_mfa_habilitado_display }}
+                  </span>
+                </td>
+                <td class="text-center btn-acciones">
+                  <a href="?edit_id={{ usuario.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                  <a href="?delete_id={{ usuario.pk }}" class="btn btn-sm btn-outline-danger mb-1" title="Eliminar"
+                     onclick="return confirm('¿Seguro que deseas eliminar este usuario?')">
+                    <i class="bi bi-trash"></i>
+                  </a>
                 </td>
               </tr>
+              {% empty %}
               <tr>
-                <td>auditor1</td>
-                <td>auditor@empresa.cl</td>
-                <td>Ana</td>
-                <td>Revisor</td>
-                <td>—</td>
-                <td>AUDITOR</td>
-                <td><span class="badge bg-warning text-dark">INACTIVO</span></td>
-                <td>No</td>
-                <td>2025-08-31 19:44</td>
-                <td>0</td>
-                <td>
-                  <button class="btn btn-sm btn-secondary mb-1">Editar</button>
-                  <button class="btn btn-sm btn-danger mb-1">Eliminar</button>
-                </td>
+                <td colspan="8" class="text-center text-muted">Sin usuarios registrados.</td>
               </tr>
-              <tr>
-                <td>oper1</td>
-                <td>operador@empresa.cl</td>
-                <td>Oscar</td>
-                <td>Operaciones</td>
-                <td>+56 9 2222 2222</td>
-                <td>OPERADOR</td>
-                <td><span class="badge bg-danger">BLOQUEADO</span></td>
-                <td>No</td>
-                <td>—</td>
-                <td>0</td>
-                <td>
-                  <button class="btn btn-sm btn-secondary mb-1">Editar</button>
-                  <button class="btn btn-sm btn-danger mb-1">Eliminar</button>
-                </td>
-              </tr>
-              <!-- Más filas de usuarios si es necesario -->
+              {% endfor %}
             </tbody>
           </table>
         </div>
