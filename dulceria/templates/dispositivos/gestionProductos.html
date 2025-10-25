@@ -1,8 +1,27 @@
 {% extends "accounts/base.html" %}
 {% block content %}
-<div class="card mb-4">
+<style>
+.card {
+  border-radius: 16px !important;
+}
+input, select {
+  border-radius: 8px !important;
+}
+.table th, .table td {
+  vertical-align: middle;
+}
+</style>
+<div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
-    <form>
+    <h5 class="card-title mb-3 fw-bold">
+      {% if edit_mode %}Editar producto{% else %}Nuevo producto{% endif %}
+    </h5>
+    <form method="post" autocomplete="off">
+      {% csrf_token %}
+      {% if edit_mode %}
+        <input type="hidden" name="edit_id" value="{{ edit_id }}">
+      {% endif %}
+      
       <ul class="nav nav-tabs mb-3" id="productTab" role="tablist">
         <li class="nav-item">
           <button class="nav-link active" id="tab-id-precios" data-bs-toggle="tab"
@@ -16,191 +35,126 @@
             2. Stock y control
           </button>
         </li>
-        <li class="nav-item">
-          <button class="nav-link" id="tab-relaciones" data-bs-toggle="tab"
-            data-bs-target="#relaciones-derivados" type="button" role="tab">
-            3. Relaciones y derivados
-          </button>
-        </li>
       </ul>
-      <!-- Tabs contenido -->
+      
       <div class="tab-content" id="productTabContent">
-        <!-- Tab: Identificación y precios -->
+        <!-- Tab 1: Identificación y precios -->
         <div class="tab-pane fade show active" id="id-precios" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-3">
               <label class="form-label">SKU</label>
-              <input type="text" class="form-control" value="SKU-0001">
+              <input type="text" class="form-control" name="sku" value="{{ form.sku.value|default_if_none:'' }}" required />
             </div>
-            <div class="col-md-3">
-              <label class="form-label">EAN/UPC</label>
-              <input type="text" class="form-control" value="7891234567890">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Nombre</label>
-              <input type="text" class="form-control" value="Silla ergonómica">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Modelo</label>
-              <input type="text" class="form-control" value="MX-200">
-            </div>
-          </div>
-          <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label">Descripción</label>
-              <textarea class="form-control">Detalles del producto...</textarea>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Marca</label>
-              <input type="text" class="form-control" value="MarcaX">
+              <label class="form-label">Nombre</label>
+              <input type="text" class="form-control" name="nombre" value="{{ form.nombre.value|default_if_none:'' }}" required />
             </div>
             <div class="col-md-3">
               <label class="form-label">Categoría</label>
-              <select class="form-select">
-                <option value="">Seleccione...</option>
-                <option value="sillas">Sillas</option>
-              </select>
+              <input type="text" class="form-control" name="categoria" value="{{ form.categoria.value|default_if_none:'' }}" />
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-2">
               <label class="form-label">Unidad compra</label>
-              <select class="form-select">
-                <option>Seleccione...</option>
-              </select>
+              <input type="text" class="form-control" name="uom_compra" value="{{ form.uom_compra.value|default_if_none:'' }}" />
             </div>
             <div class="col-md-2">
               <label class="form-label">Unidad venta</label>
-              <select class="form-select">
-                <option>Seleccione...</option>
-              </select>
+              <input type="text" class="form-control" name="uom_venta" value="{{ form.uom_venta.value|default_if_none:'' }}" />
             </div>
             <div class="col-md-2">
               <label class="form-label">Conversión</label>
-              <input type="number" class="form-control" value="1">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Costo estándar</label>
-              <input type="text" class="form-control" placeholder="—" readonly>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Costo promedio</label>
-              <input type="text" class="form-control" placeholder="—" readonly>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Precio venta</label>
-              <input type="text" class="form-control">
+              <input type="number" class="form-control" name="factor_conversion" value="{{ form.factor_conversion.value|default_if_none:1 }}" />
             </div>
             <div class="col-md-2">
               <label class="form-label">IVA (%)</label>
-              <input type="number" class="form-control" value="19">
+              <input type="number" class="form-control" name="impuesto_iva" value="{{ form.impuesto_iva.value|default_if_none:0 }}" />
             </div>
           </div>
-          <button type="button" class="btn btn-primary">Guardar</button>
-          <button type="reset" class="btn btn-secondary">Limpiar</button>
         </div>
-        <!-- Tab: Stock y control -->
+        
+        <!-- Tab 2: Stock y control -->
         <div class="tab-pane fade" id="stock-control" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-3">
               <label class="form-label">Stock mínimo</label>
-              <input type="number" class="form-control" value="0">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Stock máximo</label>
-              <input type="number" class="form-control">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Punto de reorden</label>
-              <input type="number" class="form-control" placeholder="—">
+              <input type="number" class="form-control" name="stock_minimo" value="{{ form.stock_minimo.value|default_if_none:0 }}" />
             </div>
             <div class="col-md-3 form-check form-switch mt-4">
-              <input class="form-check-input" type="checkbox" id="perishableSwitch">
+              <input class="form-check-input" type="checkbox" name="perishable" id="perishableSwitch" 
+                {% if form.perishable.value %}checked{% endif %} value="1">
               <label class="form-check-label" for="perishableSwitch">Perecible</label>
             </div>
             <div class="col-md-3 form-check form-switch mt-4">
-              <input class="form-check-input" type="checkbox" id="controlLoteSwitch">
+              <input class="form-check-input" type="checkbox" name="lote" id="controlLoteSwitch" 
+                {% if form.lote.value %}checked{% endif %} value="1">
               <label class="form-check-label" for="controlLoteSwitch">Control por lote</label>
             </div>
-            <div class="col-md-3 form-check form-switch mt-4">
-              <input class="form-check-input" type="checkbox" id="controlSerieSwitch">
-              <label class="form-check-label" for="controlSerieSwitch">Control por serie</label>
-            </div>
           </div>
-          <button type="button" class="btn btn-primary">Guardar</button>
-          <button type="reset" class="btn btn-secondary">Limpiar</button>
         </div>
-        <!-- Tab: Relaciones y derivados -->
-        <div class="tab-pane fade" id="relaciones-derivados" role="tabpanel">
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label class="form-label">Imagen (URL)</label>
-              <input type="text" class="form-control" placeholder="https://.../foto.jpg">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Ficha técnica (URL)</label>
-              <input type="text" class="form-control" placeholder="https://.../ficha.pdf">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-3">
-              <label class="form-label">Stock actual</label>
-              <input type="number" class="form-control" value="0" readonly>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Alerta bajo stock</label>
-              <input type="text" class="form-control" value="Sí" readonly>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Alerta por vencer</label>
-              <input type="text" class="form-control" value="No" readonly>
-            </div>
-          </div>
-          <button type="button" class="btn btn-primary">Guardar</button>
-          <button type="reset" class="btn btn-secondary">Limpiar</button>
-        </div>
+      </div>
+      
+      <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-primary me-2">
+          {% if edit_mode %}Actualizar{% else %}Guardar{% endif %}
+        </button>
+        {% if edit_mode %}
+          <a href="{% url 'Productos' %}" class="btn btn-outline-secondary">Cancelar</a>
+        {% else %}
+          <button type="reset" class="btn btn-outline-secondary">Limpiar</button>
+        {% endif %}
       </div>
     </form>
   </div>
 </div>
+
 <!-- Tabla de Productos -->
-<div class="card">
+<div class="card shadow-sm border-0">
   <div class="card-body">
-    <h5 class="card-title">Productos</h5>
+    <h5 class="card-title fw-bold">Productos</h5>
     <div class="d-flex mb-2">
       <input class="form-control me-2" type="text" placeholder="Buscar por SKU o nombre..." style="max-width:250px;">
       <button class="btn btn-outline-primary">Exportar a Excel</button>
     </div>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>SKU</th>
-          <th>Nombre</th>
-          <th>Stock</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>SKU-0001</td>
-          <td>Silla ergonómica</td>
-          <td>8</td>
-          <td>
-            <button class="btn btn-sm btn-secondary me-2">Editar</button>
-            <button class="btn btn-sm btn-danger">Eliminar</button>
-          </td>
-        </tr>
-        <tr>
-          <td>SKU-0002</td>
-          <td>Café en grano 1kg</td>
-          <td>18</td>
-          <td>
-            <button class="btn btn-sm btn-secondary me-2">Editar</button>
-            <button class="btn btn-sm btn-danger">Eliminar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover rounded">
+        <thead class="table-light">
+          <tr class="text-center">
+            <th>SKU</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Stock mínimo</th>
+            <th>IVA (%)</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for producto in productos %}
+          <tr>
+            <td>{{ producto.sku }}</td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.categoria }}</td>
+            <td>{{ producto.stock_minimo }}</td>
+            <td>{{ producto.impuesto_iva }}%</td>
+            <td class="text-center">
+              <a href="?edit_id={{ producto.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              <a href="?delete_id={{ producto.pk }}" class="btn btn-sm btn-outline-danger mb-1" title="Eliminar"
+                 onclick="return confirm('¿Seguro que deseas eliminar este producto?')">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">Sin productos registrados.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 {% endblock %}

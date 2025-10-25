@@ -1,8 +1,27 @@
 {% extends "accounts/base.html" %}
 {% block content %}
-<div class="card mb-4">
+<style>
+.card {
+  border-radius: 16px !important;
+}
+input, select {
+  border-radius: 8px !important;
+}
+.table th, .table td {
+  vertical-align: middle;
+}
+</style>
+<div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
-    <form>
+    <h5 class="card-title mb-3 fw-bold">
+      {% if edit_mode %}Editar proveedor{% else %}Nuevo proveedor{% endif %}
+    </h5>
+    <form method="post" autocomplete="off">
+      {% csrf_token %}
+      {% if edit_mode %}
+        <input type="hidden" name="edit_id" value="{{ edit_id }}">
+      {% endif %}
+      
       <ul class="nav nav-tabs mb-3" id="proveedorTab" role="tablist">
         <li class="nav-item">
           <button class="nav-link active" id="tab-id-contacto" data-bs-toggle="tab"
@@ -16,151 +35,137 @@
             2. Dirección y comercial
           </button>
         </li>
-        <li class="nav-item">
-          <button class="nav-link" id="tab-relacion-productos" data-bs-toggle="tab"
-            data-bs-target="#relacion-productos" type="button" role="tab">
-            3. Relación con productos
-          </button>
-        </li>
       </ul>
+      
       <div class="tab-content" id="proveedorTabContent">
         <!-- Tab 1: Identificación y contacto -->
         <div class="tab-pane fade show active" id="id-contacto" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-3">
-              <label class="form-label">ID</label>
-              <input type="text" class="form-control" value="(autogenerado)" readonly>
-            </div>
-            <div class="col-md-3">
               <label class="form-label">RUT/NIF</label>
-              <input type="text" class="form-control" value="76.543.210-5">
+              <input type="text" class="form-control" name="rut_nif" value="{{ form.rut_nif.value|default_if_none:'' }}" required />
             </div>
             <div class="col-md-6">
               <label class="form-label">Razón social</label>
-              <input type="text" class="form-control" value="Proveedor S.A.">
+              <input type="text" class="form-control" name="razon_social" value="{{ form.razon_social.value|default_if_none:'' }}" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Estado</label>
+              <select class="form-select" name="estado" required>
+                {% for value, text in form.estado.field.choices %}
+                  <option value="{{ value }}"{% if form.estado.value == value %} selected{% endif %}>{{ text }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label">Nombre de fantasía</label>
-              <input type="text" class="form-control" value="ProveeMax">
+              <input type="text" class="form-control" name="nombre_fantasia" value="{{ form.nombre_fantasia.value|default_if_none:'' }}" />
             </div>
-            <div class="col-md-3">
+            <div class="col-md-6">
               <label class="form-label">Email</label>
-              <input type="email" class="form-control" value="contacto@proveedor.cl">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Teléfono</label>
-              <input type="text" class="form-control" value="+56 2 2345 6789">
-            </div>
-            <div class="col-md-6 mt-3">
-              <label class="form-label">Sitio Web</label>
-              <input type="url" class="form-control" value="https://proveedor.cl">
+              <input type="email" class="form-control" name="email" value="{{ form.email.value|default_if_none:'' }}" />
             </div>
           </div>
-          <button type="button" class="btn btn-primary">Guardar</button>
-          <button type="reset" class="btn btn-secondary">Limpiar</button>
         </div>
+        
         <!-- Tab 2: Dirección y comercial -->
         <div class="tab-pane fade" id="direccion-comercial" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-4">
-              <label class="form-label">Dirección</label>
-              <input type="text" class="form-control">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Ciudad</label>
-              <input type="text" class="form-control">
-            </div>
-            <div class="col-md-4">
               <label class="form-label">País</label>
-              <input type="text" class="form-control">
+              <input type="text" class="form-control" name="pais" value="{{ form.pais.value|default_if_none:'' }}" />
             </div>
-          </div>
-          <div class="row mb-3">
             <div class="col-md-4">
-              <label class="form-label">Plazo de pago</label>
-              <input type="text" class="form-control">
+              <label class="form-label">Condiciones de pago</label>
+              <input type="text" class="form-control" name="condiciones_pago" value="{{ form.condiciones_pago.value|default_if_none:'' }}" />
             </div>
             <div class="col-md-4">
               <label class="form-label">Moneda</label>
-              <input type="text" class="form-control">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Descuentos</label>
-              <input type="text" class="form-control">
+              <input type="text" class="form-control" name="moneda" value="{{ form.moneda.value|default_if_none:'' }}" />
             </div>
           </div>
-          <button type="button" class="btn btn-primary">Guardar</button>
-          <button type="reset" class="btn btn-secondary">Limpiar</button>
-        </div>
-        <!-- Tab 3: Relación con productos -->
-        <div class="tab-pane fade" id="relacion-productos" role="tabpanel">
           <div class="row mb-3">
-            <div class="col-md-4">
-              <label class="form-label">Proveedor preferente</label>
-              <select class="form-select">
-                <option>Sí</option>
-                <option>No</option>
+            <div class="col-md-12">
+              <label class="form-label">Usuario responsable</label>
+              <select class="form-select" name="usuario" required>
+                <option value="">Seleccione...</option>
+                {% for usuario in form.usuario.field.queryset %}
+                  <option value="{{ usuario.pk }}"{% if form.usuario.value == usuario.pk %} selected{% endif %}>
+                    {{ usuario.username }} - {{ usuario.nombre }} {{ usuario.apellido }}
+                  </option>
+                {% endfor %}
               </select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Costos</label>
-              <input type="text" class="form-control">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Lead time</label>
-              <input type="text" class="form-control">
-            </div>
           </div>
-          <button type="button" class="btn btn-primary">Guardar</button>
-          <button type="reset" class="btn btn-secondary">Limpiar</button>
         </div>
+      </div>
+      
+      <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-primary me-2">
+          {% if edit_mode %}Actualizar{% else %}Guardar{% endif %}
+        </button>
+        {% if edit_mode %}
+          <a href="{% url 'Proveedores' %}" class="btn btn-outline-secondary">Cancelar</a>
+        {% else %}
+          <button type="reset" class="btn btn-outline-secondary">Limpiar</button>
+        {% endif %}
       </div>
     </form>
   </div>
 </div>
+
 <!-- Tabla de proveedores -->
-<div class="card">
+<div class="card shadow-sm border-0">
   <div class="card-body">
-    <h5 class="card-title">Proveedores</h5>
+    <h5 class="card-title fw-bold">Proveedores</h5>
     <div class="d-flex mb-2">
       <input class="form-control me-2" type="text" placeholder="Buscar por RUT/NIF o razón social..." style="max-width:250px;">
       <button class="btn btn-outline-primary">Exportar a Excel</button>
     </div>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>RUT/NIF</th>
-          <th>Razón social</th>
-          <th>Estado</th>
-          <th>Email</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>76.543.210-5</td>
-          <td>Proveedor Andino S.A.</td>
-          <td><span class="badge bg-success">ACTIVO</span></td>
-          <td>contacto@andespro.cl</td>
-          <td>
-            <button class="btn btn-sm btn-secondary me-2">Editar</button>
-            <button class="btn btn-sm btn-danger">Eliminar</button>
-          </td>
-        </tr>
-        <tr>
-          <td>55.111.222-3</td>
-          <td>Electro Patagon SpA</td>
-          <td><span class="badge bg-danger">BLOQUEADO</span></td>
-          <td>ventas@epat.cl</td>
-          <td>
-            <button class="btn btn-sm btn-secondary me-2">Editar</button>
-            <button class="btn btn-sm btn-danger">Eliminar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover rounded">
+        <thead class="table-light">
+          <tr class="text-center">
+            <th>RUT/NIF</th>
+            <th>Razón social</th>
+            <th>Estado</th>
+            <th>Email</th>
+            <th>País</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for proveedor in proveedores %}
+          <tr>
+            <td>{{ proveedor.rut_nif }}</td>
+            <td>{{ proveedor.razon_social }}</td>
+            <td>
+              <span class="badge {% if proveedor.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %}">
+                {{ proveedor.get_estado_display }}
+              </span>
+            </td>
+            <td>{{ proveedor.email }}</td>
+            <td>{{ proveedor.pais }}</td>
+            <td class="text-center">
+              <a href="?edit_id={{ proveedor.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              <a href="?delete_id={{ proveedor.pk }}" class="btn btn-sm btn-outline-danger mb-1" title="Eliminar"
+                 onclick="return confirm('¿Seguro que deseas eliminar este proveedor?')">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">Sin proveedores registrados.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 {% endblock %}
