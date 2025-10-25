@@ -17,6 +17,7 @@ input, select {
   min-width: 85px;
 }
 </style>
+
 <div class="row">
   <!-- Formulario Usuario -->
   <div class="col-md-4">
@@ -25,19 +26,33 @@ input, select {
         <h5 class="card-title mb-3 fw-bold">
           {% if edit_mode %}Editar usuario{% else %}Nuevo usuario{% endif %}
         </h5>
-        <form method="post" autocomplete="off">
+
+        <form id="usuarioForm" method="post" autocomplete="off" onsubmit="return validarFormulario(event)">
           {% csrf_token %}
           {% if edit_mode %}
             <input type="hidden" name="edit_id" value="{{ edit_id }}">
           {% endif %}
+
           <div class="mb-3">
             <label class="form-label">Username <span class="text-muted small">(requerido, único)</span></label>
             <input type="text" class="form-control" name="username" value="{{ form.username.value|default_if_none:'' }}" required />
           </div>
+
           <div class="mb-3">
             <label class="form-label">Email <span class="text-muted small">(requerido, único)</span></label>
             <input type="email" class="form-control" name="email" value="{{ form.email.value|default_if_none:'' }}" required />
           </div>
+
+          <div class="mb-3">
+            <label class="form-label">Contraseña <span class="text-muted small">(mínimo 8 caracteres, 1 mayúscula y 1 número)</span></label>
+            <div class="input-group">
+              <input type="password" class="form-control" name="password" id="passwordField" placeholder="Ingrese una contraseña segura" required>
+              <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+
           <div class="row">
             <div class="col">
               <label class="form-label">Nombres <span class="text-muted small">(requerido)</span></label>
@@ -48,6 +63,7 @@ input, select {
               <input type="text" class="form-control" name="apellido" value="{{ form.apellido.value|default_if_none:'' }}" required />
             </div>
           </div>
+
           <div class="mb-3 mt-2">
             <label class="form-label">Rol</label>
             <select class="form-select" name="rol" required>
@@ -56,6 +72,7 @@ input, select {
               {% endfor %}
             </select>
           </div>
+
           <div class="mb-3">
             <label class="form-label">Estado</label>
             <select class="form-select" name="estado" required>
@@ -64,6 +81,7 @@ input, select {
               {% endfor %}
             </select>
           </div>
+
           <div class="mb-3">
             <label class="form-label">MFA habilitado</label>
             <select class="form-select" name="mfa_habilitado" required>
@@ -72,6 +90,7 @@ input, select {
               {% endfor %}
             </select>
           </div>
+
           <div class="d-flex justify-content-end mt-4">
             <button type="submit" class="btn btn-primary me-2">
               {% if edit_mode %}Actualizar{% else %}Guardar{% endif %}
@@ -92,6 +111,8 @@ input, select {
     <div class="card shadow-sm border-0">
       <div class="card-body">
         <h5 class="card-title mb-3 fw-bold">Usuarios</h5>
+
+        <!-- 🔍 Filtros -->
         <div class="d-flex flex-wrap mb-3 gap-2">
           <input type="text" class="form-control me-2 mb-2" placeholder="Buscar por username" style="max-width:200px;">
           <select class="form-select me-2 mb-2" style="max-width:130px;">
@@ -110,14 +131,16 @@ input, select {
             <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
           </button>
         </div>
+
         <div class="table-responsive">
           <table class="table align-middle table-hover table-bordered rounded">
-            <thead class="table-light">
-              <tr class="align-middle text-center">
+            <thead class="table-light text-center">
+              <tr>
                 <th>Username</th>
                 <th>Email</th>
                 <th>Nombre</th>
                 <th>Apellido</th>
+                <th>Contraseña</th>
                 <th>Rol</th>
                 <th>Estado</th>
                 <th>MFA</th>
@@ -131,6 +154,13 @@ input, select {
                 <td>{{ usuario.email }}</td>
                 <td>{{ usuario.nombre }}</td>
                 <td>{{ usuario.apellido }}</td>
+                <td class="text-monospace small text-break" style="max-width:250px;">
+                  {% if usuario.password %}
+                    {{ usuario.password }}
+                  {% else %}
+                    <span class="text-muted">Sin contraseña</span>
+                  {% endif %}
+                </td>
                 <td>{{ usuario.get_rol_display }}</td>
                 <td>
                   <span class="badge {% if usuario.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %}">
@@ -153,9 +183,7 @@ input, select {
                 </td>
               </tr>
               {% empty %}
-              <tr>
-                <td colspan="8" class="text-center text-muted">Sin usuarios registrados.</td>
-              </tr>
+              <tr><td colspan="9" class="text-center text-muted">Sin usuarios registrados.</td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -164,4 +192,83 @@ input, select {
     </div>
   </div>
 </div>
+
+{% verbatim %}
+<script>
+function validarFormulario(e) {
+  e.preventDefault();
+  const form = document.getElementById("usuarioForm");
+
+  const username = form.username.value.trim();
+  const email = form.email.value.trim();
+  const password = form.password.value.trim();
+  const nombre = form.nombre.value.trim();
+  const apellido = form.apellido.value.trim();
+  const rol = form.rol.value.trim();
+  const estado = form.estado.value.trim();
+  const mfa = form.mfa_habilitado.value.trim();
+
+  const faltantes = [];
+  if (!username) faltantes.push("Username");
+  if (!email) faltantes.push("Email");
+  if (!password) faltantes.push("Contraseña");
+  if (!nombre) faltantes.push("Nombres");
+  if (!apellido) faltantes.push("Apellidos");
+  if (!rol) faltantes.push("Rol");
+  if (!estado) faltantes.push("Estado");
+  if (!mfa) faltantes.push("MFA habilitado");
+
+  if (faltantes.length > 0) {
+    Swal.fire({
+      icon: "warning",
+      title: "Campos obligatorios faltantes",
+      html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>"
+    });
+    return false;
+  }
+
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(email)) {
+    Swal.fire({
+      icon: "error",
+      title: "Correo inválido",
+      text: "Debe tener un dominio válido (.com, .cl, .org, etc)."
+    });
+    return false;
+  }
+
+  const passRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+  if (!passRegex.test(password)) {
+    Swal.fire({
+      icon: "error",
+      title: "Contraseña insegura",
+      text: "Debe tener al menos 8 caracteres, una mayúscula y un número."
+    });
+    return false;
+  }
+
+  Swal.fire({
+    icon: "success",
+    title: "Formulario válido",
+    text: "Datos correctos.",
+    showConfirmButton: false,
+    timer: 1200
+  }).then(() => form.submit());
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.getElementById("togglePassword");
+  const passwordField = document.getElementById("passwordField");
+
+  if (toggleBtn && passwordField) {
+    toggleBtn.addEventListener("click", () => {
+      const isPassword = passwordField.type === "password";
+      passwordField.type = isPassword ? "text" : "password";
+      toggleBtn.innerHTML = isPassword ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+    });
+  }
+});
+</script>
+{% endverbatim %}
+
 {% endblock %}
