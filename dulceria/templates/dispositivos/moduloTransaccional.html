@@ -9,7 +9,6 @@ input, select {
 }
 </style>
 
-<!-- Tarjetas de métricas -->
 <div class="row mb-4">
   <div class="col-md-4">
     <div class="card text-center shadow-sm">
@@ -43,7 +42,8 @@ input, select {
     <h5 class="card-title mb-3 fw-bold">
       {% if edit_mode %}Editar movimiento{% else %}Nuevo movimiento{% endif %}
     </h5>
-    <form method="post" autocomplete="off">
+
+    <form id="movimientoForm" method="post" autocomplete="off" onsubmit="return validarMovimiento(event)">
       {% csrf_token %}
       {% if edit_mode %}
         <input type="hidden" name="edit_id" value="{{ edit_id }}">
@@ -53,7 +53,7 @@ input, select {
         <div class="col-md-3">
           <label class="form-label">Fecha</label>
           <input type="datetime-local" class="form-control" name="fecha_movimiento" 
-                 value="{% if form.fecha_movimiento.value %}{{ form.fecha_movimiento.value|date:'Y-m-d\TH:i' }}{% endif %}" required />
+                 value="{% if form.fecha_movimiento.value %}{{ form.fecha_movimiento.value|date:'Y-m-d\\TH:i' }}{% endif %}" required />
         </div>
         <div class="col-md-3">
           <label class="form-label">Tipo</label>
@@ -77,7 +77,8 @@ input, select {
         </div>
         <div class="col-md-3">
           <label class="form-label">Cantidad</label>
-          <input type="number" class="form-control" name="cantidad" value="{{ form.cantidad.value|default_if_none:'' }}" required />
+          <input type="number" class="form-control" name="cantidad" id="cantidadInput" 
+                 value="{{ form.cantidad.value|default_if_none:'' }}" min="1" max="1000" required />
         </div>
       </div>
       <div class="row mb-3">
@@ -168,4 +169,79 @@ input, select {
     </div>
   </div>
 </div>
+
+{% verbatim %}
+<script>
+function validarMovimiento(e) {
+  e.preventDefault();
+  const form = document.getElementById("movimientoForm");
+  const fecha = form.fecha_movimiento.value.trim();
+  const tipo = form.tipo_movimiento.value.trim();
+  const producto = form.producto.value.trim();
+  const cantidad = parseInt(form.cantidad.value.trim());
+  const proveedor = form.proveedor.value.trim();
+
+  const faltantes = [];
+  if (!fecha) faltantes.push("Fecha");
+  if (!tipo) faltantes.push("Tipo de movimiento");
+  if (!producto) faltantes.push("Producto");
+  if (!proveedor) faltantes.push("Proveedor");
+  if (!cantidad) faltantes.push("Cantidad");
+
+  if (faltantes.length > 0) {
+    Swal.fire({
+      icon: "warning",
+      title: "Campos obligatorios faltantes",
+      html: "<ul style='text-align:left;margin:0;'>" +
+            faltantes.map(f => "<li>" + f + "</li>").join("") +
+            "</ul>"
+    });
+    return false;
+  }
+
+  if (isNaN(cantidad) || cantidad <= 0) {
+    Swal.fire({
+      icon: "error",
+      title: "Cantidad inválida",
+      text: "Debe ingresar una cantidad mayor que 0."
+    });
+    return false;
+  }
+
+  if (cantidad > 1000) {
+    Swal.fire({
+      icon: "error",
+      title: "Cantidad excedida",
+      text: "La cantidad máxima permitida es 1000 unidades."
+    });
+    return false;
+  }
+
+  Swal.fire({
+    icon: "success",
+    title: "Movimiento válido",
+    text: "Datos correctos.",
+    showConfirmButton: false,
+    timer: 1000
+  }).then(() => form.submit());
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const cantidadInput = document.getElementById("cantidadInput");
+  cantidadInput.addEventListener("input", () => {
+    if (cantidadInput.value > 1000) {
+      cantidadInput.value = 1000;
+      Swal.fire({
+        icon: "info",
+        title: "Límite alcanzado",
+        text: "La cantidad máxima permitida es 1000.",
+        timer: 1200,
+        showConfirmButton: false
+      });
+    }
+  });
+});
+</script>
+{% endverbatim %}
+
 {% endblock %}

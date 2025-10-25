@@ -4,7 +4,7 @@ from dispositivos.models import Usuario, Proveedor, Producto, ProductoProveedor
 class UsuarioForm(forms.ModelForm):
     class Meta:
         model = Usuario
-        fields = ['username', 'email', 'nombre', 'apellido', 'rol', 'estado', 'mfa_habilitado']
+        fields = ['username', 'email', 'password', 'nombre', 'apellido', 'rol', 'estado', 'mfa_habilitado']
 
 
 class ProveedorForm(forms.ModelForm):
