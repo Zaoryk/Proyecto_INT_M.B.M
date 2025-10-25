@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from dispositivos.models import Usuario, Producto, Proveedor, MovimientoInventario
+from dispositivos.models import Usuario, Producto, Proveedor, ProductoProveedor
 from dispositivos.forms import UsuarioForm
 # Create your views here.
 from django.contrib.auth.decorators import login_required
@@ -13,10 +13,9 @@ def dashboard(request):
     usuarios_count = Usuario.objects.count()
     productos_count = Producto.objects.count()
     proveedores_count = Proveedor.objects.count()
-    movimientos_count = MovimientoInventario.objects.count()
+    movimientos_count = ProductoProveedor.objects.count()
     
     # Últimos movimientos/actividad para el timeline
-    ultimos_movimientos = MovimientoInventario.objects.select_related('producto').order_by('-fecha')[:3]
     
     # Últimos usuarios creados
     ultimos_usuarios = Usuario.objects.order_by('-idUsuario')[:3]
@@ -27,7 +26,6 @@ def dashboard(request):
         'productos_count': productos_count,
         'proveedores_count': proveedores_count,
         'movimientos_count': movimientos_count,
-        'ultimos_movimientos': ultimos_movimientos,
         'ultimos_usuarios': ultimos_usuarios,
     }
     return render(request, "dispositivos/dashboard.html", context)
