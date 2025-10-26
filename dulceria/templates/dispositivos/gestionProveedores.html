@@ -20,8 +20,7 @@ input, select {
     <h5 class="card-title mb-3 fw-bold">
       {% if edit_mode %}Editar proveedor{% else %}Nuevo proveedor{% endif %}
     </h5>
-
-    <form id="proveedorForm" method="post" autocomplete="off" onsubmit="return validarProveedor(event)">
+    <form id="proveedorForm" method="post" autocomplete="off" novalidate>
       {% csrf_token %}
       {% if edit_mode %}
         <input type="hidden" name="edit_id" value="{{ edit_id }}">
@@ -29,12 +28,14 @@ input, select {
 
       <ul class="nav nav-tabs mb-3" id="proveedorTab" role="tablist">
         <li class="nav-item">
-          <button class="nav-link active" id="tab-id-contacto" data-bs-toggle="tab" data-bs-target="#id-contacto" type="button" role="tab">
+          <button class="nav-link active" id="tab-id-contacto" data-bs-toggle="tab"
+            data-bs-target="#id-contacto" type="button" role="tab">
             1. Identificación y contacto
           </button>
         </li>
         <li class="nav-item">
-          <button class="nav-link" id="tab-direccion" data-bs-toggle="tab" data-bs-target="#direccion-comercial" type="button" role="tab">
+          <button class="nav-link" id="tab-direccion" data-bs-toggle="tab"
+            data-bs-target="#direccion-comercial" type="button" role="tab">
             2. Dirección y comercial
           </button>
         </li>
@@ -46,7 +47,7 @@ input, select {
             <div class="col-md-3">
               <label class="form-label">RUT/NIF</label>
               <input type="text" class="form-control" name="rut_nif" id="rutField"
-                     value="{{ form.rut_nif.value|default_if_none:'' }}" maxlength="12" required />
+                  value="{{ form.rut_nif.value|default_if_none:'' }}" maxlength="12" required />
             </div>
             <div class="col-md-6">
               <label class="form-label">Razón social</label>
@@ -61,7 +62,6 @@ input, select {
               </select>
             </div>
           </div>
-
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label">Nombre de fantasía</label>
@@ -69,11 +69,10 @@ input, select {
             </div>
             <div class="col-md-6">
               <label class="form-label">Email</label>
-              <input type="email" class="form-control" name="email" value="{{ form.email.value|default_if_none:'' }}" />
+              <input type="text" class="form-control" name="email" id="emailField" value="{{ form.email.value|default_if_none:'' }}" />
             </div>
           </div>
         </div>
-
         <div class="tab-pane fade" id="direccion-comercial" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-4">
@@ -89,7 +88,6 @@ input, select {
               <input type="text" class="form-control" name="moneda" value="{{ form.moneda.value|default_if_none:'' }}" />
             </div>
           </div>
-
           <div class="row mb-3">
             <div class="col-md-12">
               <label class="form-label">Usuario responsable</label>
@@ -120,6 +118,7 @@ input, select {
   </div>
 </div>
 
+<!-- Tabla de proveedores -->
 <div class="card shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold">Proveedores</h5>
@@ -127,7 +126,6 @@ input, select {
       <input class="form-control me-2" type="text" placeholder="Buscar por RUT/NIF o razón social..." style="max-width:250px;">
       <button class="btn btn-outline-primary"><i class="bi bi-file-earmark-excel"></i> Exportar a Excel</button>
     </div>
-
     <div class="table-responsive">
       <table class="table table-bordered table-hover rounded">
         <thead class="table-light">
@@ -156,8 +154,7 @@ input, select {
               <a href="?edit_id={{ proveedor.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
                 <i class="bi bi-pencil-square"></i>
               </a>
-              <a href="?delete_id={{ proveedor.pk }}" class="btn btn-sm btn-outline-danger mb-1" title="Eliminar"
-                 onclick="return confirm('¿Seguro que deseas eliminar este proveedor?')">
+              <a href="?delete_id={{ proveedor.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
                 <i class="bi bi-trash"></i>
               </a>
             </td>
@@ -172,103 +169,112 @@ input, select {
     </div>
   </div>
 </div>
+{% endblock %}
 
-{% verbatim %}
+<!-- SweetAlert2 para errores de backend -->
+{% if form.errors %}
 <script>
-function validarProveedor(e) {
-  e.preventDefault();
-  const form = document.getElementById("proveedorForm");
-  const rut = form.rut_nif.value.trim();
-  const razon = form.razon_social.value.trim();
-  const estado = form.estado.value.trim();
-  const email = form.email.value.trim();
-  const usuario = form.usuario.value.trim();
-
-  const faltantes = [];
-  if (!rut) faltantes.push("RUT/NIF");
-  if (!razon) faltantes.push("Razón social");
-  if (!estado) faltantes.push("Estado");
-  if (!usuario) faltantes.push("Usuario responsable");
-
-  if (faltantes.length > 0) {
-    Swal.fire({
-      icon: "warning",
-      title: "Campos obligatorios faltantes",
-      html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>"
-    });
-    return false;
-  }
-
-  if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
-    Swal.fire({
-      icon: "error",
-      title: "Correo inválido",
-      text: "Debe tener un dominio válido como .com, .cl, .org, etc."
-    });
-    return false;
-  }
-
-  const limpio = rut.replace(/[^\dkK]/g, "");
-  const cuerpo = limpio.slice(0, -1);
-  const dv = limpio.slice(-1).toUpperCase();
-
-  if (!/^[\dkK]$/.test(dv)) {
-    Swal.fire({
-      icon: "error",
-      title: "Dígito verificador inválido",
-      text: "El dígito verificador solo puede ser un número o la letra K."
-    });
-    return false;
-  }
-
-  const esK = dv === "K";
-  const largoEsperado = esK ? 8 : 9;
-  if (cuerpo.length !== largoEsperado) {
-    Swal.fire({
-      icon: "error",
-      title: "RUT incompleto",
-      text: esK
-        ? "El RUT con verificador K debe tener 8 dígitos antes del guion (ej: 12.312.412-K)."
-        : "El RUT con verificador numérico debe tener 9 dígitos antes del guion (ej: 12.345.678-5)."
-    });
-    return false;
-  }
-
+document.addEventListener("DOMContentLoaded", function() {
   Swal.fire({
-    icon: "success",
-    title: "Formulario válido",
-    text: "Datos correctos.",
-    showConfirmButton: false,
-    timer: 1200
-  }).then(() => form.submit());
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const rutInput = document.getElementById("rutField");
-  if (!rutInput) return;
-
-  rutInput.addEventListener("input", () => {
-    let value = rutInput.value.replace(/[^\dkK]/g, "");
-    if (value.length > 9) value = value.slice(0, 9);
-    rutInput.value = value;
-  });
-
-  rutInput.addEventListener("blur", () => {
-    let value = rutInput.value.replace(/[^\dkK]/g, "");
-    if (value.length >= 8) {
-      let cuerpo = value.slice(0, -1);
-      let dv = value.slice(-1).toUpperCase();
-      let formateado = "";
-      while (cuerpo.length > 3) {
-        formateado = "." + cuerpo.slice(-3) + formateado;
-        cuerpo = cuerpo.slice(0, -3);
-      }
-      formateado = cuerpo + formateado + "-" + dv;
-      rutInput.value = formateado;
-    }
+    icon: 'error',
+    title: 'Errores en el formulario',
+    html: `{% for field in form %}
+              {% if field.errors %}
+                <strong>{{ field.label }}:</strong> {{ field.errors|join:", " }}<br>
+              {% endif %}
+           {% endfor %}`,
+    confirmButtonText: 'Aceptar'
   });
 });
 </script>
-{% endverbatim %}
+{% endif %}
 
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Confirmación visual de borrado
+  document.querySelectorAll('.delete-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'warning',
+        title: '¿Seguro de eliminar?',
+        text: '¡Esta acción no se puede deshacer!',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = btn.getAttribute('href');
+        }
+      });
+    });
+  });
+
+  // Validación visual
+  const form = document.getElementById("proveedorForm");
+  if (form) {
+    form.setAttribute("novalidate", "novalidate");
+    form.onsubmit = function(e) {
+      const rut = form.rut_nif.value.trim();
+      const razon = form.razon_social.value.trim();
+      const estado = form.estado.value.trim();
+      const email = form.email.value.trim();
+      const usuario = form.usuario.value.trim();
+
+      const faltantes = [];
+      if (!rut) faltantes.push("RUT/NIF");
+      if (!razon) faltantes.push("Razón social");
+      if (!estado) faltantes.push("Estado");
+      if (!usuario) faltantes.push("Usuario responsable");
+
+      if (faltantes.length > 0) {
+        e.preventDefault();
+        Swal.fire({
+          icon: "warning",
+          title: "Campos obligatorios faltantes",
+          html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>"
+        });
+        return false;
+      }
+      if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+        e.preventDefault();
+        Swal.fire({
+          icon: "error",
+          title: "Correo inválido",
+          text: "Debe tener un dominio válido como .com, .cl, .org, etc."
+        });
+        return false;
+      }
+      return true;
+    }
+  }
+
+  // Formato RUT
+  const rutInput = document.getElementById("rutField");
+  if (rutInput) {
+    rutInput.addEventListener("input", function() {
+      let value = rutInput.value.replace(/[^\dkK]/g, "");
+      if (value.length > 9) value = value.slice(0, 9);
+      rutInput.value = value;
+    });
+    rutInput.addEventListener("blur", function() {
+      let value = rutInput.value.replace(/[^\dkK]/g, "");
+      if (value.length >= 8) {
+        let cuerpo = value.slice(0, -1);
+        let dv = value.slice(-1).toUpperCase();
+        let formateado = "";
+        while (cuerpo.length > 3) {
+          formateado = "." + cuerpo.slice(-3) + formateado;
+          cuerpo = cuerpo.slice(0, -3);
+        }
+        formateado = cuerpo + formateado + "-" + dv;
+        rutInput.value = formateado;
+      }
+    });
+  }
+});
+</script>
 {% endblock %}
