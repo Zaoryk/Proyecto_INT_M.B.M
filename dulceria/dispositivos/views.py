@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from dispositivos.models import Usuario, Producto, Proveedor, ProductoProveedor
 from dispositivos.forms import UsuarioForm, ProveedorForm, ProductoForm, ProductoProveedorForm
+from django.core.paginator import Paginator
 # Create your views here.
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -157,7 +158,6 @@ def moduloTransaccional(request):
         movimiento_to_edit = get_object_or_404(ProductoProveedor, pk=request.GET.get("edit_id"))
         form = ProductoProveedorForm(instance=movimiento_to_edit)
         edit_mode = True
-    # Crear o actualizar movimiento
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         if edit_id:
@@ -170,7 +170,6 @@ def moduloTransaccional(request):
         if form.is_valid():
             form.save()
             return redirect("Transaccional")
-    # Eliminar movimiento
     elif request.method == "GET" and "delete_id" in request.GET:
         ProductoProveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Transaccional")
@@ -178,16 +177,28 @@ def moduloTransaccional(request):
         form = ProductoProveedorForm()
         edit_mode = False
 
-    movimientos = ProductoProveedor.objects.select_related('producto', 'proveedor').all()
-    
-    # Métricas
+    # Soporte para 'ver por': show = 10, 50, 100
+    show = request.GET.get('show', 10)
+    try:
+        show = int(show)
+        if show not in [10, 50, 100]:
+            show = 10
+    except:
+        show = 10
+
+    movimientos_query = ProductoProveedor.objects.select_related('producto', 'proveedor').all().order_by('-fecha_movimiento')
+    paginator = Paginator(movimientos_query, show)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     movimientos_hoy = ProductoProveedor.objects.filter(fecha_movimiento__date=timezone.now().date()).count()
     productos_count = Producto.objects.count()
-    
+
     return render(request, "dispositivos/moduloTransaccional.html", {
         "visitas": visitas,
         "form": form,
-        "movimientos": movimientos,
+        "page_obj": page_obj,
+        "show": show,  # Para que el select quede sincronizado
         "movimientos_hoy": movimientos_hoy,
         "productos_count": productos_count,
         "edit_mode": edit_mode if "edit_mode" in locals() else False,
