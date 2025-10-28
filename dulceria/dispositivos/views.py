@@ -1,26 +1,23 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from dispositivos.models import Usuario, Producto, Proveedor, ProductoProveedor
 from dispositivos.forms import UsuarioForm, ProveedorForm, ProductoForm, ProductoProveedorForm
-# Create your views here.
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.db.models import Q
+
 
 @login_required
 def dashboard(request):
     visitas = request.session.get('visitas', 0)
     request.session['visitas'] = visitas + 1
-    
-    # Conteo de registros
+
     usuarios_count = Usuario.objects.count()
     productos_count = Producto.objects.count()
     proveedores_count = Proveedor.objects.count()
     movimientos_count = ProductoProveedor.objects.count()
-    
-    # Últimos movimientos/actividad para el timeline
-    
-    # Últimos usuarios creados
+
     ultimos_usuarios = Usuario.objects.order_by('-idUsuario')[:3]
-    
+
     context = {
         'visitas': visitas,
         'usuarios_count': usuarios_count,
@@ -31,16 +28,33 @@ def dashboard(request):
     }
     return render(request, "dispositivos/dashboard.html", context)
 
+
+# -------------------------------------------------------------
+# USUARIOS
+# -------------------------------------------------------------
 def formularioUsuario(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
-    # Editar usuario (por ID en GET)
+    # 🔍 Búsqueda / filtros
+    search = request.GET.get("buscar", "")
+    rol_filter = request.GET.get("rol", "")
+    estado_filter = request.GET.get("estado", "")
+
+    usuarios = Usuario.objects.all()
+    if search:
+        usuarios = usuarios.filter(Q(username__icontains=search) | Q(nombre__icontains=search))
+    if rol_filter:
+        usuarios = usuarios.filter(rol__iexact=rol_filter)
+    if estado_filter:
+        usuarios = usuarios.filter(estado__iexact=estado_filter)
+
+    # CRUD
     if request.method == "GET" and "edit_id" in request.GET:
         user_to_edit = get_object_or_404(Usuario, pk=request.GET.get("edit_id"))
         form = UsuarioForm(instance=user_to_edit)
         edit_mode = True
-    # Crear o actualizar usuario
+
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         if edit_id:
@@ -53,7 +67,7 @@ def formularioUsuario(request):
         if form.is_valid():
             form.save()
             return redirect("Formulario")
-    # Eliminar usuario
+
     elif request.method == "GET" and "delete_id" in request.GET:
         Usuario.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Formulario")
@@ -61,7 +75,6 @@ def formularioUsuario(request):
         form = UsuarioForm()
         edit_mode = False
 
-    usuarios = Usuario.objects.all()
     return render(request, "dispositivos/formularioUsuario.html", {
         "visitas": visitas,
         "form": form,
@@ -70,16 +83,24 @@ def formularioUsuario(request):
         "edit_id": request.GET.get("edit_id") if "edit_id" in request.GET else "",
     })
 
+
+# -------------------------------------------------------------
+# PRODUCTOS
+# -------------------------------------------------------------
 def gestionProductos(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
-    # Editar producto
+    search = request.GET.get("buscar", "")
+    productos = Producto.objects.all()
+    if search:
+        productos = productos.filter(Q(nombre__icontains=search) | Q(sku__icontains=search))
+
     if request.method == "GET" and "edit_id" in request.GET:
         producto_to_edit = get_object_or_404(Producto, pk=request.GET.get("edit_id"))
         form = ProductoForm(instance=producto_to_edit)
         edit_mode = True
-    # Crear o actualizar producto
+
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         if edit_id:
@@ -92,7 +113,7 @@ def gestionProductos(request):
         if form.is_valid():
             form.save()
             return redirect("Productos")
-    # Eliminar producto
+
     elif request.method == "GET" and "delete_id" in request.GET:
         Producto.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Productos")
@@ -100,7 +121,6 @@ def gestionProductos(request):
         form = ProductoForm()
         edit_mode = False
 
-    productos = Producto.objects.all()
     return render(request, "dispositivos/gestionProductos.html", {
         "visitas": visitas,
         "form": form,
@@ -109,16 +129,26 @@ def gestionProductos(request):
         "edit_id": request.GET.get("edit_id") if "edit_id" in request.GET else "",
     })
 
+
+# -------------------------------------------------------------
+# PROVEEDORES
+# -------------------------------------------------------------
 def gestionProveedores(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
-    # Editar proveedor
+    search = request.GET.get("buscar", "")
+    proveedores = Proveedor.objects.all()
+    if search:
+        proveedores = proveedores.filter(
+            Q(rut_nif__icontains=search) | Q(razon_social__icontains=search)
+        )
+
     if request.method == "GET" and "edit_id" in request.GET:
         proveedor_to_edit = get_object_or_404(Proveedor, pk=request.GET.get("edit_id"))
         form = ProveedorForm(instance=proveedor_to_edit)
         edit_mode = True
-    # Crear o actualizar proveedor
+
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         if edit_id:
@@ -131,7 +161,7 @@ def gestionProveedores(request):
         if form.is_valid():
             form.save()
             return redirect("Proveedores")
-    # Eliminar proveedor
+
     elif request.method == "GET" and "delete_id" in request.GET:
         Proveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Proveedores")
@@ -139,7 +169,6 @@ def gestionProveedores(request):
         form = ProveedorForm()
         edit_mode = False
 
-    proveedores = Proveedor.objects.all()
     return render(request, "dispositivos/gestionProveedores.html", {
         "visitas": visitas,
         "form": form,
@@ -148,16 +177,29 @@ def gestionProveedores(request):
         "edit_id": request.GET.get("edit_id") if "edit_id" in request.GET else "",
     })
 
+
+# -------------------------------------------------------------
+# PRODUCTO - PROVEEDOR (Movimientos)
+# -------------------------------------------------------------
 def moduloTransaccional(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
-    # Editar movimiento
+    search = request.GET.get("buscar", "")
+    tipo = request.GET.get("tipo", "")
+
+    movimientos = ProductoProveedor.objects.select_related('producto', 'proveedor').all()
+
+    if search:
+        movimientos = movimientos.filter(Q(producto__sku__icontains=search) | Q(producto__nombre__icontains=search))
+    if tipo:
+        movimientos = movimientos.filter(tipo_movimiento__iexact=tipo)
+
     if request.method == "GET" and "edit_id" in request.GET:
         movimiento_to_edit = get_object_or_404(ProductoProveedor, pk=request.GET.get("edit_id"))
         form = ProductoProveedorForm(instance=movimiento_to_edit)
         edit_mode = True
-    # Crear o actualizar movimiento
+
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         if edit_id:
@@ -170,7 +212,7 @@ def moduloTransaccional(request):
         if form.is_valid():
             form.save()
             return redirect("Transaccional")
-    # Eliminar movimiento
+
     elif request.method == "GET" and "delete_id" in request.GET:
         ProductoProveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Transaccional")
@@ -178,12 +220,11 @@ def moduloTransaccional(request):
         form = ProductoProveedorForm()
         edit_mode = False
 
-    movimientos = ProductoProveedor.objects.select_related('producto', 'proveedor').all()
-    
-    # Métricas
-    movimientos_hoy = ProductoProveedor.objects.filter(fecha_movimiento__date=timezone.now().date()).count()
+    movimientos_hoy = ProductoProveedor.objects.filter(
+        fecha_movimiento__date=timezone.now().date()
+    ).count()
     productos_count = Producto.objects.count()
-    
+
     return render(request, "dispositivos/moduloTransaccional.html", {
         "visitas": visitas,
         "form": form,
