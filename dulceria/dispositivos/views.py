@@ -29,9 +29,7 @@ def dashboard(request):
     return render(request, "dispositivos/dashboard.html", context)
 
 
-# -------------------------------------------------------------
-# USUARIOS
-# -------------------------------------------------------------
+
 def formularioUsuario(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
@@ -84,9 +82,7 @@ def formularioUsuario(request):
     })
 
 
-# -------------------------------------------------------------
-# PRODUCTOS
-# -------------------------------------------------------------
+
 def gestionProductos(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
@@ -130,9 +126,7 @@ def gestionProductos(request):
     })
 
 
-# -------------------------------------------------------------
-# PROVEEDORES
-# -------------------------------------------------------------
+
 def gestionProveedores(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
@@ -178,9 +172,7 @@ def gestionProveedores(request):
     })
 
 
-# -------------------------------------------------------------
-# PRODUCTO - PROVEEDOR (Movimientos)
-# -------------------------------------------------------------
+
 def moduloTransaccional(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
