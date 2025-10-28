@@ -10,15 +10,12 @@ def dashboard(request):
     visitas = request.session.get('visitas', 0)
     request.session['visitas'] = visitas + 1
     
-    # Conteo de registros
     usuarios_count = Usuario.objects.count()
     productos_count = Producto.objects.count()
     proveedores_count = Proveedor.objects.count()
     movimientos_count = ProductoProveedor.objects.count()
     
-    # Últimos movimientos/actividad para el timeline
     
-    # Últimos usuarios creados
     ultimos_usuarios = Usuario.objects.order_by('-idUsuario')[:3]
     
     context = {
@@ -113,12 +110,10 @@ def gestionProveedores(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
-    # Editar proveedor
     if request.method == "GET" and "edit_id" in request.GET:
         proveedor_to_edit = get_object_or_404(Proveedor, pk=request.GET.get("edit_id"))
         form = ProveedorForm(instance=proveedor_to_edit)
         edit_mode = True
-    # Crear o actualizar proveedor
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         if edit_id:
@@ -131,7 +126,7 @@ def gestionProveedores(request):
         if form.is_valid():
             form.save()
             return redirect("Proveedores")
-    # Eliminar proveedor
+
     elif request.method == "GET" and "delete_id" in request.GET:
         Proveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Proveedores")
@@ -152,12 +147,11 @@ def moduloTransaccional(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
-    # Editar movimiento
+
     if request.method == "GET" and "edit_id" in request.GET:
         movimiento_to_edit = get_object_or_404(ProductoProveedor, pk=request.GET.get("edit_id"))
         form = ProductoProveedorForm(instance=movimiento_to_edit)
         edit_mode = True
-    # Crear o actualizar movimiento
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         if edit_id:
@@ -170,7 +164,6 @@ def moduloTransaccional(request):
         if form.is_valid():
             form.save()
             return redirect("Transaccional")
-    # Eliminar movimiento
     elif request.method == "GET" and "delete_id" in request.GET:
         ProductoProveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Transaccional")
@@ -180,7 +173,6 @@ def moduloTransaccional(request):
 
     movimientos = ProductoProveedor.objects.select_related('producto', 'proveedor').all()
     
-    # Métricas
     movimientos_hoy = ProductoProveedor.objects.filter(fecha_movimiento__date=timezone.now().date()).count()
     productos_count = Producto.objects.count()
     
