@@ -19,7 +19,6 @@ input, select {
 </style>
 
 <div class="row">
-  <!-- Formulario Usuario -->
   <div class="col-md-4">
     <div class="card mb-4 shadow-sm border-0">
       <div class="card-body">
@@ -27,7 +26,7 @@ input, select {
           {% if edit_mode %}Editar usuario{% else %}Nuevo usuario{% endif %}
         </h5>
 
-        <form id="usuarioForm" method="post" autocomplete="off" onsubmit="return validarFormulario(event)">
+        <form method="post" autocomplete="off">
           {% csrf_token %}
           {% if edit_mode %}
             <input type="hidden" name="edit_id" value="{{ edit_id }}">
@@ -106,36 +105,41 @@ input, select {
     </div>
   </div>
 
-  <!-- Tabla de usuarios -->
   <div class="col-md-8">
     <div class="card shadow-sm border-0">
       <div class="card-body">
         <h5 class="card-title mb-3 fw-bold">Usuarios</h5>
 
-        <!-- 🔍 Filtros -->
-        <div class="d-flex flex-wrap mb-3 gap-2">
-          <input type="text" class="form-control me-2 mb-2" placeholder="Buscar por username" style="max-width:200px;">
-          <select class="form-select me-2 mb-2" style="max-width:130px;">
-            <option>Rol: todos</option>
-            <option>ADMIN</option>
-            <option>AUDITOR</option>
-            <option>OPERADOR</option>
+        <form method="get" class="d-flex flex-wrap mb-3 gap-2">
+          <input type="text" class="form-control me-2 mb-2" name="buscar"
+                 placeholder="Buscar por username o nombre..." style="max-width:200px;">
+          <select class="form-select me-2 mb-2" name="rol" style="max-width:130px;">
+            <option value="">Rol: todos</option>
+            <option value="ADMIN">ADMIN</option>
+            <option value="AUDITOR">AUDITOR</option>
+            <option value="OPERADOR">OPERADOR</option>
           </select>
-          <select class="form-select me-2 mb-2" style="max-width:130px;">
-            <option>Estado: todos</option>
-            <option>ACTIVO</option>
-            <option>INACTIVO</option>
-            <option>BLOQUEADO</option>
+          <select class="form-select me-2 mb-2" name="estado" style="max-width:130px;">
+            <option value="">Estado: todos</option>
+            <option value="ACTIVO">ACTIVO</option>
+            <option value="INACTIVO">INACTIVO</option>
+            <option value="BLOQUEADO">BLOQUEADO</option>
           </select>
-          <button class="btn btn-outline-primary ms-auto mb-2">
+
+          <button type="submit" class="btn btn-outline-primary mb-2">
+            <i class="bi bi-search"></i> Buscar
+          </button>
+
+          <button type="submit" class="btn btn-outline-success ms-auto mb-2"
+                  name="export_excel" value="1">
             <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
           </button>
-        </div>
+        </form>
 
         <div class="table-responsive">
           <table class="table align-middle table-hover table-bordered rounded">
-            <thead class="table-light text-center">
-              <tr>
+            <thead class="table-light">
+              <tr class="align-middle text-center">
                 <th>Username</th>
                 <th>Email</th>
                 <th>Nombre</th>
@@ -183,80 +187,22 @@ input, select {
                 </td>
               </tr>
               {% empty %}
-              <tr><td colspan="9" class="text-center text-muted">Sin usuarios registrados.</td></tr>
+              <tr>
+                <td colspan="9" class="text-center text-muted">Sin usuarios registrados.</td>
+              </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
+
       </div>
     </div>
   </div>
 </div>
 
-{% verbatim %}
 <script>
-function validarFormulario(e) {
-  e.preventDefault();
-  const form = document.getElementById("usuarioForm");
-
-  const username = form.username.value.trim();
-  const email = form.email.value.trim();
-  const password = form.password.value.trim();
-  const nombre = form.nombre.value.trim();
-  const apellido = form.apellido.value.trim();
-  const rol = form.rol.value.trim();
-  const estado = form.estado.value.trim();
-  const mfa = form.mfa_habilitado.value.trim();
-
-  const faltantes = [];
-  if (!username) faltantes.push("Username");
-  if (!email) faltantes.push("Email");
-  if (!password) faltantes.push("Contraseña");
-  if (!nombre) faltantes.push("Nombres");
-  if (!apellido) faltantes.push("Apellidos");
-  if (!rol) faltantes.push("Rol");
-  if (!estado) faltantes.push("Estado");
-  if (!mfa) faltantes.push("MFA habilitado");
-
-  if (faltantes.length > 0) {
-    Swal.fire({
-      icon: "warning",
-      title: "Campos obligatorios faltantes",
-      html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>"
-    });
-    return false;
-  }
-
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (!emailRegex.test(email)) {
-    Swal.fire({
-      icon: "error",
-      title: "Correo inválido",
-      text: "Debe tener un dominio válido (.com, .cl, .org, etc)."
-    });
-    return false;
-  }
-
-  const passRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-  if (!passRegex.test(password)) {
-    Swal.fire({
-      icon: "error",
-      title: "Contraseña insegura",
-      text: "Debe tener al menos 8 caracteres, una mayúscula y un número."
-    });
-    return false;
-  }
-
-  Swal.fire({
-    icon: "success",
-    title: "Formulario válido",
-    text: "Datos correctos.",
-    showConfirmButton: false,
-    timer: 1200
-  }).then(() => form.submit());
-}
-
 document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector("form[method='post']");
   const toggleBtn = document.getElementById("togglePassword");
   const passwordField = document.getElementById("passwordField");
 
@@ -267,8 +213,69 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleBtn.innerHTML = isPassword ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
     });
   }
+
+  if (!form) return;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const username = form.querySelector("[name='username']").value.trim();
+    const email    = form.querySelector("[name='email']").value.trim();
+    const password = form.querySelector("[name='password']").value.trim();
+    const nombre   = form.querySelector("[name='nombre']").value.trim();
+    const apellido = form.querySelector("[name='apellido']").value.trim();
+    const rol      = form.querySelector("[name='rol']").value.trim();
+    const estado   = form.querySelector("[name='estado']").value.trim();
+    const mfa      = form.querySelector("[name='mfa_habilitado']").value.trim();
+
+    const faltantes = [];
+    if (!username) faltantes.push("Username");
+    if (!email)    faltantes.push("Email");
+    if (!password) faltantes.push("Contraseña");
+    if (!nombre)   faltantes.push("Nombres");
+    if (!apellido) faltantes.push("Apellidos");
+    if (!rol)      faltantes.push("Rol");
+    if (!estado)   faltantes.push("Estado");
+    if (!mfa)      faltantes.push("MFA habilitado");
+
+    if (faltantes.length > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Campos obligatorios faltantes",
+        html: `<ul style='text-align:left;margin:0;'>${faltantes.map(f => `<li>${f}</li>`).join("")}</ul>`
+      });
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      Swal.fire({
+        icon: "error",
+        title: "Correo inválido",
+        text: "El correo debe tener un formato válido (ejemplo@dominio.com o ejemplo@empresa.cl)."
+      });
+      return;
+    }
+
+    const passRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passRegex.test(password)) {
+      Swal.fire({
+        icon: "error",
+        title: "Contraseña insegura",
+        text: "Debe tener al menos 8 caracteres, una mayúscula y un número."
+      });
+      return;
+    }
+
+    Swal.fire({
+      icon: "success",
+      title: "Formulario válido",
+      text: "Datos correctos.",
+      showConfirmButton: false,
+      timer: 1200
+    }).then(() => form.submit());
+  });
 });
 </script>
-{% endverbatim %}
 
 {% endblock %}

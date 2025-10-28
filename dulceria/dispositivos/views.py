@@ -4,27 +4,24 @@ from dispositivos.forms import UsuarioForm, ProveedorForm, ProductoForm, Product
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models import Q
+from django.http import HttpResponse
+import openpyxl
 
-
+# -------------------------------------------------------------
+# DASHBOARD
+# -------------------------------------------------------------
 @login_required
 def dashboard(request):
     visitas = request.session.get('visitas', 0)
     request.session['visitas'] = visitas + 1
 
-    usuarios_count = Usuario.objects.count()
-    productos_count = Producto.objects.count()
-    proveedores_count = Proveedor.objects.count()
-    movimientos_count = ProductoProveedor.objects.count()
-
-    ultimos_usuarios = Usuario.objects.order_by('-idUsuario')[:3]
-
     context = {
         'visitas': visitas,
-        'usuarios_count': usuarios_count,
-        'productos_count': productos_count,
-        'proveedores_count': proveedores_count,
-        'movimientos_count': movimientos_count,
-        'ultimos_usuarios': ultimos_usuarios,
+        'usuarios_count': Usuario.objects.count(),
+        'productos_count': Producto.objects.count(),
+        'proveedores_count': Proveedor.objects.count(),
+        'movimientos_count': ProductoProveedor.objects.count(),
+        'ultimos_usuarios': Usuario.objects.order_by('-idUsuario')[:3],
     }
     return render(request, "dispositivos/dashboard.html", context)
 
@@ -36,7 +33,6 @@ def formularioUsuario(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
-    # 🔍 Búsqueda / filtros
     search = request.GET.get("buscar", "")
     rol_filter = request.GET.get("rol", "")
     estado_filter = request.GET.get("estado", "")
@@ -49,25 +45,37 @@ def formularioUsuario(request):
     if estado_filter:
         usuarios = usuarios.filter(estado__iexact=estado_filter)
 
+    # Exportar a Excel
+    if "export_excel" in request.GET:
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Usuarios"
+        headers = ["Username", "Email", "Nombre", "Apellido", "Rol", "Estado", "MFA"]
+        sheet.append(headers)
+        for u in usuarios:
+            sheet.append([
+                u.username, u.email, u.nombre, u.apellido,
+                u.get_rol_display(), u.get_estado_display(), u.get_mfa_habilitado_display()
+            ])
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response['Content-Disposition'] = 'attachment; filename="usuarios.xlsx"'
+        workbook.save(response)
+        return response
+
     # CRUD
     if request.method == "GET" and "edit_id" in request.GET:
-        user_to_edit = get_object_or_404(Usuario, pk=request.GET.get("edit_id"))
-        form = UsuarioForm(instance=user_to_edit)
+        form = UsuarioForm(instance=get_object_or_404(Usuario, pk=request.GET.get("edit_id")))
         edit_mode = True
-
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
-        if edit_id:
-            instance = get_object_or_404(Usuario, pk=edit_id)
-            form = UsuarioForm(request.POST, instance=instance)
-            edit_mode = True
-        else:
-            form = UsuarioForm(request.POST)
-            edit_mode = False
+        instance = get_object_or_404(Usuario, pk=edit_id) if edit_id else None
+        form = UsuarioForm(request.POST, instance=instance)
+        edit_mode = bool(edit_id)
         if form.is_valid():
             form.save()
             return redirect("Formulario")
-
     elif request.method == "GET" and "delete_id" in request.GET:
         Usuario.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Formulario")
@@ -79,8 +87,8 @@ def formularioUsuario(request):
         "visitas": visitas,
         "form": form,
         "usuarios": usuarios,
-        "edit_mode": edit_mode if "edit_mode" in locals() else False,
-        "edit_id": request.GET.get("edit_id") if "edit_id" in request.GET else "",
+        "edit_mode": edit_mode,
+        "edit_id": request.GET.get("edit_id", ""),
     })
 
 
@@ -96,24 +104,36 @@ def gestionProductos(request):
     if search:
         productos = productos.filter(Q(nombre__icontains=search) | Q(sku__icontains=search))
 
-    if request.method == "GET" and "edit_id" in request.GET:
-        producto_to_edit = get_object_or_404(Producto, pk=request.GET.get("edit_id"))
-        form = ProductoForm(instance=producto_to_edit)
-        edit_mode = True
+    # Exportar a Excel
+    if "export_excel" in request.GET:
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Productos"
+        headers = ["SKU", "Nombre", "Categoría", "Unidad Compra", "Unidad Venta", "IVA", "Stock Mínimo"]
+        sheet.append(headers)
+        for p in productos:
+            sheet.append([
+                p.sku, p.nombre, p.categoria, p.uom_compra, p.uom_venta, p.impuesto_iva, p.stock_minimo
+            ])
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response['Content-Disposition'] = 'attachment; filename="productos.xlsx"'
+        workbook.save(response)
+        return response
 
+    # CRUD
+    if request.method == "GET" and "edit_id" in request.GET:
+        form = ProductoForm(instance=get_object_or_404(Producto, pk=request.GET.get("edit_id")))
+        edit_mode = True
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
-        if edit_id:
-            instance = get_object_or_404(Producto, pk=edit_id)
-            form = ProductoForm(request.POST, instance=instance)
-            edit_mode = True
-        else:
-            form = ProductoForm(request.POST)
-            edit_mode = False
+        instance = get_object_or_404(Producto, pk=edit_id) if edit_id else None
+        form = ProductoForm(request.POST, instance=instance)
+        edit_mode = bool(edit_id)
         if form.is_valid():
             form.save()
             return redirect("Productos")
-
     elif request.method == "GET" and "delete_id" in request.GET:
         Producto.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Productos")
@@ -125,8 +145,8 @@ def gestionProductos(request):
         "visitas": visitas,
         "form": form,
         "productos": productos,
-        "edit_mode": edit_mode if "edit_mode" in locals() else False,
-        "edit_id": request.GET.get("edit_id") if "edit_id" in request.GET else "",
+        "edit_mode": edit_mode,
+        "edit_id": request.GET.get("edit_id", ""),
     })
 
 
@@ -137,31 +157,43 @@ def gestionProveedores(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
-    search = request.GET.get("buscar", "")
+    buscar = request.GET.get('buscar', '')
     proveedores = Proveedor.objects.all()
-    if search:
+    if buscar:
         proveedores = proveedores.filter(
-            Q(rut_nif__icontains=search) | Q(razon_social__icontains=search)
+            Q(rut_nif__icontains=buscar) | Q(razon_social__icontains=buscar)
         )
 
-    if request.method == "GET" and "edit_id" in request.GET:
-        proveedor_to_edit = get_object_or_404(Proveedor, pk=request.GET.get("edit_id"))
-        form = ProveedorForm(instance=proveedor_to_edit)
-        edit_mode = True
+    # Exportar a Excel
+    if "export_excel" in request.GET:
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Proveedores"
+        headers = ["RUT/NIF", "Razón Social", "Estado", "Email", "País"]
+        sheet.append(headers)
+        for p in proveedores:
+            sheet.append([
+                p.rut_nif, p.razon_social, p.get_estado_display(), p.email, p.pais
+            ])
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response['Content-Disposition'] = 'attachment; filename="proveedores.xlsx"'
+        workbook.save(response)
+        return response
 
+    # CRUD
+    if request.method == "GET" and "edit_id" in request.GET:
+        form = ProveedorForm(instance=get_object_or_404(Proveedor, pk=request.GET.get("edit_id")))
+        edit_mode = True
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
-        if edit_id:
-            instance = get_object_or_404(Proveedor, pk=edit_id)
-            form = ProveedorForm(request.POST, instance=instance)
-            edit_mode = True
-        else:
-            form = ProveedorForm(request.POST)
-            edit_mode = False
+        instance = get_object_or_404(Proveedor, pk=edit_id) if edit_id else None
+        form = ProveedorForm(request.POST, instance=instance)
+        edit_mode = bool(edit_id)
         if form.is_valid():
             form.save()
             return redirect("Proveedores")
-
     elif request.method == "GET" and "delete_id" in request.GET:
         Proveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Proveedores")
@@ -173,13 +205,14 @@ def gestionProveedores(request):
         "visitas": visitas,
         "form": form,
         "proveedores": proveedores,
-        "edit_mode": edit_mode if "edit_mode" in locals() else False,
-        "edit_id": request.GET.get("edit_id") if "edit_id" in request.GET else "",
+        "edit_mode": edit_mode,
+        "edit_id": request.GET.get("edit_id", ""),
+        "buscar": buscar,
     })
 
 
 # -------------------------------------------------------------
-# PRODUCTO - PROVEEDOR (Movimientos)
+# PRODUCTO - PROVEEDOR (MOVIMIENTOS)
 # -------------------------------------------------------------
 def moduloTransaccional(request):
     visitas = request.session.get("visitas", 0)
@@ -187,7 +220,6 @@ def moduloTransaccional(request):
 
     search = request.GET.get("buscar", "")
     tipo = request.GET.get("tipo", "")
-
     movimientos = ProductoProveedor.objects.select_related('producto', 'proveedor').all()
 
     if search:
@@ -195,24 +227,40 @@ def moduloTransaccional(request):
     if tipo:
         movimientos = movimientos.filter(tipo_movimiento__iexact=tipo)
 
-    if request.method == "GET" and "edit_id" in request.GET:
-        movimiento_to_edit = get_object_or_404(ProductoProveedor, pk=request.GET.get("edit_id"))
-        form = ProductoProveedorForm(instance=movimiento_to_edit)
-        edit_mode = True
+    # Exportar a Excel
+    if "export_excel" in request.GET:
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Movimientos"
+        headers = ["Fecha", "Tipo", "Producto", "Proveedor", "Cantidad"]
+        sheet.append(headers)
+        for m in movimientos:
+            sheet.append([
+                timezone.localtime(m.fecha_movimiento).strftime("%Y-%m-%d %H:%M"),
+                m.get_tipo_movimiento_display(),
+                m.producto.nombre,
+                m.proveedor.razon_social,
+                m.cantidad,
+            ])
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response['Content-Disposition'] = 'attachment; filename="movimientos.xlsx"'
+        workbook.save(response)
+        return response
 
+    # CRUD
+    if request.method == "GET" and "edit_id" in request.GET:
+        form = ProductoProveedorForm(instance=get_object_or_404(ProductoProveedor, pk=request.GET.get("edit_id")))
+        edit_mode = True
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
-        if edit_id:
-            instance = get_object_or_404(ProductoProveedor, pk=edit_id)
-            form = ProductoProveedorForm(request.POST, instance=instance)
-            edit_mode = True
-        else:
-            form = ProductoProveedorForm(request.POST)
-            edit_mode = False
+        instance = get_object_or_404(ProductoProveedor, pk=edit_id) if edit_id else None
+        form = ProductoProveedorForm(request.POST, instance=instance)
+        edit_mode = bool(edit_id)
         if form.is_valid():
             form.save()
             return redirect("Transaccional")
-
     elif request.method == "GET" and "delete_id" in request.GET:
         ProductoProveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Transaccional")
@@ -223,14 +271,13 @@ def moduloTransaccional(request):
     movimientos_hoy = ProductoProveedor.objects.filter(
         fecha_movimiento__date=timezone.now().date()
     ).count()
-    productos_count = Producto.objects.count()
 
     return render(request, "dispositivos/moduloTransaccional.html", {
         "visitas": visitas,
         "form": form,
         "movimientos": movimientos,
         "movimientos_hoy": movimientos_hoy,
-        "productos_count": productos_count,
-        "edit_mode": edit_mode if "edit_mode" in locals() else False,
-        "edit_id": request.GET.get("edit_id") if "edit_id" in request.GET else "",
+        "productos_count": Producto.objects.count(),
+        "edit_mode": edit_mode,
+        "edit_id": request.GET.get("edit_id", ""),
     })

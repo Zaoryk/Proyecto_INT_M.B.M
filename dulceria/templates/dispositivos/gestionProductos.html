@@ -126,8 +126,15 @@ input, select {
   <div class="card-body">
     <h5 class="card-title fw-bold">Productos</h5>
     <div class="d-flex mb-2">
-      <input class="form-control me-2" type="text" placeholder="Buscar por SKU o nombre..." style="max-width:250px;">
-      <button class="btn btn-outline-primary">Exportar a Excel</button>
+<form method="get" class="d-flex mb-2">
+  <input class="form-control me-2" type="text" name="buscar"
+         value="{{ buscar|default_if_none:'' }}"
+         placeholder="Buscar por SKU o nombre..." style="max-width:150px;">
+  <button type="submit" class="btn btn-outline-primary">Buscar</button>
+  <button type="submit" class="btn btn-outline-success ms-auto" name="export_excel" value="1">
+    Exportar a Excel
+  </button>
+</form>
     </div>
     <div class="table-responsive">
       <table class="table table-bordered table-hover rounded">

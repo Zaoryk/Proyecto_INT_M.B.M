@@ -14,6 +14,7 @@ class Usuario(models.Model):
     ESTADOS = [
         ("activo", "Activo"),
         ("inactivo", "Inactivo"),
+        ("bloqueado", "Bloqueado")
     ]
     
     MFA_OPTIONS = [
