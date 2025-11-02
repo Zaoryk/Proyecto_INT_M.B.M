@@ -28,4 +28,5 @@ urlpatterns = [
     path("gestionproductos/", gestionProductos, name="Productos"),
     path("gestionproveedores/", gestionProveedores, name="Proveedores"),
     path("modulotransaccional/", moduloTransaccional, name="Transaccional"),
+    path('', include('accounts.urls')),
 ]
