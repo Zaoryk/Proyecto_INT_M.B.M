@@ -29,6 +29,7 @@ def dashboard(request):
 # -------------------------------------------------------------
 # USUARIOS
 # -------------------------------------------------------------
+@login_required
 def formularioUsuario(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
@@ -95,6 +96,7 @@ def formularioUsuario(request):
 # -------------------------------------------------------------
 # PRODUCTOS
 # -------------------------------------------------------------
+@login_required
 def gestionProductos(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
@@ -153,6 +155,7 @@ def gestionProductos(request):
 # -------------------------------------------------------------
 # PROVEEDORES
 # -------------------------------------------------------------
+@login_required
 def gestionProveedores(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
@@ -214,6 +217,7 @@ def gestionProveedores(request):
 # -------------------------------------------------------------
 # PRODUCTO - PROVEEDOR (MOVIMIENTOS)
 # -------------------------------------------------------------
+@login_required
 def moduloTransaccional(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1

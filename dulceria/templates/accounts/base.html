@@ -66,12 +66,15 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
+            <!--El usuario solo vera el navbar cuando inicie sesión-->
+            {% if user.is_authenticated %}
             <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'Formulario' %}">Usuarios</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'Productos' %}">Productos</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'Proveedores' %}">Proveedores</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'Transaccional' %}">Inventario</a></li>
-
+            {% endif %}
+            <!--Fin-->
             {% if user.is_authenticated %}
               <li class="nav-item">
                 <span class="nav-link">Hola, {{ user.username }}</span>
