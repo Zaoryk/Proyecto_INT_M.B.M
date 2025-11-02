@@ -48,7 +48,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "login"
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -154,3 +153,19 @@ SESSION_SAVE_EVERY_REQUEST = False
 SESSION_COOKIE_SECURE = True # en producción con HTTPS
 # sólo enviar la cookie en el mismo sitio (protección CSRF) / Lax por defecto en Django
 SESSION_COOKIE_SAMESITE = 'Lax' # o 'Strict'/'None'(+Secure)
+
+#PRUEBA DE RECUPERAR CONTRASEÑA
+# Backend personalizado para login con username o email
+AUTHENTICATION_BACKENDS = [
+    'accounts.authentication.EmailOrUsernameBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Configuración de Email con Gmail
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'benjamindiazcastillo@gmail.com'  # CAMBIAR
+EMAIL_HOST_PASSWORD = 'kphtngtyxqqiulej'  # Contraseña de aplicación
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

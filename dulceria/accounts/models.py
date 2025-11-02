@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import Group, User
 from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+import random
+import string
 
 class Module(models.Model):
     """
@@ -74,6 +78,59 @@ class RoleModulePermission(models.Model):
         
         return f"{self.role} → {self.module} ({', '.join(perms) if perms else 'Sin permisos'})"
 
+"""
+Clase para reseteo de cotraseña
+"""
+class PasswordResetCode(models.Model):
+    """
+    Modelo para almacenar códigos de recuperación de contraseña
+    """
+    email = models.EmailField(verbose_name="Email del usuario")
+    code = models.CharField(max_length=6, verbose_name="Código de verificación")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    expires_at = models.DateTimeField(verbose_name="Fecha de expiración")
+    is_used = models.BooleanField(default=False, verbose_name="¿Usado?")
+    
+    class Meta:
+        verbose_name = "Código de Recuperación"
+        verbose_name_plural = "Códigos de Recuperación"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.email} - {self.code} ({'Usado' if self.is_used else 'Válido'})"
+    
+    @staticmethod
+    def generate_code():
+        """Genera un código de 6 dígitos"""
+        return ''.join(random.choices(string.digits, k=6))
+    
+    @classmethod
+    def create_code(cls, email):
+        """
+        Crea un nuevo código de recuperación para un email
+        Invalida códigos anteriores
+        """
+        # Invalidar códigos anteriores no usados
+        cls.objects.filter(email=email, is_used=False).update(is_used=True)
+        
+        # Crear nuevo código
+        code = cls.generate_code()
+        expires_at = timezone.now() + timedelta(minutes=15)  # Válido por 15 minutos
+        
+        return cls.objects.create(
+            email=email,
+            code=code,
+            expires_at=expires_at
+        )
+    
+    def is_valid(self):
+        """Verifica si el código es válido"""
+        return not self.is_used and timezone.now() < self.expires_at
+    
+    def mark_as_used(self):
+        """Marca el código como usado"""
+        self.is_used = True
+        self.save()
 
 # Módulos predefinidos del sistema
 MODULOS_SISTEMA = [

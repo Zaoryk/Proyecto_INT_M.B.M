@@ -18,7 +18,9 @@
         {% csrf_token %}
 
         <div class="mb-3">
-          <label class="form-label text-light">Usuario</label>
+          <label class="form-label text-light">
+            <i class="bi bi-person-fill me-1"></i>Usuario o Correo
+          </label>
           {{ form.username }}
           {% if form.username.errors %}
             <div class="text-warning small">{{ form.username.errors }}</div>
@@ -26,7 +28,9 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label text-light">Contraseña</label>
+          <label class="form-label text-light">
+            <i class="bi bi-lock-fill me-1"></i>Contraseña
+          </label>
           {{ form.password }}
           {% if form.password.errors %}
             <div class="text-warning small">{{ form.password.errors }}</div>
@@ -37,9 +41,14 @@
           <input type="hidden" name="next" value="{{ next }}">
         {% endif %}
 
-        <button type="submit" class="btn btn-light w-100 fw-bold">Ingresar</button>
-        <div class="text-center mt-3">
-          <a href="#" class="text-light" style="text-decoration: underline;">¿Olvidaste tu contraseña?</a>
+        <button type="submit" class="btn btn-light w-100 fw-bold mb-3">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+        </button>
+
+        <div class="text-center">
+          <a href="{% url 'password_solicitud' %}" class="text-light" style="text-decoration: underline;">
+            <i class="bi bi-key-fill me-1"></i>¿Olvidaste tu contraseña?
+          </a>
         </div>
       </form>
     </div>

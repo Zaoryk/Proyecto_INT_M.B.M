@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password, check_password
 
 class Usuario(models.Model):
     ROLES = [
@@ -23,8 +25,8 @@ class Usuario(models.Model):
     ]
     
     idUsuario = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=100, blank=True, null=True)
-    email = models.CharField(max_length=100, blank=True, null=True)
+    username = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    email = models.CharField(max_length=100, blank=True, null=True, unique=True)
     nombre = models.CharField(max_length=100, blank=True, null=True)
     apellido = models.CharField(max_length=100, blank=True, null=True)
     rol = models.CharField(max_length=50, choices=ROLES, default="operador_ventas")
@@ -35,6 +37,100 @@ class Usuario(models.Model):
     class Meta:
         managed = False
         db_table = 'Usuario'
+
+    def __str__(self):
+        return f"{self.username} - {self.nombre} {self.apellido}"
+
+    def set_password(self, raw_password):
+        """Hashea la contraseña usando el sistema de Django"""
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        """Verifica si la contraseña coincide"""
+        if not self.password:
+            return False
+        return check_password(raw_password, self.password)
+
+    def sync_to_auth_user(self):
+        """
+        Sincroniza este usuario con la tabla auth_user de Django
+        Crea o actualiza el usuario en auth_user para permitir login
+        """
+        try:
+            # Buscar si ya existe en auth_user
+            auth_user = User.objects.filter(username=self.username).first()
+            
+            if auth_user:
+                # Actualizar usuario existente
+                auth_user.email = self.email or ''
+                auth_user.first_name = self.nombre or ''
+                auth_user.last_name = self.apellido or ''
+                auth_user.is_active = (self.estado == 'activo')
+                
+                # Solo actualizar password si cambió
+                if self.password and not auth_user.check_password(self.password):
+                    # Si la password está hasheada en Usuario, copiarla directamente
+                    if self.password.startswith('pbkdf2_'):
+                        auth_user.password = self.password
+                    else:
+                        # Si no está hasheada, hashearla
+                        auth_user.set_password(self.password)
+                
+                auth_user.save()
+            else:
+                # Crear nuevo usuario en auth_user
+                auth_user = User.objects.create(
+                    username=self.username,
+                    email=self.email or '',
+                    first_name=self.nombre or '',
+                    last_name=self.apellido or '',
+                    is_active=(self.estado == 'activo'),
+                    is_staff=False,
+                    is_superuser=False
+                )
+                
+                # Establecer contraseña
+                if self.password:
+                    if self.password.startswith('pbkdf2_'):
+                        auth_user.password = self.password
+                    else:
+                        auth_user.set_password(self.password)
+                    auth_user.save()
+            
+            # Asignar al grupo según rol
+            from django.contrib.auth.models import Group
+            
+            # Limpiar grupos anteriores
+            auth_user.groups.clear()
+            
+            # Asignar nuevo grupo
+            try:
+                group = Group.objects.get(name=self.rol)
+                auth_user.groups.add(group)
+            except Group.DoesNotExist:
+                pass
+            
+            return auth_user
+            
+        except Exception as e:
+            print(f"Error sincronizando usuario {self.username}: {e}")
+            return None
+
+    def save(self, *args, **kwargs):
+        """
+        Override del método save para hashear contraseña automáticamente
+        y sincronizar con auth_user
+        """
+        # Si la contraseña no está hasheada, hashearla
+        if self.password and not self.password.startswith('pbkdf2_'):
+            self.set_password(self.password)
+        
+        # Guardar en la tabla usuario
+        super().save(*args, **kwargs)
+        
+        # Sincronizar con auth_user después de guardar
+        self.sync_to_auth_user()
+
 
 class Producto(models.Model):
     idProducto = models.AutoField(primary_key=True)
@@ -52,6 +148,9 @@ class Producto(models.Model):
     class Meta:
         managed = False
         db_table = 'Producto'
+
+    def __str__(self):
+        return f"{self.sku} - {self.nombre}"
 
 class Proveedor(models.Model):
     ESTADOS = [
@@ -73,6 +172,9 @@ class Proveedor(models.Model):
     class Meta:
         managed = False
         db_table = 'Proveedor'
+
+    def __str__(self):
+        return self.razon_social
 
 class ProductoProveedor(models.Model):
     TIPOS_MOVIMIENTO = [
