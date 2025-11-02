@@ -11,15 +11,13 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
     <style>
-      /* ======== ESTILOS GLOBALES ======== */
       body {
           background-color: #fff8f6;
           font-family: 'Poppins', sans-serif;
       }
 
-      /* ======== NAVBAR ======== */
       .navbar {
-          background-color: #C40000 !important; /* rojo principal */
+          background-color: #C40000 !important;
       }
 
       .navbar-brand, .navbar-nav .nav-link {
@@ -32,7 +30,6 @@
           margin-right: 10px;
       }
 
-      /* ======== BOTONES NEGROS ======== */
       .btn-lilis {
           background-color: #000 !important;
           color: #fff !important;
@@ -44,7 +41,6 @@
           background-color: #333 !important;
       }
 
-      /* ======== CONTENIDO ======== */
       main {
           padding: 20px;
       }
@@ -67,16 +63,12 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'Formulario' %}">Usuarios</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'Productos' %}">Productos</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'Proveedores' %}">Proveedores</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'Transaccional' %}">Inventario</a></li>
-
-            {# ====================================================== #}
-            {# NUEVA CONDICIÓN HÍBRIDA PARA LOGIN PERSONALIZADO #}
-            {# ====================================================== #}
             {% if user.is_authenticated or request.session.usuario_id %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'Formulario' %}">Usuarios</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'Productos' %}">Productos</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'Proveedores' %}">Proveedores</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'Transaccional' %}">Inventario</a></li>
               <li class="nav-item">
                 <span class="nav-link">
                   Hola,
@@ -94,9 +86,7 @@
                 </form>
               </li>
             {% else %}
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'login' %}">Entrar</a>
-              </li>
+              
             {% endif %}
           </ul>
         </div>
