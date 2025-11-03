@@ -57,28 +57,25 @@ class Usuario(models.Model):
         Crea o actualiza el usuario en auth_user para permitir login
         """
         try:
-            # Buscar si ya existe en auth_user
+
             auth_user = User.objects.filter(username=self.username).first()
-            
+
             if auth_user:
-                # Actualizar usuario existente
                 auth_user.email = self.email or ''
                 auth_user.first_name = self.nombre or ''
                 auth_user.last_name = self.apellido or ''
                 auth_user.is_active = (self.estado == 'activo')
                 
-                # Solo actualizar password si cambió
                 if self.password and not auth_user.check_password(self.password):
-                    # Si la password está hasheada en Usuario, copiarla directamente
+
                     if self.password.startswith('pbkdf2_'):
                         auth_user.password = self.password
                     else:
-                        # Si no está hasheada, hashearla
+
                         auth_user.set_password(self.password)
                 
                 auth_user.save()
             else:
-                # Crear nuevo usuario en auth_user
                 auth_user = User.objects.create(
                     username=self.username,
                     email=self.email or '',
@@ -89,7 +86,6 @@ class Usuario(models.Model):
                     is_superuser=False
                 )
                 
-                # Establecer contraseña
                 if self.password:
                     if self.password.startswith('pbkdf2_'):
                         auth_user.password = self.password
@@ -115,17 +111,12 @@ class Usuario(models.Model):
         except Exception as e:
             print(f"Error sincronizando usuario {self.username}: {e}")
             return None
-
+#HASHEA Y SINCRONIZA CON AUTH_USER
     def save(self, *args, **kwargs):
-        """
-        Override del método save para hashear contraseña automáticamente
-        y sincronizar con auth_user
-        """
-        # Si la contraseña no está hasheada, hashearla
+
         if self.password and not self.password.startswith('pbkdf2_'):
             self.set_password(self.password)
         
-        # Guardar en la tabla usuario
         super().save(*args, **kwargs)
         
         # Sincronizar con auth_user después de guardar

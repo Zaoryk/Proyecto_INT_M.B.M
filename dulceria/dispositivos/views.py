@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from dispositivos.models import Usuario, Producto, Proveedor, ProductoProveedor
 from dispositivos.forms import UsuarioForm, ProveedorForm, ProductoForm, ProductoProveedorForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models import Q
 from django.http import HttpResponse
@@ -65,21 +66,39 @@ def formularioUsuario(request):
         workbook.save(response)
         return response
 
-    # CRUD
+    # CRUD - ELIMINAR
+    if request.method == "GET" and "delete_id" in request.GET:
+        usuario_id = request.GET.get("delete_id")
+        try:
+            usuario = Usuario.objects.get(pk=usuario_id)
+            username = usuario.username
+            
+            try:
+                auth_user = User.objects.get(username=username)
+                auth_user.delete()
+            except User.DoesNotExist:
+                pass 
+            usuario.delete()
+            
+        except Exception as e:
+            print(f'Error al eliminar usuario: {str(e)}')
+        
+        return redirect("Formulario")
+
+    # CRUD EDITAR
     if request.method == "GET" and "edit_id" in request.GET:
         form = UsuarioForm(instance=get_object_or_404(Usuario, pk=request.GET.get("edit_id")))
         edit_mode = True
+
+    #CRUD - GUARDAR Y ACTUALIZAR
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         instance = get_object_or_404(Usuario, pk=edit_id) if edit_id else None
         form = UsuarioForm(request.POST, instance=instance)
         edit_mode = bool(edit_id)
-        if form.is_valid():
-            form.save()
+        if form.is_valid(): 
+            usuario = form.save() #Esto hashea y sincroniza
             return redirect("Formulario")
-    elif request.method == "GET" and "delete_id" in request.GET:
-        Usuario.objects.filter(pk=request.GET.get("delete_id")).delete()
-        return redirect("Formulario")
     else:
         form = UsuarioForm()
         edit_mode = False

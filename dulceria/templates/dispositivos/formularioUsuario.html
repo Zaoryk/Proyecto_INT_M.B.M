@@ -160,7 +160,7 @@ input, select {
                 <td>{{ usuario.apellido }}</td>
                 <td class="text-monospace small text-break" style="max-width:250px;">
                   {% if usuario.password %}
-                    {{ usuario.password }}
+                    <span class="text-muted">••••••••</span>
                   {% else %}
                     <span class="text-muted">Sin contraseña</span>
                   {% endif %}
