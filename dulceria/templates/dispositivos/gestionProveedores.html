@@ -15,6 +15,8 @@ input, select {
 }
 </style>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
+
 <div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title mb-3 fw-bold">
@@ -73,12 +75,42 @@ input, select {
             </div>
           </div>
         </div>
+
         <div class="tab-pane fade" id="direccion-comercial" role="tabpanel">
           <div class="row mb-3">
+            <!-- Selector de país con bandera -->
             <div class="col-md-4">
               <label class="form-label">País</label>
-              <input type="text" class="form-control" name="pais" value="{{ form.pais.value|default_if_none:'' }}" />
+              <div class="input-group">
+                <span class="input-group-text" id="flag-icon">
+                  <span class="fi fi-cl"></span>
+                </span>
+                <select class="form-select" id="paisSelect" name="pais" required>
+                  <option value="">Seleccione un país...</option>
+                  <option value="Chile" data-flag="cl" selected>Chile</option>
+                  <option value="Argentina" data-flag="ar">Argentina</option>
+                  <option value="México" data-flag="mx">México</option>
+                  <option value="Brasil" data-flag="br">Brasil</option>
+                  <option value="Colombia" data-flag="co">Colombia</option>
+                  <option value="Perú" data-flag="pe">Perú</option>
+                  <option value="Estados Unidos" data-flag="us">Estados Unidos</option>
+                  <option value="Canadá" data-flag="ca">Canadá</option>
+                  <option value="España" data-flag="es">España</option>
+                  <option value="Francia" data-flag="fr">Francia</option>
+                  <option value="Italia" data-flag="it">Italia</option>
+                  <option value="Reino Unido" data-flag="gb">Reino Unido</option>
+                  <option value="Alemania" data-flag="de">Alemania</option>
+                  <option value="Japón" data-flag="jp">Japón</option>
+                  <option value="China" data-flag="cn">China</option>
+                  <option value="Australia" data-flag="au">Australia</option>
+                  <option value="Uruguay" data-flag="uy">Uruguay</option>
+                  <option value="Paraguay" data-flag="py">Paraguay</option>
+                  <option value="Ecuador" data-flag="ec">Ecuador</option>
+                  <option value="Bolivia" data-flag="bo">Bolivia</option>
+                </select>
+              </div>
             </div>
+
             <div class="col-md-4">
               <label class="form-label">Condiciones de pago</label>
               <input type="text" class="form-control" name="condiciones_pago" value="{{ form.condiciones_pago.value|default_if_none:'' }}" />
@@ -88,6 +120,7 @@ input, select {
               <input type="text" class="form-control" name="moneda" value="{{ form.moneda.value|default_if_none:'' }}" />
             </div>
           </div>
+
           <div class="row mb-3">
             <div class="col-md-12">
               <label class="form-label">Usuario responsable</label>
@@ -118,21 +151,20 @@ input, select {
   </div>
 </div>
 
-<!-- Tabla de proveedores -->
 <div class="card shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold">Proveedores</h5>
-<form method="get" class="d-flex mb-2 flex-wrap">
-  <input class="form-control me-2 mb-2" type="text" name="buscar"
-         value="{{ buscar|default_if_none:'' }}"
-         placeholder="Buscar por RUT/NIF o razón social..." style="max-width:250px;">
-  <button type="submit" class="btn btn-outline-primary mb-2 me-2">
-    <i class="bi bi-search"></i> Buscar
-  </button>
-  <button type="submit" class="btn btn-outline-success mb-2 ms-auto" name="export_excel" value="1">
-    <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
-  </button>
-</form>
+    <form method="get" class="d-flex mb-2 flex-wrap">
+      <input class="form-control me-2 mb-2" type="text" name="buscar"
+             value="{{ buscar|default_if_none:'' }}"
+             placeholder="Buscar por RUT/NIF o razón social..." style="max-width:250px;">
+      <button type="submit" class="btn btn-outline-primary mb-2 me-2">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+      <button type="submit" class="btn btn-outline-success mb-2 ms-auto" name="export_excel" value="1">
+        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+      </button>
+    </form>
 
     <div class="table-responsive">
       <table class="table table-bordered table-hover rounded">
@@ -179,7 +211,6 @@ input, select {
 </div>
 {% endblock %}
 
-<!-- SweetAlert2 para errores de backend -->
 {% if form.errors %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -200,7 +231,15 @@ document.addEventListener("DOMContentLoaded", function() {
 {% block extra_js %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  // Confirmación visual de borrado
+
+  const selectPais = document.getElementById("paisSelect");
+  const flagSpan = document.getElementById("flag-icon").querySelector("span");
+  selectPais.addEventListener("change", function() {
+    const flag = this.options[this.selectedIndex].getAttribute("data-flag");
+    flagSpan.className = "fi fi-" + flag;
+  });
+
+  // Confirmación de borrado visual
   document.querySelectorAll('.delete-btn').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -221,7 +260,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // Validación visual
   const form = document.getElementById("proveedorForm");
   if (form) {
     form.setAttribute("novalidate", "novalidate");
@@ -229,13 +267,22 @@ document.addEventListener("DOMContentLoaded", function() {
       const rut = form.rut_nif.value.trim();
       const razon = form.razon_social.value.trim();
       const estado = form.estado.value.trim();
+      const nombreFantasia = form.nombre_fantasia.value.trim();
       const email = form.email.value.trim();
+      const pais = form.pais ? form.pais.value.trim() : selectPais.value.trim();
+      const condicionesPago = form.condiciones_pago.value.trim();
+      const moneda = form.moneda.value.trim();
       const usuario = form.usuario.value.trim();
 
       const faltantes = [];
       if (!rut) faltantes.push("RUT/NIF");
       if (!razon) faltantes.push("Razón social");
       if (!estado) faltantes.push("Estado");
+      if (!nombreFantasia) faltantes.push("Nombre de fantasía");
+      if (!email) faltantes.push("Email");
+      if (!pais) faltantes.push("País");
+      if (!condicionesPago) faltantes.push("Condiciones de pago");
+      if (!moneda) faltantes.push("Moneda");
       if (!usuario) faltantes.push("Usuario responsable");
 
       if (faltantes.length > 0) {
@@ -243,24 +290,28 @@ document.addEventListener("DOMContentLoaded", function() {
         Swal.fire({
           icon: "warning",
           title: "Campos obligatorios faltantes",
-          html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>"
+          html: "<ul style='text-align:left;margin:0;'>" +
+                faltantes.map(f => "<li>" + f + "</li>").join("") +
+                "</ul>",
+          confirmButtonText: "OK"
         });
         return false;
       }
+
       if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
         e.preventDefault();
         Swal.fire({
           icon: "error",
           title: "Correo inválido",
-          text: "Debe tener un dominio válido como .com, .cl, .org, etc."
+          text: "Debe tener un formato válido, por ejemplo: ejemplo@correo.com"
         });
         return false;
       }
+
       return true;
     }
   }
 
-  // Formato RUT
   const rutInput = document.getElementById("rutField");
   if (rutInput) {
     rutInput.addEventListener("input", function() {
