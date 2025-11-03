@@ -28,8 +28,6 @@ class ProveedorForm(forms.ModelForm):
         if not usuario:
             errores.append("Usuario responsable")
 
-        # ⚠️ Ejemplo: si también quieres que el país sea obligatorio, descomenta esta línea:
-        # if not pais:
 
         if errores:
             raise forms.ValidationError(
