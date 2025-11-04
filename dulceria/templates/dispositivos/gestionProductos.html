@@ -1,26 +1,23 @@
 {% extends "accounts/base.html" %}
 {% block content %}
 <style>
-.card {
-  border-radius: 16px !important;
-}
-input, select {
-  border-radius: 8px !important;
-}
-.table th, .table td {
-  vertical-align: middle;
-}
+.card { border-radius: 16px !important; }
+input, select { border-radius: 8px !important; }
+.table th, .table td { vertical-align: middle; }
 </style>
+
 <div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title mb-3 fw-bold">
       {% if edit_mode %}Editar producto{% else %}Nuevo producto{% endif %}
     </h5>
-    <form id="productoForm" method="post" autocomplete="off">
+
+    <form id="productoForm" method="post" autocomplete="off" novalidate>
       {% csrf_token %}
       {% if edit_mode %}
         <input type="hidden" name="edit_id" value="{{ edit_id }}">
       {% endif %}
+
       <ul class="nav nav-tabs mb-3" id="productTab" role="tablist">
         <li class="nav-item">
           <button class="nav-link active" id="tab-id-precios" data-bs-toggle="tab"
@@ -35,62 +32,100 @@ input, select {
           </button>
         </li>
       </ul>
+
       <div class="tab-content" id="productTabContent">
-        <!-- Tab 1: Identificación y precios -->
+        <!-- Identificación y precios -->
         <div class="tab-pane fade show active" id="id-precios" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-3">
               <label class="form-label">SKU</label>
-              <input type="text" class="form-control" name="sku" value="{{ form.sku.value|default_if_none:'' }}" required />
+              <select class="form-select" name="sku" id="sku" required>
+                <option value="">Seleccione tipo de SKU</option>
+                <option value="SKU-CHOC" {% if form.sku.value == "SKU-CHOC" %}selected{% endif %}>Chocolates</option>
+                <option value="SKU-CAR" {% if form.sku.value == "SKU-CAR" %}selected{% endif %}>Caramelos</option>
+                <option value="SKU-GAL" {% if form.sku.value == "SKU-GAL" %}selected{% endif %}>Galletas</option>
+                <option value="SKU-GOM" {% if form.sku.value == "SKU-GOM" %}selected{% endif %}>Gomitas</option>
+                <option value="SKU-ALF" {% if form.sku.value == "SKU-ALF" %}selected{% endif %}>Alfajores</option>
+              </select>
             </div>
+
             <div class="col-md-6">
               <label class="form-label">Nombre</label>
-              <input type="text" class="form-control" name="nombre" value="{{ form.nombre.value|default_if_none:'' }}" required />
+              <input type="text" class="form-control" name="nombre"
+                     value="{{ form.nombre.value|default_if_none:'' }}" required>
             </div>
+
             <div class="col-md-3">
               <label class="form-label">Categoría</label>
-              <input type="text" class="form-control" name="categoria" value="{{ form.categoria.value|default_if_none:'' }}" />
+              <input type="text" class="form-control" name="categoria"
+                     value="{{ form.categoria.value|default_if_none:'' }}">
             </div>
           </div>
+
           <div class="row mb-3">
             <div class="col-md-2">
               <label class="form-label">Unidad compra</label>
-              <input type="text" class="form-control" name="uom_compra" value="{{ form.uom_compra.value|default_if_none:'' }}" />
+              <select class="form-select" name="uom_compra" required>
+                <option value="">Seleccione...</option>
+                <option value="KG" {% if form.uom_compra.value == "KG" %}selected{% endif %}>Kilogramo</option>
+                <option value="LT" {% if form.uom_compra.value == "LT" %}selected{% endif %}>Litro</option>
+                <option value="CJ" {% if form.uom_compra.value == "CJ" %}selected{% endif %}>Caja</option>
+                <option value="PQ" {% if form.uom_compra.value == "PQ" %}selected{% endif %}>Paquete</option>
+                <option value="BL" {% if form.uom_compra.value == "BL" %}selected{% endif %}>Bloque</option>
+                <option value="BG" {% if form.uom_compra.value == "BG" %}selected{% endif %}>Bolsa</option>
+              </select>
             </div>
+
             <div class="col-md-2">
               <label class="form-label">Unidad venta</label>
-              <input type="text" class="form-control" name="uom_venta" value="{{ form.uom_venta.value|default_if_none:'' }}" />
+              <select class="form-select" name="uom_venta" required>
+                <option value="">Seleccione...</option>
+                <option value="UN" {% if form.uom_venta.value == "UN" %}selected{% endif %}>Unidad</option>
+                <option value="BL" {% if form.uom_venta.value == "BL" %}selected{% endif %}>Bolsa</option>
+                <option value="GR" {% if form.uom_venta.value == "GR" %}selected{% endif %}>Gramos</option>
+                <option value="KG" {% if form.uom_venta.value == "KG" %}selected{% endif %}>Kilogramo</option>
+                <option value="LT" {% if form.uom_venta.value == "LT" %}selected{% endif %}>Litro</option>
+                <option value="PD" {% if form.uom_venta.value == "PD" %}selected{% endif %}>Pack</option>
+                <option value="CJ" {% if form.uom_venta.value == "CJ" %}selected{% endif %}>Caja</option>
+              </select>
             </div>
+
             <div class="col-md-2">
               <label class="form-label">Conversión</label>
-              <input type="number" class="form-control" name="factor_conversion" value="{{ form.factor_conversion.value|default_if_none:1 }}" />
+              <input type="number" class="form-control" name="factor_conversion"
+                     value="{{ form.factor_conversion.value|default_if_none:1 }}" min="1" required>
             </div>
+
             <div class="col-md-2">
               <label class="form-label">IVA (%)</label>
-              <input type="number" class="form-control" name="impuesto_iva" value="{{ form.impuesto_iva.value|default_if_none:0 }}" />
+              <input type="number" class="form-control" name="impuesto_iva"
+                     value="{{ form.impuesto_iva.value|default_if_none:19 }}" readonly>
             </div>
           </div>
         </div>
-        <!-- Tab 2: Stock y control -->
+
+        <!-- Stock y control -->
         <div class="tab-pane fade" id="stock-control" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-3">
               <label class="form-label">Stock mínimo</label>
-              <input type="number" class="form-control" name="stock_minimo" value="{{ form.stock_minimo.value|default_if_none:0 }}" />
+              <input type="number" class="form-control" name="stock_minimo"
+                     value="{{ form.stock_minimo.value|default_if_none:0 }}" min="0" required>
             </div>
             <div class="col-md-3 form-check form-switch mt-4">
-              <input class="form-check-input" type="checkbox" name="perishable" id="perishableSwitch" 
-                {% if form.perishable.value %}checked{% endif %} value="1">
+              <input class="form-check-input" type="checkbox" name="perishable"
+                     id="perishableSwitch" {% if form.perishable.value %}checked{% endif %}>
               <label class="form-check-label" for="perishableSwitch">Perecible</label>
             </div>
             <div class="col-md-3 form-check form-switch mt-4">
-              <input class="form-check-input" type="checkbox" name="lote" id="controlLoteSwitch" 
-                {% if form.lote.value %}checked{% endif %} value="1">
+              <input class="form-check-input" type="checkbox" name="lote"
+                     id="controlLoteSwitch" {% if form.lote.value %}checked{% endif %}>
               <label class="form-check-label" for="controlLoteSwitch">Control por lote</label>
             </div>
           </div>
         </div>
       </div>
+
       <div class="d-flex justify-content-end mt-4">
         <button type="submit" class="btn btn-primary me-2">
           {% if edit_mode %}Actualizar{% else %}Guardar{% endif %}
@@ -102,44 +137,24 @@ input, select {
         {% endif %}
       </div>
     </form>
-      {% if form.errors %}
-      <script>
-      document.addEventListener("DOMContentLoaded", function() {
-        Swal.fire({
-          icon: 'error',
-          title: 'Errores en el formulario',
-          html: `{% for field in form %}
-                    {% if field.errors %}
-                      <strong>{{ field.label }}:</strong> {{ field.errors|join:", " }}<br>
-                    {% endif %}
-                {% endfor %}`,
-          confirmButtonText: 'Aceptar'
-        });
-      });
-      </script>
-      {% endif %}
-
   </div>
 </div>
-<!-- Tabla de Productos -->
+
 <div class="card shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold">Productos</h5>
-    <div class="d-flex mb-2">
-<form method="get" class="d-flex mb-2">
-  <input class="form-control me-2" type="text" name="buscar"
-         value="{{ buscar|default_if_none:'' }}"
-         placeholder="Buscar por SKU o nombre..." style="max-width:150px;">
-  <button type="submit" class="btn btn-outline-primary">Buscar</button>
-  <button type="submit" class="btn btn-outline-success ms-auto" name="export_excel" value="1">
-    Exportar a Excel
-  </button>
-</form>
-    </div>
+    <form method="get" class="d-flex mb-2">
+      <input class="form-control me-2" type="text" name="buscar"
+             placeholder="Buscar por SKU o nombre..." style="max-width:150px;">
+      <button type="submit" class="btn btn-outline-primary">Buscar</button>
+      <button type="submit" class="btn btn-outline-success ms-auto"
+              name="export_excel" value="1">Exportar a Excel</button>
+    </form>
+
     <div class="table-responsive">
       <table class="table table-bordered table-hover rounded">
-        <thead class="table-light">
-          <tr class="text-center">
+        <thead class="table-light text-center">
+          <tr>
             <th>SKU</th>
             <th>Nombre</th>
             <th>Categoría</th>
@@ -157,30 +172,95 @@ input, select {
             <td>{{ producto.stock_minimo }}</td>
             <td>{{ producto.impuesto_iva }}%</td>
             <td class="text-center">
-              <a href="?edit_id={{ producto.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+              <a href="?edit_id={{ producto.pk }}" class="btn btn-sm btn-outline-secondary mb-1">
                 <i class="bi bi-pencil-square"></i>
               </a>
-              <a href="?delete_id={{ producto.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
+              <a href="?delete_id={{ producto.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn">
                 <i class="bi bi-trash"></i>
               </a>
             </td>
           </tr>
           {% empty %}
-          <tr>
-            <td colspan="6" class="text-center text-muted">Sin productos registrados.</td>
-          </tr>
+          <tr><td colspan="6" class="text-center text-muted">Sin productos registrados.</td></tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // Confirmación de borrado son SweetAlert2 universal
+  const form = document.getElementById("productoForm");
+  if (!form) return;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const sku = form.sku.value.trim();
+    const nombre = form.nombre.value.trim();
+    const uomCompra = form.uom_compra.value.trim();
+    const uomVenta = form.uom_venta.value.trim();
+    const factor = form.factor_conversion.value.trim();
+    const iva = form.impuesto_iva.value.trim();
+    const stock = form.stock_minimo.value.trim();
+    
+    const faltantes = [];
+    if (!sku) faltantes.push("SKU");
+    if (!nombre) faltantes.push("Nombre");
+    if (!uomCompra) faltantes.push("Unidad de compra");
+    if (!uomVenta) faltantes.push("Unidad de venta");
+    if (!factor) faltantes.push("Conversión");
+    if (!iva) faltantes.push("IVA (%)");
+    if (!stock) faltantes.push("Stock mínimo");
+
+    if (faltantes.length > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Campos obligatorios faltantes",
+        html: "<ul style='text-align:left;margin:0;'>" +
+              faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>",
+        confirmButtonText: "Corregir"
+      });
+      return;
+    }
+
+    if (Number(stock) < 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Valor inválido",
+        text: "El stock mínimo no puede ser negativo.",
+        confirmButtonText: "Corregir"
+      });
+      return;
+    }
+
+    if (Number(factor) <= 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Conversión inválida",
+        text: "El factor de conversión debe ser mayor que cero.",
+        confirmButtonText: "Corregir"
+      });
+      return;
+    }
+
+    Swal.fire({
+      icon: "success",
+      title: form.querySelector("input[name='edit_id']") ?
+            "Producto actualizado correctamente." :
+            "Producto guardado correctamente.",
+      showConfirmButton: false,
+      timer: 1300
+    }).then(() => {
+      if (form.querySelector("input[name='edit_id']")) {
+        window.location.href = "{% url 'Productos' %}";
+      } else {
+        form.submit();
+      }
+    });
+  });
+
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -194,9 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
       }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = btn.getAttribute('href');
-        }
+        if (result.isConfirmed) window.location.href = btn.getAttribute('href');
       });
     });
   });

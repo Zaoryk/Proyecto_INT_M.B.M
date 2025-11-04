@@ -27,8 +27,6 @@ class ProveedorForm(forms.ModelForm):
             errores.append("Razón social")
         if not usuario:
             errores.append("Usuario responsable")
-
-
         if errores:
             raise forms.ValidationError(
                 f"Campos obligatorios faltantes: {', '.join(errores)}"

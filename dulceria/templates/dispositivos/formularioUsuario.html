@@ -26,7 +26,7 @@ input, select {
           {% if edit_mode %}Editar usuario{% else %}Nuevo usuario{% endif %}
         </h5>
 
-        <form method="post" autocomplete="off">
+        <form id="formUsuario" method="post" autocomplete="off" novalidate>
           {% csrf_token %}
           {% if edit_mode %}
             <input type="hidden" name="edit_id" value="{{ edit_id }}">
@@ -34,18 +34,18 @@ input, select {
 
           <div class="mb-3">
             <label class="form-label">Username <span class="text-muted small">(requerido, único)</span></label>
-            <input type="text" class="form-control" name="username" value="{{ form.username.value|default_if_none:'' }}" required />
+            <input type="text" class="form-control" name="username" value="{{ form.username.value|default_if_none:'' }}" required>
           </div>
 
           <div class="mb-3">
             <label class="form-label">Email <span class="text-muted small">(requerido, único)</span></label>
-            <input type="email" class="form-control" name="email" value="{{ form.email.value|default_if_none:'' }}" required />
+            <input type="email" class="form-control" name="email" value="{{ form.email.value|default_if_none:'' }}" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Contraseña <span class="text-muted small">(mínimo 8 caracteres, 1 mayúscula y 1 número)</span></label>
+            <label class="form-label">Contraseña <span class="text-muted small">(mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo)</span></label>
             <div class="input-group">
-              <input type="password" class="form-control" name="password" id="passwordField" placeholder="Ingrese una contraseña segura" required>
+              <input type="password" class="form-control" name="password" id="passwordField" placeholder="Ingrese una contraseña segura" {% if not edit_mode %}required{% endif %}>
               <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                 <i class="bi bi-eye"></i>
               </button>
@@ -55,11 +55,11 @@ input, select {
           <div class="row">
             <div class="col">
               <label class="form-label">Nombres <span class="text-muted small">(requerido)</span></label>
-              <input type="text" class="form-control" name="nombre" value="{{ form.nombre.value|default_if_none:'' }}" required />
+              <input type="text" class="form-control" name="nombre" value="{{ form.nombre.value|default_if_none:'' }}" required>
             </div>
             <div class="col">
               <label class="form-label">Apellidos <span class="text-muted small">(requerido)</span></label>
-              <input type="text" class="form-control" name="apellido" value="{{ form.apellido.value|default_if_none:'' }}" required />
+              <input type="text" class="form-control" name="apellido" value="{{ form.apellido.value|default_if_none:'' }}" required>
             </div>
           </div>
 
@@ -109,27 +109,28 @@ input, select {
     <div class="card shadow-sm border-0">
       <div class="card-body">
         <h5 class="card-title mb-3 fw-bold">Usuarios</h5>
-
         <form method="get" class="d-flex flex-wrap mb-3 gap-2">
           <input type="text" class="form-control me-2 mb-2" name="buscar"
+                 value="{{ request.GET.buscar|default_if_none:'' }}"
                  placeholder="Buscar por username o nombre..." style="max-width:200px;">
           <select class="form-select me-2 mb-2" name="rol" style="max-width:130px;">
             <option value="">Rol: todos</option>
-            <option value="ADMIN">ADMIN</option>
-            <option value="AUDITOR">AUDITOR</option>
-            <option value="OPERADOR">OPERADOR</option>
+            <option value="administrador" {% if request.GET.rol == 'administrador' %}selected{% endif %}>Administrador</option>
+            <option value="operador_compras" {% if request.GET.rol == 'operador_compras' %}selected{% endif %}>Operador Compras</option>
+            <option value="operador_inventario" {% if request.GET.rol == 'operador_inventario' %}selected{% endif %}>Operador Inventario</option>
+            <option value="operador_produccion" {% if request.GET.rol == 'operador_produccion' %}selected{% endif %}>Operador Producción</option>
+            <option value="operador_ventas" {% if request.GET.rol == 'operador_ventas' %}selected{% endif %}>Operador Ventas</option>
+            <option value="analista_financiero" {% if request.GET.rol == 'analista_financiero' %}selected{% endif %}>Analista Financiero</option>
           </select>
           <select class="form-select me-2 mb-2" name="estado" style="max-width:130px;">
             <option value="">Estado: todos</option>
-            <option value="ACTIVO">ACTIVO</option>
-            <option value="INACTIVO">INACTIVO</option>
-            <option value="BLOQUEADO">BLOQUEADO</option>
+            <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>Activo</option>
+            <option value="inactivo" {% if request.GET.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
+            <option value="bloqueado" {% if request.GET.estado == 'bloqueado' %}selected{% endif %}>Bloqueado</option>
           </select>
-
           <button type="submit" class="btn btn-outline-primary mb-2">
             <i class="bi bi-search"></i> Buscar
           </button>
-
           <button type="submit" class="btn btn-outline-success ms-auto mb-2"
                   name="export_excel" value="1">
             <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
@@ -180,10 +181,9 @@ input, select {
                   <a href="?edit_id={{ usuario.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
                     <i class="bi bi-pencil-square"></i>
                   </a>
-                  <a href="?delete_id={{ usuario.pk }}" class="btn btn-sm btn-outline-danger mb-1" title="Eliminar"
-                     onclick="return confirm('¿Seguro que deseas eliminar este usuario?')">
+                  <button type="button" data-id="{{ usuario.pk }}" class="btn btn-sm btn-outline-danger mb-1 btn-delete-user" title="Eliminar">
                     <i class="bi bi-trash"></i>
-                  </a>
+                  </button>
                 </td>
               </tr>
               {% empty %}
@@ -194,15 +194,16 @@ input, select {
             </tbody>
           </table>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector("form[method='post']");
+  const form = document.getElementById("formUsuario");
   const toggleBtn = document.getElementById("togglePassword");
   const passwordField = document.getElementById("passwordField");
 
@@ -214,35 +215,36 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (!form) return;
-
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const username = form.querySelector("[name='username']").value.trim();
-    const email    = form.querySelector("[name='email']").value.trim();
+    const email = form.querySelector("[name='email']").value.trim();
     const password = form.querySelector("[name='password']").value.trim();
-    const nombre   = form.querySelector("[name='nombre']").value.trim();
+    const nombre = form.querySelector("[name='nombre']").value.trim();
     const apellido = form.querySelector("[name='apellido']").value.trim();
-    const rol      = form.querySelector("[name='rol']").value.trim();
-    const estado   = form.querySelector("[name='estado']").value.trim();
-    const mfa      = form.querySelector("[name='mfa_habilitado']").value.trim();
+    const rol = form.querySelector("[name='rol']").value.trim();
+    const estado = form.querySelector("[name='estado']").value.trim();
+    const mfa = form.querySelector("[name='mfa_habilitado']").value.trim();
 
     const faltantes = [];
     if (!username) faltantes.push("Username");
-    if (!email)    faltantes.push("Email");
-    if (!password) faltantes.push("Contraseña");
-    if (!nombre)   faltantes.push("Nombres");
+    if (!email) faltantes.push("Email");
+    if (!nombre) faltantes.push("Nombres");
     if (!apellido) faltantes.push("Apellidos");
-    if (!rol)      faltantes.push("Rol");
-    if (!estado)   faltantes.push("Estado");
-    if (!mfa)      faltantes.push("MFA habilitado");
+    if (!rol) faltantes.push("Rol");
+    if (!estado) faltantes.push("Estado");
+    if (!mfa) faltantes.push("MFA habilitado");
+
+    const editMode = form.querySelector("input[name='edit_id']") !== null;
+    if (!editMode && !password) faltantes.push("Contraseña");
 
     if (faltantes.length > 0) {
       Swal.fire({
         icon: "warning",
         title: "Campos obligatorios faltantes",
-        html: `<ul style='text-align:left;margin:0;'>${faltantes.map(f => `<li>${f}</li>`).join("")}</ul>`
+        html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>",
+        confirmButtonText: "Corregir"
       });
       return;
     }
@@ -252,28 +254,56 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire({
         icon: "error",
         title: "Correo inválido",
-        text: "El correo debe tener un formato válido (ejemplo@dominio.com o ejemplo@empresa.cl)."
+        text: "Debe tener un formato válido (ejemplo@dominio.com).",
+        confirmButtonText: "Entendido"
       });
       return;
     }
 
-    const passRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!passRegex.test(password)) {
-      Swal.fire({
-        icon: "error",
-        title: "Contraseña insegura",
-        text: "Debe tener al menos 8 caracteres, una mayúscula y un número."
-      });
-      return;
+    if (!editMode) {
+      const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
+      if (!passRegex.test(password)) {
+        Swal.fire({
+          icon: "error",
+          title: "Contraseña insegura",
+          html: "Debe tener al menos:<br>• 8 caracteres<br>• 1 mayúscula<br>• 1 número<br>• 1 carácter especial (@$!%*?&.#_-)",
+          confirmButtonText: "Corregir"
+        });
+        return;
+      }
     }
 
     Swal.fire({
       icon: "success",
       title: "Formulario válido",
-      text: "Datos correctos.",
+      text: editMode ? "Usuario actualizado correctamente." : "Usuario guardado correctamente.",
       showConfirmButton: false,
       timer: 1200
-    }).then(() => form.submit());
+    });
+
+    setTimeout(() => {
+      form.submit();
+    }, 1300);
+  });
+
+  document.querySelectorAll(".btn-delete-user").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-id");
+      Swal.fire({
+        icon: "warning",
+        title: "¿Eliminar usuario?",
+        text: "Esta acción no se puede deshacer.",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+      }).then((r) => {
+        if (r.isConfirmed) {
+          window.location.href = "?delete_id=" + id;
+        }
+      });
+    });
   });
 });
 </script>
