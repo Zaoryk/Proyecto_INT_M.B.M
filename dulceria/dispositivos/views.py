@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models import Q
+from django.contrib import messages
 from django.http import HttpResponse
 import openpyxl
 
@@ -79,9 +80,9 @@ def formularioUsuario(request):
             except User.DoesNotExist:
                 pass 
             usuario.delete()
-            
+            messages.success(request, "Usuario eliminado correctamente.")
         except Exception as e:
-            print(f'Error al eliminar usuario: {str(e)}')
+            messages.error(request, f"Error al eliminar usuario: {str(e)}")
         
         return redirect("Formulario")
 
@@ -89,27 +90,36 @@ def formularioUsuario(request):
     if request.method == "GET" and "edit_id" in request.GET:
         form = UsuarioForm(instance=get_object_or_404(Usuario, pk=request.GET.get("edit_id")))
         edit_mode = True
+        edit_id = request.GET.get("edit_id")
 
-    #CRUD - GUARDAR Y ACTUALIZAR
+    # CRUD - GUARDAR Y ACTUALIZAR
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         instance = get_object_or_404(Usuario, pk=edit_id) if edit_id else None
         form = UsuarioForm(request.POST, instance=instance)
         edit_mode = bool(edit_id)
-        if form.is_valid(): 
-            usuario = form.save() #Esto hashea y sincroniza
+        
+        if form.is_valid():
+            # Si el form es válido, guardar
+            usuario = form.save()
+            messages.success(request, "Usuario guardado correctamente.")
             return redirect("Formulario")
+        # Si form.is_valid() es False, NO redirigir
+        # Los errores estarán en form.errors y se mostrarán en el template
+        
     else:
         form = UsuarioForm()
         edit_mode = False
+        edit_id = ""
 
     return render(request, "dispositivos/formularioUsuario.html", {
         "visitas": visitas,
         "form": form,
         "usuarios": usuarios,
         "edit_mode": edit_mode,
-        "edit_id": request.GET.get("edit_id", ""),
+        "edit_id": edit_id,
     })
+
 
 
 # -------------------------------------------------------------
