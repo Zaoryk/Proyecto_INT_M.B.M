@@ -260,18 +260,16 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (!editMode) {
-      const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
-      if (!passRegex.test(password)) {
-        Swal.fire({
-          icon: "error",
-          title: "Contraseña insegura",
-          html: "Debe tener al menos:<br>• 8 caracteres<br>• 1 mayúscula<br>• 1 número<br>• 1 carácter especial (@$!%*?&.#_-)",
-          confirmButtonText: "Corregir"
-        });
-        return;
-      }
-    }
+const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
+if ((!editMode && !passRegex.test(password)) || (editMode && password && !passRegex.test(password))) {
+  Swal.fire({
+    icon: "error",
+    title: "Contraseña insegura",
+    html: "Debe tener al menos:<br>• 8 caracteres<br>• 1 mayúscula<br>• 1 número<br>• 1 carácter especial (@$!%*?&.#_-)",
+    confirmButtonText: "Corregir"
+  });
+  return;
+}
 
     Swal.fire({
       icon: "success",
