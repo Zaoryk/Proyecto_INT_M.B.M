@@ -55,6 +55,14 @@ def password_solicitud(request):
         
         # Enviar email
         try:
+            # Verificar configuración antes de enviar
+            if not settings.EMAIL_HOST_USER:
+                messages.error(
+                    request,
+                    'Error de configuración: El servidor de correo no está configurado correctamente. Contacte al administrador.'
+                )
+                return render(request, 'accounts/password_solicitud.html')
+            
             send_mail(
                 subject='Código de Recuperación - Dulcería Lilis',
                 message=f'''
@@ -87,9 +95,16 @@ Equipo de Dulcería Lilis
             return redirect('password_validar')
             
         except Exception as e:
+            # Log del error completo para debugging
+            import traceback
+            print("="*60)
+            print("ERROR AL ENVIAR CORREO:")
+            print(traceback.format_exc())
+            print("="*60)
+            
             messages.error(
                 request, 
-                f'Error al enviar el correo: {str(e)}. Verifica tu configuración de email.'
+                f'Error al enviar el correo. Verifica tu configuración de email o contacta al administrador.'
             )
             return render(request, 'accounts/password_solicitud.html')
     

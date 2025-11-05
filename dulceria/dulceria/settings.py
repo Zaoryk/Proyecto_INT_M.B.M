@@ -164,8 +164,9 @@ AUTHENTICATION_BACKENDS = [
 # Configuración de Email con Gmail
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = ''  # AGREGAR CORREO PARA QUE FUNCIONE
-EMAIL_HOST_PASSWORD = 'kphtngtyxqqiulej'  # Contraseña de aplicación ESTA CAMBIA SEGUN CUENTA
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = '@gmail.com'  # AGREGAR CORREO PARA QUE FUNCIONE
+EMAIL_HOST_PASSWORD = 'pufeuguygtdrmwqe'  # Contraseña de aplicación ESTA CAMBIA SEGUN CUENTA
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

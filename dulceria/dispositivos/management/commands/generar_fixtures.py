@@ -21,7 +21,7 @@ class Command(BaseCommand):
                     "rol": "administrador",
                     "estado": "activo",
                     "mfa_habilitado": "deshabilitado",
-                    "password": "pbkdf2_sha256$600000$TEST$TEST"
+                    "password": "Admin#123"
                 }
             },
             {
@@ -35,7 +35,7 @@ class Command(BaseCommand):
                     "rol": "operador_inventario",
                     "estado": "activo",
                     "mfa_habilitado": "deshabilitado",
-                    "password": "pbkdf2_sha256$600000$TEST$TEST"
+                    "password": "Inventario#001"
                 }
             },
             {
@@ -49,7 +49,7 @@ class Command(BaseCommand):
                     "rol": "operador_ventas",
                     "estado": "activo",
                     "mfa_habilitado": "deshabilitado",
-                    "password": "pbkdf2_sha256$600000$TEST$TEST"
+                    "password": "Ventas#001"
                 }
             },
             {
@@ -63,7 +63,7 @@ class Command(BaseCommand):
                     "rol": "operador_compras",
                     "estado": "activo",
                     "mfa_habilitado": "deshabilitado",
-                    "password": "pbkdf2_sha256$600000$TEST$TEST"
+                    "password": "Compras#001"
                 }
             }
         ]
