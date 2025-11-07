@@ -11,32 +11,52 @@ input, select { border-radius: 8px !important; }
     <h5 class="card-title mb-3 fw-bold">
       {% if edit_mode %}Editar producto{% else %}Nuevo producto{% endif %}
     </h5>
-
     <form id="productoForm" method="post" autocomplete="off" novalidate>
       {% csrf_token %}
       {% if edit_mode %}
         <input type="hidden" name="edit_id" value="{{ edit_id }}">
       {% endif %}
-
       <ul class="nav nav-tabs mb-3" id="productTab" role="tablist">
         <li class="nav-item">
           <button class="nav-link active" id="tab-id-precios" data-bs-toggle="tab"
-            data-bs-target="#id-precios" type="button" role="tab">
+                  data-bs-target="#id-precios" type="button" role="tab">
             1. Identificación y precios
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" id="tab-stock" data-bs-toggle="tab"
-            data-bs-target="#stock-control" type="button" role="tab">
+                  data-bs-target="#stock-control" type="button" role="tab">
             2. Stock y control
           </button>
         </li>
       </ul>
-
       <div class="tab-content" id="productTabContent">
-        <!-- Identificación y precios -->
         <div class="tab-pane fade show active" id="id-precios" role="tabpanel">
           <div class="row mb-3">
+            <div class="col-md-3">
+              <label class="form-label">Categoría</label>
+              <select class="form-select" name="categoria" id="categoriaSelect" required>
+                <option value="">Seleccione...</option>
+                {% for value, text in categorias %}
+                  <option value="{{ value }}" {% if form.categoria.value == value %}selected{% endif %}>{{ text }}</option>
+                {% endfor %}
+                {# Compatibilidad total: agregamos la opción ingresada si no está en choices #}
+                {% with found=0 %}
+                  {% for value, text in categorias %}
+                    {% if form.categoria.value == value %}
+                      {% with found=1 %}{% endwith %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if form.categoria.value and form.categoria.value != "Otras" and not found %}
+                    <option value="{{ form.categoria.value }}" selected>{{ form.categoria.value }}</option>
+                  {% endif %}
+                {% endwith %}
+              </select>
+              <div id="input-categoria-nueva" style="display:none; margin-top:5px;">
+                <input type="text" name="categoria_nueva" class="form-control"
+                       placeholder="Ingrese nueva categoría" value="{{ request.POST.categoria_nueva }}">
+              </div>
+            </div>
             <div class="col-md-3">
               <label class="form-label">SKU</label>
               <select class="form-select" name="sku" id="sku" required>
@@ -48,20 +68,12 @@ input, select { border-radius: 8px !important; }
                 <option value="SKU-ALF" {% if form.sku.value == "SKU-ALF" %}selected{% endif %}>Alfajores</option>
               </select>
             </div>
-
             <div class="col-md-6">
               <label class="form-label">Nombre</label>
               <input type="text" class="form-control" name="nombre"
                      value="{{ form.nombre.value|default_if_none:'' }}" required>
             </div>
-
-            <div class="col-md-3">
-              <label class="form-label">Categoría</label>
-              <input type="text" class="form-control" name="categoria"
-                     value="{{ form.categoria.value|default_if_none:'' }}">
-            </div>
           </div>
-
           <div class="row mb-3">
             <div class="col-md-2">
               <label class="form-label">Unidad compra</label>
@@ -75,7 +87,6 @@ input, select { border-radius: 8px !important; }
                 <option value="BG" {% if form.uom_compra.value == "BG" %}selected{% endif %}>Bolsa</option>
               </select>
             </div>
-
             <div class="col-md-2">
               <label class="form-label">Unidad venta</label>
               <select class="form-select" name="uom_venta" required>
@@ -89,13 +100,11 @@ input, select { border-radius: 8px !important; }
                 <option value="CJ" {% if form.uom_venta.value == "CJ" %}selected{% endif %}>Caja</option>
               </select>
             </div>
-
             <div class="col-md-2">
               <label class="form-label">Conversión</label>
               <input type="number" class="form-control" name="factor_conversion"
                      value="{{ form.factor_conversion.value|default_if_none:1 }}" min="1" required>
             </div>
-
             <div class="col-md-2">
               <label class="form-label">IVA (%)</label>
               <input type="number" class="form-control" name="impuesto_iva"
@@ -103,8 +112,6 @@ input, select { border-radius: 8px !important; }
             </div>
           </div>
         </div>
-
-        <!-- Stock y control -->
         <div class="tab-pane fade" id="stock-control" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-3">
@@ -125,7 +132,6 @@ input, select { border-radius: 8px !important; }
           </div>
         </div>
       </div>
-
       <div class="d-flex justify-content-end mt-4">
         <button type="submit" class="btn btn-primary me-2">
           {% if edit_mode %}Actualizar{% else %}Guardar{% endif %}
@@ -150,7 +156,6 @@ input, select { border-radius: 8px !important; }
       <button type="submit" class="btn btn-outline-success ms-auto"
               name="export_excel" value="1">Exportar a Excel</button>
     </form>
-
     <div class="table-responsive">
       <table class="table table-bordered table-hover rounded">
         <thead class="table-light text-center">
@@ -191,75 +196,15 @@ input, select { border-radius: 8px !important; }
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("productoForm");
-  if (!form) return;
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const sku = form.sku.value.trim();
-    const nombre = form.nombre.value.trim();
-    const uomCompra = form.uom_compra.value.trim();
-    const uomVenta = form.uom_venta.value.trim();
-    const factor = form.factor_conversion.value.trim();
-    const iva = form.impuesto_iva.value.trim();
-    const stock = form.stock_minimo.value.trim();
-    
-    const faltantes = [];
-    if (!sku) faltantes.push("SKU");
-    if (!nombre) faltantes.push("Nombre");
-    if (!uomCompra) faltantes.push("Unidad de compra");
-    if (!uomVenta) faltantes.push("Unidad de venta");
-    if (!factor) faltantes.push("Conversión");
-    if (!iva) faltantes.push("IVA (%)");
-    if (!stock) faltantes.push("Stock mínimo");
-
-    if (faltantes.length > 0) {
-      Swal.fire({
-        icon: "warning",
-        title: "Campos obligatorios faltantes",
-        html: "<ul style='text-align:left;margin:0;'>" +
-              faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>",
-        confirmButtonText: "Corregir"
-      });
-      return;
-    }
-
-    if (Number(stock) < 0) {
-      Swal.fire({
-        icon: "error",
-        title: "Valor inválido",
-        text: "El stock mínimo no puede ser negativo.",
-        confirmButtonText: "Corregir"
-      });
-      return;
-    }
-
-    if (Number(factor) <= 0) {
-      Swal.fire({
-        icon: "error",
-        title: "Conversión inválida",
-        text: "El factor de conversión debe ser mayor que cero.",
-        confirmButtonText: "Corregir"
-      });
-      return;
-    }
-
-    Swal.fire({
-      icon: "success",
-      title: form.querySelector("input[name='edit_id']") ?
-            "Producto actualizado correctamente." :
-            "Producto guardado correctamente.",
-      showConfirmButton: false,
-      timer: 1300
-    }).then(() => {
-      if (form.querySelector("input[name='edit_id']")) {
-        window.location.href = "{% url 'Productos' %}";
-      } else {
-        form.submit();
-      }
+document.addEventListener("DOMContentLoaded", function() {
+  const selectCat = document.getElementById("categoriaSelect");
+  const inputDiv = document.getElementById("input-categoria-nueva");
+  if (selectCat) {
+    selectCat.addEventListener('change', function() {
+      inputDiv.style.display = (this.value === 'Otras') ? 'block' : 'none';
     });
-  });
+    if (selectCat.value === 'Otras') inputDiv.style.display = 'block';
+  }
 
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
@@ -278,6 +223,27 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   });
+
+  {% if form.errors %}
+    let erroresHTML = "<ul style='text-align:left; margin:0; padding-left:20px;'>";
+    {% for field in form %}
+      {% if field.errors %}
+        {% for error in field.errors %}
+          erroresHTML += "<li><strong>{{ field.label }}:</strong> {{ error|escapejs }}</li>";
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+      erroresHTML += "<li>{{ error|escapejs }}</li>";
+    {% endfor %}
+    erroresHTML += "</ul>";
+    Swal.fire({
+      icon: "error",
+      title: "Error en el formulario",
+      html: erroresHTML,
+      confirmButtonText: "Corregir"
+    });
+  {% endif %}
 });
 </script>
 {% endblock %}

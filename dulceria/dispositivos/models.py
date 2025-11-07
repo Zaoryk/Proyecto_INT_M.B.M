@@ -122,7 +122,6 @@ class Usuario(models.Model):
         # Sincronizar con auth_user después de guardar
         self.sync_to_auth_user()
 
-
 class Producto(models.Model):
     idProducto = models.AutoField(primary_key=True)
     sku = models.CharField(unique=True, max_length=50, blank=True, null=True)

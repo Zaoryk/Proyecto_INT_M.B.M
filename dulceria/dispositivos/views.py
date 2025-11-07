@@ -9,6 +9,20 @@ from django.contrib import messages
 from django.http import HttpResponse
 import openpyxl
 
+# ------------
+# Categorias para editar
+# -------------
+
+CATEGORIAS = [
+    ("Chocolates", "Chocolates"),
+    ("Caramelos", "Caramelos"),
+    ("Galletas", "Galletas"),
+    ("Gomitas", "Gomitas"),
+    ("Alfajores", "Alfajores"),
+    ("Otras", "Otra...")
+]
+
+
 # -------------------------------------------------------------
 # DASHBOARD
 # -------------------------------------------------------------
@@ -135,7 +149,6 @@ def gestionProductos(request):
     if search:
         productos = productos.filter(Q(nombre__icontains=search) | Q(sku__icontains=search))
 
-    # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -153,21 +166,35 @@ def gestionProductos(request):
         workbook.save(response)
         return response
 
-    # CRUD
     if request.method == "GET" and "edit_id" in request.GET:
         form = ProductoForm(instance=get_object_or_404(Producto, pk=request.GET.get("edit_id")))
         edit_mode = True
+
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         instance = get_object_or_404(Producto, pk=edit_id) if edit_id else None
-        form = ProductoForm(request.POST, instance=instance)
+
+        categoria = request.POST.get("categoria")
+        categoria_nueva = request.POST.get("categoria_nueva", "").strip()
+        data = request.POST.copy()
+
+        if categoria == "Otras" and categoria_nueva:
+            data['categoria'] = categoria_nueva
+
+        form = ProductoForm(data, instance=instance)
         edit_mode = bool(edit_id)
+
+        if categoria == "Otras" and not categoria_nueva:
+            form.add_error('categoria', "Debes ingresar una nueva categoría")
+
         if form.is_valid():
             form.save()
             return redirect("Productos")
+
     elif request.method == "GET" and "delete_id" in request.GET:
         Producto.objects.filter(pk=request.GET.get("delete_id")).delete()
         return redirect("Productos")
+
     else:
         form = ProductoForm()
         edit_mode = False
@@ -178,8 +205,8 @@ def gestionProductos(request):
         "productos": productos,
         "edit_mode": edit_mode,
         "edit_id": request.GET.get("edit_id", ""),
+        "categorias": CATEGORIAS,
     })
-
 
 # -------------------------------------------------------------
 # PROVEEDORES
