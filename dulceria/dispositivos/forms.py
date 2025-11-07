@@ -87,15 +87,37 @@ class ProveedorForm(forms.ModelForm):
 
 
 class ProductoProveedorForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # TODOS los campos requeridos custom
+        self.fields['fecha_movimiento'].required = False
+        self.fields['tipo_movimiento'].required = False
+        self.fields['producto'].required = False
+        self.fields['cantidad'].required = False
+        self.fields['proveedor'].required = False
+
+    def clean(self):
+        cleaned = super().clean()
+        required = {
+            'fecha_movimiento': 'Debes ingresar la fecha del movimiento.',
+            'tipo_movimiento': 'Debes seleccionar el tipo de movimiento.',
+            'producto': 'Debes seleccionar un producto.',
+            'cantidad': 'Debes ingresar la cantidad.',
+            'proveedor': 'Debes seleccionar un proveedor.',
+        }
+        for field, msg in required.items():
+            if not self.cleaned_data.get(field):
+                self.add_error(field, msg)
+        # Lógica adicional para cantidad positiva
+        cantidad = self.cleaned_data.get("cantidad")
+        if cantidad is not None and cantidad <= 0:
+            self.add_error("cantidad", "La cantidad debe ser mayor a cero.")
+        return cleaned
+
     class Meta:
         model = ProductoProveedor
         fields = '__all__'
-    
-    def clean_cantidad(self):
-        cantidad = self.cleaned_data.get('cantidad')
-        if cantidad and cantidad < 0:
-            raise ValidationError("La cantidad no puede ser negativa.")
-        return cantidad
+
 
 
 class MovimientoInventarioForm(forms.ModelForm):
