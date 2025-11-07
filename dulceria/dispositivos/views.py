@@ -62,7 +62,6 @@ def formularioUsuario(request):
     if estado_filter:
         usuarios = usuarios.filter(estado__iexact=estado_filter)
 
-    # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -81,13 +80,12 @@ def formularioUsuario(request):
         workbook.save(response)
         return response
 
-    # CRUD - ELIMINAR
     if request.method == "GET" and "delete_id" in request.GET:
         usuario_id = request.GET.get("delete_id")
         try:
             usuario = Usuario.objects.get(pk=usuario_id)
             username = usuario.username
-            
+
             try:
                 auth_user = User.objects.get(username=username)
                 auth_user.delete()
@@ -97,30 +95,34 @@ def formularioUsuario(request):
             messages.success(request, "Usuario eliminado correctamente.")
         except Exception as e:
             messages.error(request, f"Error al eliminar usuario: {str(e)}")
-        
         return redirect("Formulario")
 
-    # CRUD EDITAR
+    if request.method == "POST" and request.POST.get("delete_avatar"):
+        edit_id = request.POST.get("edit_id")
+        usuario = get_object_or_404(Usuario, pk=edit_id)
+        if usuario.avatar:
+            usuario.avatar.delete(save=False)
+            usuario.avatar = None
+            usuario.save()
+        messages.success(request, "Avatar eliminado correctamente.")
+        return redirect("Formulario")
+
     if request.method == "GET" and "edit_id" in request.GET:
         form = UsuarioForm(instance=get_object_or_404(Usuario, pk=request.GET.get("edit_id")))
         edit_mode = True
         edit_id = request.GET.get("edit_id")
 
-    # CRUD - GUARDAR Y ACTUALIZAR
+    # Guardar o actualizar usuario.
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         instance = get_object_or_404(Usuario, pk=edit_id) if edit_id else None
-        form = UsuarioForm(request.POST, instance=instance)
+        form = UsuarioForm(request.POST, request.FILES, instance=instance)
         edit_mode = bool(edit_id)
-        
         if form.is_valid():
-            # Si el form es válido, guardar
             usuario = form.save()
             messages.success(request, "Usuario guardado correctamente.")
             return redirect("Formulario")
-        # Si form.is_valid() es False, NO redirigir
-        # Los errores estarán en form.errors y se mostrarán en el template
-        
+
     else:
         form = UsuarioForm()
         edit_mode = False
@@ -133,6 +135,7 @@ def formularioUsuario(request):
         "edit_mode": edit_mode,
         "edit_id": edit_id,
     })
+
 
 
 
@@ -223,7 +226,6 @@ def gestionProveedores(request):
             Q(rut_nif__icontains=buscar) | Q(razon_social__icontains=buscar)
         )
 
-    # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -287,7 +289,6 @@ def moduloTransaccional(request):
     if tipo:
         movimientos = movimientos.filter(tipo_movimiento__iexact=tipo)
 
-    # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active

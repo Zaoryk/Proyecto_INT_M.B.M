@@ -3,6 +3,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from .forms import LoginForm
 from .views import (dashboard, password_solicitud, password_validar, password_cambio)
 
+
 urlpatterns = [
     path("login/", LoginView.as_view(
         template_name="accounts/login.html",

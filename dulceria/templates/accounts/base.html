@@ -76,9 +76,21 @@
             {% endif %}
             <!--Fin-->
             {% if user.is_authenticated %}
-              <li class="nav-item">
-                <span class="nav-link">Hola, {{ user.username }}</span>
+              <li class="nav-item d-flex align-items-center">
+                {% if usuario_actual and usuario_actual.avatar %}
+                  <img src="{{ usuario_actual.avatar.url }}" alt="Avatar"
+                    class="rounded-circle me-2" style="width:34px;height:34px;object-fit:cover;border:2px solid #fff;">
+                {% else %}
+                  <div class="rounded-circle bg-white d-flex align-items-center justify-content-center me-2"
+                      style="width:34px;height:34px;border:2px solid #fff;">
+                    <span class="fw-bold text-danger" style="font-size:1.2em;">
+                      {{ usuario_actual.nombre|default:user.username|slice:":1"|upper }}
+                    </span>
+                  </div>
+                {% endif %}
+                <span class="nav-link p-0">Hola, {{ user.username }}</span>
               </li>
+
               <li class="nav-item">
                 <form action="{% url 'logout' %}" method="post" class="d-inline">
                   {% csrf_token %}

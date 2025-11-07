@@ -231,3 +231,4 @@ def password_cambio(request):
                 return redirect('password_solicitud')
     
     return render(request, 'accounts/password_cambio.html')
+

@@ -29,6 +29,7 @@ class Usuario(models.Model):
     email = models.CharField(max_length=100, blank=True, null=True, unique=True)
     nombre = models.CharField(max_length=100, blank=True, null=True)
     apellido = models.CharField(max_length=100, blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True) 
     rol = models.CharField(max_length=50, choices=ROLES, default="operador_ventas")
     estado = models.CharField(max_length=50, choices=ESTADOS, default="activo")
     mfa_habilitado = models.CharField(max_length=50, choices=MFA_OPTIONS, default="deshabilitado")
@@ -92,14 +93,11 @@ class Usuario(models.Model):
                     else:
                         auth_user.set_password(self.password)
                     auth_user.save()
-            
-            # Asignar al grupo según rol
+
             from django.contrib.auth.models import Group
             
-            # Limpiar grupos anteriores
             auth_user.groups.clear()
             
-            # Asignar nuevo grupo
             try:
                 group = Group.objects.get(name=self.rol)
                 auth_user.groups.add(group)
@@ -118,8 +116,7 @@ class Usuario(models.Model):
             self.set_password(self.password)
         
         super().save(*args, **kwargs)
-        
-        # Sincronizar con auth_user después de guardar
+
         self.sync_to_auth_user()
 
 class Producto(models.Model):
@@ -184,7 +181,6 @@ class ProductoProveedor(models.Model):
         managed = False
         db_table = 'Producto_Proveedor'
 
-# Modelos existentes que se mantienen (adaptados para compatibilidad)
 class Bodega(models.Model):
     idbodega = models.AutoField(db_column='idBodega', primary_key=True)
     nombre = models.CharField(max_length=120, blank=True, null=True)
