@@ -49,24 +49,36 @@ class ProductoForm(forms.ModelForm):
         data = None
         if args:
             data = args[0]
-        custom_found = False
         if data and hasattr(data, 'get'):
             val = data.get('categoria')
             if val and val not in [v for v, t in CATEGORIAS] and val != "":
                 choices.append((val, val))
-                custom_found = True
         self.fields['categoria'] = forms.ChoiceField(
-            choices=choices,
-            required=True,
+            choices=choices, required=False,
             widget=forms.Select(attrs={'class': 'form-select', 'id': 'categoriaSelect'})
         )
+        self.fields['nombre'].required = False
+        self.fields['uom_compra'].required = False
+        self.fields['uom_venta'].required = False
+        self.fields['stock_minimo'].required = False
+
+    def clean(self):
+        cleaned = super().clean()
+        custom_msgs = {
+            "nombre": "Debes ingresar un nombre.",
+            "categoria": "Debes seleccionar o ingresar una categoría.",
+            "uom_compra": "Debes seleccionar unidad de compra.",
+            "uom_venta": "Debes seleccionar unidad de venta.",
+            "stock_minimo": "Debes ingresar el stock mínimo."
+        }
+        for field, msg in custom_msgs.items():
+            if not self.cleaned_data.get(field):
+                self.add_error(field, msg)
+        return cleaned
+
     class Meta:
         model = Producto
         fields = '__all__'
-
-
-
-
 
 class ProveedorForm(forms.ModelForm):
     class Meta:
