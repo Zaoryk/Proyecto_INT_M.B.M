@@ -41,29 +41,31 @@ class UsuarioForm(forms.ModelForm):
         
         return email
 
-
 class ProductoForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from dispositivos.views import CATEGORIAS
+        choices = [('', 'Seleccione...')] + list(CATEGORIAS)
+        data = None
+        if args:
+            data = args[0]
+        custom_found = False
+        if data and hasattr(data, 'get'):
+            val = data.get('categoria')
+            if val and val not in [v for v, t in CATEGORIAS] and val != "":
+                choices.append((val, val))
+                custom_found = True
+        self.fields['categoria'] = forms.ChoiceField(
+            choices=choices,
+            required=True,
+            widget=forms.Select(attrs={'class': 'form-select', 'id': 'categoriaSelect'})
+        )
     class Meta:
         model = Producto
         fields = '__all__'
-        
-    def clean_stock_minimo(self):
-        stock_minimo = self.cleaned_data.get('stock_minimo')
-        if stock_minimo and stock_minimo < 0:
-            raise ValidationError("El stock mínimo no puede ser negativo.")
-        return stock_minimo
-        
-    def clean_factor_conversion(self):
-        factor_conversion = self.cleaned_data.get('factor_conversion')
-        if factor_conversion and factor_conversion < 0:
-            raise ValidationError("El factor de conversión no puede ser negativo.")
-        return factor_conversion
-        
-    def clean_impuesto_iva(self):
-        impuesto_iva = self.cleaned_data.get('impuesto_iva')
-        if impuesto_iva and impuesto_iva < 0:
-            raise ValidationError("El impuesto IVA no puede ser negativo.")
-        return impuesto_iva
+
+
+
 
 
 class ProveedorForm(forms.ModelForm):
