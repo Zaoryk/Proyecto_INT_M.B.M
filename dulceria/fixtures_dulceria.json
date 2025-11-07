@@ -10,7 +10,7 @@
       "rol": "administrador",
       "estado": "activo",
       "mfa_habilitado": "deshabilitado",
-      "password": "pbkdf2_sha256$600000$TEST$TEST"
+      "password": "Admin#123"
     }
   },
   {
@@ -24,7 +24,7 @@
       "rol": "operador_inventario",
       "estado": "activo",
       "mfa_habilitado": "deshabilitado",
-      "password": "pbkdf2_sha256$600000$TEST$TEST"
+      "password": "Inventario#001"
     }
   },
   {
@@ -38,7 +38,7 @@
       "rol": "operador_ventas",
       "estado": "activo",
       "mfa_habilitado": "deshabilitado",
-      "password": "pbkdf2_sha256$600000$TEST$TEST"
+      "password": "Ventas#001"
     }
   },
   {
@@ -52,7 +52,7 @@
       "rol": "operador_compras",
       "estado": "activo",
       "mfa_habilitado": "deshabilitado",
-      "password": "pbkdf2_sha256$600000$TEST$TEST"
+      "password": "Compras#001"
     }
   },
   {
