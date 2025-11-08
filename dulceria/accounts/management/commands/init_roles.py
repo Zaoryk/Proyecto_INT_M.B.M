@@ -129,24 +129,20 @@ class Command(BaseCommand):
             # ANALISTA FINANCIERO - SOLO VISUALIZACION
             # =========================================
             elif group_name == 'analista_financiero':
-                modulos_lectura = [
-                    'productos', 'proveedores', 'producto_proveedor',
-                    'costos', 'listar_precios', 'clientes', 'pedidos',
-                    'orden_compra', 'movimiento_inventario'
-                ]
-                for module_code in modulos_lectura:
-                    try:
-                        module = Module.objects.get(code=module_code)
-                        RoleModulePermission.objects.create(
-                            role=role,
-                            module=module,
-                            can_view=True,
-                            can_add=False,
-                            can_change=False,
-                            can_delete=False
-                        )
-                    except Module.DoesNotExist:
-                        self.stdout.write(self.style.WARNING(f'Módulo no encontrado: {module_code}'))
+                permisos = {
+                    'usuarios': {'view': True, 'add': False, 'change': True, 'delete': False},
+                    'productos': {'view': True, 'add': False, 'change': False, 'delete': False},
+                    'proveedores': {'view': True, 'add': False, 'change': False, 'delete': False},
+                    'producto_proveedor': {'view': True, 'add': False, 'change': False, 'delete': False},
+                    'costos': {'view': True, 'add': False, 'change': False, 'delete': False},
+                    'listar_precios': {'view': True, 'add': False, 'change': False, 'delete': False},
+                    'clientes': {'view': True, 'add': False, 'change': False, 'delete': False},
+                    'pedidos': {'view': True, 'add': False, 'change': False, 'delete': False},
+                    'orden_compra': {'view': True, 'add': False, 'change': False, 'delete': False},
+                    'movimiento_inventario': {'view': True, 'add': False, 'change': False, 'delete': False},
+                }
+                self._aplicar_permisos(role, permisos)
+
 
         self.stdout.write(self.style.SUCCESS('Sistema de roles inicializado exitosamente!'))
 

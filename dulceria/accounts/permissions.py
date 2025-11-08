@@ -90,7 +90,7 @@ def can_edit_own_profile(user, usuario_id):
     
     Reglas:
     - Administrador: puede editar cualquier perfil
-    - Analista Financiero: no puede editar ningún perfil (ni el suyo)
+    - Analista Financiero: solo puede editar su propio perfil
     - Otros roles: solo pueden editar su propio perfil
     
     Args:
@@ -105,16 +105,10 @@ def can_edit_own_profile(user, usuario_id):
     
     role_name = get_user_role_name(user)
     
-    # Analista financiero no puede editar nada
-    if role_name == 'analista_financiero':
-        return False
-    
     # Administrador puede editar cualquier perfil
     if role_name == 'administrador':
         return True
     
-    # Otros roles solo pueden editar su propio perfil
-    # Necesitamos obtener el usuario_id del usuario autenticado
     from dispositivos.models import Usuario
     try:
         usuario_actual = Usuario.objects.get(username=user.username)
