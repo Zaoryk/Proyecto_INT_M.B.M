@@ -229,7 +229,6 @@ def formularioUsuario(request):
 def gestionProductos(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
-
     role_name = get_user_role_name(request.user)
 
     # Búsqueda
@@ -237,6 +236,16 @@ def gestionProductos(request):
     productos = Producto.objects.all()
     if search:
         productos = productos.filter(Q(nombre__icontains=search) | Q(sku__icontains=search))
+
+    # Ordenamiento
+    order = request.GET.get("order") or request.session.get("order", "asc")
+    order_by = request.GET.get("order_by") or request.session.get("order_by", "nombre")
+    request.session["order"] = order
+    request.session["order_by"] = order_by
+    if order == "desc":
+        productos = productos.order_by(f"-{order_by}")
+    else:
+        productos = productos.order_by(order_by)
 
     # Exportar a Excel
     if "export_excel" in request.GET:
@@ -268,19 +277,18 @@ def gestionProductos(request):
             return redirect("Productos")
         form = ProductoForm(instance=get_object_or_404(Producto, pk=request.GET.get("edit_id")))
         edit_mode = True
-    
+
     # GUARDAR / ACTUALIZAR
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
-        
+
         if edit_id and not can_change:
             messages.error(request, "No tienes permiso para editar productos.")
             return redirect("Productos")
-        
         if not edit_id and not can_add:
             messages.error(request, "No tienes permiso para crear productos.")
             return redirect("Productos")
-        
+
         instance = get_object_or_404(Producto, pk=edit_id) if edit_id else None
         categoria = request.POST.get("categoria")
         categoria_nueva = request.POST.get("categoria_nueva", "").strip()
@@ -294,12 +302,12 @@ def gestionProductos(request):
 
         if categoria == "Otras" and not categoria_nueva:
             form.add_error('categoria', "Debes ingresar una nueva categoría")
-        
+
         if form.is_valid():
             form.save()
             messages.success(request, "Producto guardado correctamente.")
             return redirect("Productos")
-    
+
     # ELIMINAR
     elif request.method == "GET" and "delete_id" in request.GET:
         if not can_delete:
@@ -308,14 +316,23 @@ def gestionProductos(request):
         Producto.objects.filter(pk=request.GET.get("delete_id")).delete()
         messages.success(request, "Producto eliminado correctamente.")
         return redirect("Productos")
+
     else:
         form = ProductoForm() if can_add else None
         edit_mode = False
 
+    # Paginador con persistencia en sesión
+    pag_size = request.GET.get('pag_size') or request.session.get('pag_size', '15')
+    request.session['pag_size'] = pag_size
+    from django.core.paginator import Paginator
+    paginator = Paginator(productos, int(pag_size))
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "dispositivos/gestionProductos.html", {
         "visitas": visitas,
         "form": form,
-        "productos": productos,
+        "productos": page_obj,
         "edit_mode": edit_mode,
         "edit_id": request.GET.get("edit_id", ""),
         "can_add": can_add,
@@ -323,7 +340,11 @@ def gestionProductos(request):
         "can_delete": can_delete,
         "role_name": role_name,
         "categorias": CATEGORIAS,
+        "pag_size": pag_size,
+        "order": order,
+        "order_by": order_by,
     })
+
 
 # -------------------------------------------------------------
 # PROVEEDORES
@@ -335,7 +356,6 @@ def gestionProveedores(request):
     request.session['visitas'] = visitas + 1
 
     role_name = get_user_role_name(request.user)
-    
     buscar = request.GET.get('buscar', '')
     proveedores = Proveedor.objects.all()
     if buscar:
@@ -343,13 +363,36 @@ def gestionProveedores(request):
             Q(rut_nif__icontains=buscar) | Q(razon_social__icontains=buscar)
         )
 
-    # Exportar a Excel
+    # Ordenamiento seguro por campo existente
+    VALID_FIELDS = ['rut_nif', 'razon_social', 'estado', 'email', 'pais']
+    order = request.GET.get('order', request.session.get('order', 'asc'))
+    order_by = request.GET.get('order_by', request.session.get('order_by', 'razon_social'))
+    if order_by not in VALID_FIELDS:
+        order_by = 'razon_social'
+    request.session['order'] = order
+    request.session['order_by'] = order_by
+    if order == 'desc':
+        proveedores = proveedores.order_by(f'-{order_by}')
+    else:
+        proveedores = proveedores.order_by(order_by)
+
+    # Paginador
+    pag_size = request.GET.get('pag_size') or request.session.get('pag_size', '10')
+    request.session['pag_size'] = pag_size
+    from django.core.paginator import Paginator
+    paginator = Paginator(proveedores, int(pag_size))
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Exportar a Excel (siempre usando queryset filtrado/ordenado)
     if "export_excel" in request.GET:
+        import openpyxl
+        from django.http import HttpResponse
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "Proveedores"
-        headers = ["RUT/NIF", "Razón Social", "Estado", "Email", "País"]
-        sheet.append(headers)
+        headers_excel = ["RUT/NIF", "Razón Social", "Estado", "Email", "País"]
+        sheet.append(headers_excel)
         for p in proveedores:
             sheet.append([
                 p.rut_nif, p.razon_social, p.get_estado_display(), p.email, p.pais
@@ -361,7 +404,15 @@ def gestionProveedores(request):
         workbook.save(response)
         return response
 
-    # Verificar permisos CRUD
+    # Headers para la tabla
+    headers = [
+        ("rut_nif", "RUT/NIF"),
+        ("razon_social", "Razón Social"),
+        ("estado", "Estado"),
+        ("email", "Email"),
+        ("pais", "País"),
+    ]
+
     can_add = user_can_add_module(request.user, 'proveedores')
     can_change = user_can_change_module(request.user, 'proveedores')
     can_delete = user_can_delete_module(request.user, 'proveedores')
@@ -373,29 +424,21 @@ def gestionProveedores(request):
             return redirect("Proveedores")
         form = ProveedorForm(instance=get_object_or_404(Proveedor, pk=request.GET.get("edit_id")))
         edit_mode = True
-    
-    # GUARDAR / ACTUALIZAR
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
-        
         if edit_id and not can_change:
             messages.error(request, "No tienes permiso para editar proveedores.")
             return redirect("Proveedores")
-        
         if not edit_id and not can_add:
             messages.error(request, "No tienes permiso para crear proveedores.")
             return redirect("Proveedores")
-        
         instance = get_object_or_404(Proveedor, pk=edit_id) if edit_id else None
         form = ProveedorForm(request.POST, instance=instance)
         edit_mode = bool(edit_id)
-        
         if form.is_valid():
             form.save()
             messages.success(request, "Proveedor guardado correctamente.")
             return redirect("Proveedores")
-    
-    # ELIMINAR
     elif request.method == "GET" and "delete_id" in request.GET:
         if not can_delete:
             messages.error(request, "No tienes permiso para eliminar proveedores.")
@@ -410,7 +453,7 @@ def gestionProveedores(request):
     return render(request, "dispositivos/gestionProveedores.html", {
         "visitas": visitas,
         "form": form,
-        "proveedores": proveedores,
+        "proveedores": page_obj,
         "edit_mode": edit_mode,
         "edit_id": request.GET.get("edit_id", ""),
         "buscar": buscar,
@@ -418,8 +461,11 @@ def gestionProveedores(request):
         "can_edit": can_change,
         "can_delete": can_delete,
         "role_name": role_name,
+        "order": order,
+        "order_by": order_by,
+        "pag_size": pag_size,
+        "headers": headers,
     })
-
 
 # -------------------------------------------------------------
 # PRODUCTO - PROVEEDOR (MOVIMIENTOS DE INVENTARIO)

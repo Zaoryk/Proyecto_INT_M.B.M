@@ -6,6 +6,7 @@ input, select { border-radius: 8px !important; }
 .table th, .table td { vertical-align: middle; }
 </style>
 
+{# --------- FORMULARIO NUEVO/EDITAR PRODUCTO --------- #}
 {% if can_add or edit_mode %}
 <div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
@@ -158,12 +159,21 @@ input, select { border-radius: 8px !important; }
 </div>
 {% endif %}
 
+{# ------------ TABLA Y PAGINADOR ------------ #}
+
 <div class="card shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold">Productos</h5>
-    <form method="get" class="d-flex mb-2">
+    <form method="get" class="d-flex align-items-center mb-3" id="paginatorForm">
       <input class="form-control me-2" type="text" name="buscar"
-             placeholder="Buscar por SKU o nombre..." style="max-width:150px;">
+             placeholder="Buscar por SKU o nombre..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:150px;">
+      <label class="me-2 mb-0" for="pag_size">Mostrar</label>
+      <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
+        <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
+        <option value="10"{% if pag_size == '10' %} selected{% endif %}>10</option>
+        <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
+      </select>
+      <span class="me-2">registros</span>
       <button type="submit" class="btn btn-outline-primary">Buscar</button>
       <button type="submit" class="btn btn-outline-success ms-auto"
               name="export_excel" value="1">Exportar a Excel</button>
@@ -172,11 +182,18 @@ input, select { border-radius: 8px !important; }
       <table class="table table-bordered table-hover rounded">
         <thead class="table-light text-center">
           <tr>
-            <th>SKU</th>
-            <th>Nombre</th>
-            <th>Categoría</th>
-            <th>Stock mínimo</th>
-            <th>IVA (%)</th>
+            {% for field, label in headers %}
+            <th>
+              <a href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}
+                order_by={{ field }}&order={% if order_by == field %}{% if order == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}
+                {% if pag_size %}&pag_size={{ pag_size }}{% endif %}">
+                {{ label }}
+                {% if order_by == field %}
+                  {% if order == "asc" %}▲{% else %}▼{% endif %}
+                {% endif %}
+              </a>
+            </th>
+            {% endfor %}
             {% if can_edit or can_delete %}
               <th>Acciones</th>
             {% endif %}
@@ -197,7 +214,6 @@ input, select { border-radius: 8px !important; }
                   <i class="bi bi-pencil-square"></i>
                 </a>
               {% endif %}
-              
               {% if can_delete %}
                 <a href="?delete_id={{ producto.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
                   <i class="bi bi-trash"></i>
@@ -207,7 +223,7 @@ input, select { border-radius: 8px !important; }
             {% endif %}
           </tr>
           {% empty %}
-          <tr>            
+          <tr>
             <td colspan="{% if can_edit or can_delete %}6{% else %}5{% endif %}" class="text-center text-muted">
               Sin productos registrados.
             </td>
@@ -216,12 +232,34 @@ input, select { border-radius: 8px !important; }
         </tbody>
       </table>
     </div>
+    {% if productos.has_other_pages %}
+    <nav>
+      <ul class="pagination justify-content-end">
+        {% if productos.has_previous %}
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ productos.previous_page_number }}">Anterior</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+        {% for i in productos.paginator.page_range %}
+          <li class="page-item {% if productos.number == i %}active{% endif %}">
+            <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ i }}">{{ i }}</a>
+          </li>
+        {% endfor %}
+        {% if productos.has_next %}
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ productos.next_page_number }}">Siguiente</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  // Patch para campo categoría nueva:
   const selectCat = document.getElementById("categoriaSelect");
   const inputDiv = document.getElementById("input-categoria-nueva");
   if (selectCat) {
@@ -230,7 +268,40 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     if (selectCat.value === 'Otras') inputDiv.style.display = 'block';
   }
-
+  // Patch checkboxes:
+  const productoForm = document.getElementById("productoForm");
+  if (productoForm) {
+    productoForm.addEventListener("submit", function(e){
+      let perishable = document.getElementById("perishableSwitch");
+      let controlLote = document.getElementById("controlLoteSwitch");
+      if(perishable && !perishable.checked){
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "perishable";
+        input.value = "0";
+        this.appendChild(input);
+      } else if(perishable && perishable.checked) {
+        perishable.value = "1";
+      }
+      if(controlLote && !controlLote.checked){
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "lote";
+        input.value = "0";
+        this.appendChild(input);
+      } else if(controlLote && controlLote.checked) {
+        controlLote.value = "1";
+      }
+    });
+  }
+  // Autosubmit paginador:
+  const pagSize = document.getElementById("pag_size");
+  if(pagSize){
+    pagSize.addEventListener("change", function(){
+      document.getElementById("paginatorForm").submit();
+    });
+  }
+  // Confirmación SweetAlert2
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -248,8 +319,7 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     });
   });
-
-  // SweetAlert para todos los errores del form
+  // Errores backend en SweetAlert2
   {% if form.errors %}
     let erroresHTML = "<ul style='text-align:left; margin:0; padding-left:20px;'>";
     {% for field in form %}
@@ -263,7 +333,7 @@ document.addEventListener("DOMContentLoaded", function() {
       erroresHTML += "<li>{{ error|escapejs }}</li>";
     {% endfor %}
     erroresHTML += "</ul>";
-    Swal.fire({ 
+    Swal.fire({
       icon: "error",
       title: "Error en el formulario",
       html: erroresHTML,

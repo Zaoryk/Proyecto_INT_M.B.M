@@ -1,18 +1,18 @@
 import json
-from datetime import date, datetime
+from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
-    help = 'Genera fixtures para la dulcería Lilis'
+    help = 'Genera fixtures creativos para la dulcería Lilis'
 
     def handle(self, *args, **options):
         fixtures = []
-        
-        # 1. Usuarios (primero por dependencias)
+
+        # 1. Usuarios base (puedes agregar los que quieras)
         usuarios = [
             {
-                "model": "dispositivos.usuario", 
-                "pk": 1, 
+                "model": "dispositivos.usuario",
+                "pk": 1,
                 "fields": {
                     "username": "admin",
                     "email": "admin@dulcerialilis.cl",
@@ -25,13 +25,13 @@ class Command(BaseCommand):
                 }
             },
             {
-                "model": "dispositivos.usuario", 
-                "pk": 2, 
+                "model": "dispositivos.usuario",
+                "pk": 2,
                 "fields": {
                     "username": "inventario",
                     "email": "inventario@dulcerialilis.cl",
-                    "nombre": "Operador",
-                    "apellido": "Inventario",
+                    "nombre": "Tomás",
+                    "apellido": "Gallardo",
                     "rol": "operador_inventario",
                     "estado": "activo",
                     "mfa_habilitado": "deshabilitado",
@@ -39,13 +39,13 @@ class Command(BaseCommand):
                 }
             },
             {
-                "model": "dispositivos.usuario", 
-                "pk": 3, 
+                "model": "dispositivos.usuario",
+                "pk": 3,
                 "fields": {
                     "username": "ventas",
                     "email": "ventas@dulcerialilis.cl",
-                    "nombre": "Operador",
-                    "apellido": "Ventas",
+                    "nombre": "Andrea",
+                    "apellido": "Sánchez",
                     "rol": "operador_ventas",
                     "estado": "activo",
                     "mfa_habilitado": "deshabilitado",
@@ -53,13 +53,13 @@ class Command(BaseCommand):
                 }
             },
             {
-                "model": "dispositivos.usuario", 
-                "pk": 4, 
+                "model": "dispositivos.usuario",
+                "pk": 4,
                 "fields": {
                     "username": "compras",
                     "email": "compras@dulcerialilis.cl",
-                    "nombre": "Operador",
-                    "apellido": "Compras",
+                    "nombre": "Martín",
+                    "apellido": "Lagos",
                     "rol": "operador_compras",
                     "estado": "activo",
                     "mfa_habilitado": "deshabilitado",
@@ -68,152 +68,97 @@ class Command(BaseCommand):
             }
         ]
         fixtures.extend(usuarios)
-        
-        # 2. Productos
-        productos = [
-            {
-                "model": "dispositivos.producto", 
-                "pk": 1, 
+
+        # Listas para variedad creativa
+        nombres_productos = [
+            "Trufas de Avellana", "Alfajor Cordobés", "Turrón de Maní", "Chocolate Rubí 75g", "Cinta de Caramelo",
+            "Barra de Cacao 80%", "Confites Turquesa", "Bombones del Bosque", "Frutilla Glaseada", "Mentitas Lemon",
+            "Gomitas Frutales", "Galletas de Coco", "Almendrado Gourmet", "Chocoteja Limeña", "Bastón de Menta",
+            "Jalea Real Berry", "Enrejado de Nuez", "Crocante de Maní", "Relleno de Avellana", "Napoleón Frambuesa",
+            "Marmoleado de Damasco", "Glaseado de Limón", "Tarta Chocolate Negro", "Galletón Rock", "Flan de Cappuccino",
+            "Mousse de Mango", "Brownie Express", "Tableta Festival", "Chocobolas Dulzón", "Azúcar Avainillado",
+            "Bizcocho Sorpresa", "Tarta de Pistacho", "Alfajor Marplatense", "Bombón Cítrico", "Pomelo Drops",
+            "Cereza Semiamarga", "Caramelo Naranja", "Trufa de Frutos Rojos", "Nocciola Tableta", "Brownie de Caramelo"
+        ]
+        categorias = ["Chocolates", "Caramelos", "Galletas", "Bombones", "Gomitas", "Confites"]
+        paises = ["Chile", "Argentina", "México", "Colombia", "Uruguay", "Paraguay", "Perú", "Brasil"]
+
+        # 2. 40 Productos
+        productos = []
+        for i in range(1, 41):
+            nombre = nombres_productos[(i-1) % len(nombres_productos)]
+            categoria = categorias[(i-1) % len(categorias)]
+            prod = {
+                "model": "dispositivos.producto",
+                "pk": i,
                 "fields": {
-                    "sku": "SKU-CHOC-001",
-                    "nombre": "Chocolate Amargo 100g",
-                    "categoria": "Chocolates",
-                    "uom_compra": "kg",
-                    "uom_venta": "unidad",
-                    "factor_conversion": 10,
+                    "sku": f"SKU-{categoria[:3].upper()}-{str(i).zfill(3)}",
+                    "nombre": nombre,
+                    "categoria": categoria,
+                    "uom_compra": "kg" if i % 2 == 0 else "caja",
+                    "uom_venta": "unidad" if i % 3 == 0 else "bolsa",
+                    "factor_conversion": (i % 10) + 1,
                     "impuesto_iva": 19,
-                    "stock_minimo": 20,
-                    "perishable": 1,
-                    "lote": 1001
-                }
-            },
-            {
-                "model": "dispositivos.producto", 
-                "pk": 2, 
-                "fields": {
-                    "sku": "SKU-CAR-001",
-                    "nombre": "Caramelo Frutal 500g",
-                    "categoria": "Caramelos",
-                    "uom_compra": "kg",
-                    "uom_venta": "bolsa",
-                    "factor_conversion": 2,
-                    "impuesto_iva": 19,
-                    "stock_minimo": 30,
-                    "perishable": 1,
-                    "lote": 1002
-                }
-            },
-            {
-                "model": "dispositivos.producto", 
-                "pk": 3, 
-                "fields": {
-                    "sku": "SKU-GAL-001",
-                    "nombre": "Galletas Vainilla 200g",
-                    "categoria": "Galletas",
-                    "uom_compra": "caja",
-                    "uom_venta": "paquete",
-                    "factor_conversion": 1,
-                    "impuesto_iva": 19,
-                    "stock_minimo": 15,
-                    "perishable": 1,
-                    "lote": 1003
+                    "stock_minimo": (i * 3) % 100 + 10,
+                    "perishable": 1 if i % 2 == 0 else 0,
+                    "lote": 800 + i,
                 }
             }
-        ]
+            productos.append(prod)
         fixtures.extend(productos)
-        
-        # 3. Proveedores
-        proveedores = [
-            {
-                "model": "dispositivos.proveedor", 
-                "pk": 1, 
+
+        # 3. 40 Proveedores creativos
+        nombres_proveedores = [
+            "Exportadora", "Comercial", "Distribuidora", "Central", "Mayorista", "Emporio", "Proveedoría", "Bebestible",
+            "Fábrica", "Importadora"
+        ]
+        fantasia_extras = [
+            "Dulsur", "CacaoMix", "Sweetland", "FrutiKing", "DeliNet", "Merken", "Chocolito", "CandyHouse", "Mansión Dulce", "SnacksLab"
+        ]
+        proveedores = []
+        for i in range(1, 41):
+            razon_social = f"{nombres_proveedores[i % len(nombres_proveedores)]} {fantasia_extras[i % len(fantasia_extras)]} S.A."
+            fantasia = f"{fantasia_extras[i % len(fantasia_extras)]} {i}"
+            proveedor = {
+                "model": "dispositivos.proveedor",
+                "pk": i,
                 "fields": {
-                    "rut_nif": "76.123.456-7",
-                    "razon_social": "Proveedor Andino S.A.",
-                    "nombre_fantasia": "Andino Distribuciones",
-                    "email": "contacto@andino.cl",
-                    "pais": "Chile",
-                    "condiciones_pago": "30 días",
+                    "rut_nif": f"76.{i:03d}.{(100+i):03d}-{i%10}",
+                    "razon_social": razon_social,
+                    "nombre_fantasia": fantasia,
+                    "email": f"contacto{i}@{fantasia_extras[i%len(fantasia_extras)]}.cl",
+                    "pais": paises[i % len(paises)],
+                    "condiciones_pago": "30 días" if i % 2 == 0 else "15 días",
                     "moneda": "CLP",
-                    "estado": "activo",
-                    "usuario": 4  # usuario_compras
-                }
-            },
-            {
-                "model": "dispositivos.proveedor", 
-                "pk": 2, 
-                "fields": {
-                    "rut_nif": "76.765.432-1",
-                    "razon_social": "Electro Patagon SpA",
-                    "nombre_fantasia": "ElectroPatagon",
-                    "email": "ventas@electropatagon.cl",
-                    "pais": "Chile",
-                    "condiciones_pago": "15 días",
-                    "moneda": "CLP",
-                    "estado": "activo",
-                    "usuario": 4  # usuario_compras
-                }
-            },
-            {
-                "model": "dispositivos.proveedor", 
-                "pk": 3, 
-                "fields": {
-                    "rut_nif": "76.987.654-3",
-                    "razon_social": "Dulces del Norte Ltda.",
-                    "nombre_fantasia": "Dulces Norte",
-                    "email": "info@dulcesnorte.cl",
-                    "pais": "Chile",
-                    "condiciones_pago": "30 días",
-                    "moneda": "CLP",
-                    "estado": "activo",
-                    "usuario": 4  # usuario_compras
+                    "estado": "activo" if i % 3 != 0 else "inactivo",
+                    "usuario": 4
                 }
             }
-        ]
+            proveedores.append(proveedor)
         fixtures.extend(proveedores)
-        
-        # 4. ProductoProveedor (Relaciones)
-        producto_proveedor = [
-            {
-                "model": "dispositivos.productoproveedor", 
-                "pk": 1, 
+
+        # 4. 40 Relaciones producto-proveedor (1 a 1, puedes fácilmente hacer combinaciones diferentes)
+        producto_proveedor = []
+        base_fecha = datetime(2025, 1, 1, 10, 0, 0)
+        for i in range(1, 41):
+            mov = {
+                "model": "dispositivos.productoproveedor",
+                "pk": i,
                 "fields": {
                     "tipo_movimiento": "entrada",
-                    "cantidad": 1000,
-                    "fecha_movimiento": "2025-01-10T10:00:00Z",
-                    "producto": 1,
-                    "proveedor": 1
-                }
-            },
-            {
-                "model": "dispositivos.productoproveedor", 
-                "pk": 2, 
-                "fields": {
-                    "tipo_movimiento": "entrada",
-                    "cantidad": 500,
-                    "fecha_movimiento": "2025-01-12T14:30:00Z",
-                    "producto": 2,
-                    "proveedor": 2
-                }
-            },
-            {
-                "model": "dispositivos.productoproveedor", 
-                "pk": 3, 
-                "fields": {
-                    "tipo_movimiento": "entrada",
-                    "cantidad": 750,
-                    "fecha_movimiento": "2025-01-15T09:15:00Z",
-                    "producto": 3,
-                    "proveedor": 3
+                    "cantidad": 80 + i * 7,
+                    "fecha_movimiento": (base_fecha + timedelta(days=i)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    "producto": i,
+                    "proveedor": ((i * 3) % 40) + 1  # Distribuye relaciones entre proveedores
                 }
             }
-        ]
+            producto_proveedor.append(mov)
         fixtures.extend(producto_proveedor)
-        
+
         # Guardar fixtures
         with open('fixtures_dulceria.json', 'w', encoding='utf-8') as f:
             json.dump(fixtures, f, indent=2, ensure_ascii=False)
-        
+
         self.stdout.write(
             self.style.SUCCESS(f'Fixtures generados: {len(fixtures)} registros en fixtures_dulceria.json')
         )
