@@ -202,11 +202,14 @@ class PerfilUsuarioForm(forms.ModelForm):
     def clean_avatar(self):
         avatar = self.cleaned_data.get('avatar')
         if avatar:
-            if avatar.size > 2*1024*1024:
-                raise ValidationError("La imagen debe ser menor a 2MB.")
-            if not avatar.content_type.startswith('image/'):
-                raise ValidationError("Formato de imagen no válido.")
+            if hasattr(avatar, 'content_type'):
+                if avatar.content_type not in ['image/png', 'image/jpeg', 'image/jpg']:
+                    raise forms.ValidationError("Solo se aceptan imágenes PNG/JPG/JPEG.")
+                # Valida tamano maximo (2MB por ejemplo)
+                if avatar.size > 2 * 1024 * 1024:
+                    raise forms.ValidationError("La imagen no debe superar 2MB.")
         return avatar
+
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
