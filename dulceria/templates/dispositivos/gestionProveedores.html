@@ -128,7 +128,7 @@ input, select {
                 <option value="">Seleccione...</option>
                 {% for usuario in form.usuario.field.queryset %}
                   <option value="{{ usuario.pk }}"{% if form.usuario.value == usuario.pk %} selected{% endif %}>
-                    {{ usuario.username }} - {{ usuario.nombre }} {{ usuario.apellido }}
+                    {{ usuario.username }} - {{ usuario.nombre }} {{ usuario.apellido }} - {{ usuario.get_rol_display }}
                   </option>
                 {% endfor %}
               </select>
