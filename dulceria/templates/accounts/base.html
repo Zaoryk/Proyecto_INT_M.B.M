@@ -5,92 +5,103 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Dulcería Lili's{% endblock %}</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
-
     <style>
-          /* ======== ESTILOS GLOBALES ======== */
-          body {
-              background-color: #fff8f6;
-              font-family: 'Poppins', sans-serif;
-          }
+      body {
+        background-color: #fff8f6;
+        font-family: 'Poppins', sans-serif;
+      }
+      .navbar {
+        background-color: #C40000 !important;
+      }
+      .navbar-brand, .navbar-nav .nav-link {
+        color: #fff !important;
+        font-weight: 600;
+        transition: background 0.2s, box-shadow 0.2s, color 0.2s, text-decoration 0.2s;
+        border-radius: 14px;
+      }
+      .navbar-brand img { height: 45px; margin-right: 10px; }
+      .btn-lilis { background-color: #000 !important; color: #fff !important; border: none; transition: background-color 0.3s ease; }
+      .btn-lilis:hover { background-color: #333 !important; }
+      main { padding: 20px; }
 
-          /* ======== NAVBAR ======== */
-          .navbar {
-              background-color: #C40000 !important; /* rojo principal */
-          }
-
-          .navbar-brand, .navbar-nav .nav-link {
-              color: #fff !important;
-              font-weight: 600;
-          }
-
-          .navbar-brand img {
-              height: 45px;
-              margin-right: 10px;
-          }
-
-          /* ======== BOTONES NEGROS ======== */
-          .btn-lilis {
-              background-color: #000 !important;
-              color: #fff !important;
-              border: none;
-              transition: background-color 0.3s ease;
-          }
-
-          .btn-lilis:hover {
-              background-color: #333 !important;
-          }
-
-          /* ======== CONTENIDO ======== */
-          main {
-              padding: 20px;
-          }
+      /* Hover universal para TODOS los items de menú navbar */
+      .navbar-nav .nav-link:not(.active):hover,
+      .navbar-nav .nav-link:not(.active):focus {
+        text-decoration: underline !important;
+        background: #fff2f2 !important;
+        color: #C40000 !important;
+        box-shadow: 0 2px 12px #9001;
+        cursor: pointer;
+      }
+      /* USUARIO EN NAVBAR (avatar + nombre) */
+      .navbar-user-link {
+        transition: background 0.2s, box-shadow 0.2s;
+        border-radius: 18px;
+        padding: 2px 10px 2px 2px;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+      }
+      .navbar-user-link:hover,
+      .navbar-user-link:focus {
+        text-decoration: underline !important;
+        background: #fff2f2 !important;
+        box-shadow: 0 2px 12px #9001;
+        color: #C40000 !important;
+        cursor: pointer;
+      }
+      .navbar-user-avatar, .navbar-user-text {
+        transition: filter 0.2s, color 0.2s;
+      }
+      .navbar-user-link:hover .navbar-user-avatar,
+      .navbar-user-link:hover .navbar-user-text {
+        filter: brightness(1.15) contrast(1.3);
+        color: #C40000;
+        text-decoration: underline !important;
+      }
     </style>
     {% block extra_head %}{% endblock %}
   </head>
-
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
       <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}"><img src="{% static 'img/LOGO-Lilis-2-03.png' %}" alt="Logo Dulcería Lili's">
-          Dulcería Lili's</a>
-
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
+          <img src="{% static 'img/LOGO-Lilis-2-03.png' %}" alt="Logo Dulcería Lili's">
+          Dulcería Lili's
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
           aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
-            <!--El usuario solo vera el navbar cuando inicie sesión-->
             {% if user.is_authenticated %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'Formulario' %}">Usuarios</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'Productos' %}">Productos</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'Proveedores' %}">Proveedores</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'Transaccional' %}">Inventario</a></li>
-            {% endif %}
-            <!--Fin-->
-            {% if user.is_authenticated %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'Formulario' %}">Usuarios</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'Productos' %}">Productos</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'Proveedores' %}">Proveedores</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'Transaccional' %}">Inventario</a></li>
               <li class="nav-item d-flex align-items-center">
-                {% if usuario_actual and usuario_actual.avatar %}
-                  <img src="{{ usuario_actual.avatar.url }}" alt="Avatar"
-                    class="rounded-circle me-2" style="width:34px;height:34px;object-fit:cover;border:2px solid #fff;">
-                {% else %}
-                  <div class="rounded-circle bg-white d-flex align-items-center justify-content-center me-2"
-                      style="width:34px;height:34px;border:2px solid #fff;">
-                    <span class="fw-bold text-danger" style="font-size:1.2em;">
-                      {{ usuario_actual.nombre|default:user.username|slice:":1"|upper }}
-                    </span>
-                  </div>
-                {% endif %}
-                <span class="nav-link p-0">Hola, {{ user.username }}</span>
+                <a href="{% url 'perfil_usuario' %}" class="navbar-user-link d-flex align-items-center">
+                  {% if usuario_actual and usuario_actual.avatar %}
+                    <img src="{{ usuario_actual.avatar.url }}" alt="Avatar"
+                      class="rounded-circle me-2 navbar-user-avatar"
+                      style="width:34px;height:34px;object-fit:cover;border:2px solid #fff;">
+                  {% else %}
+                    <div class="rounded-circle bg-white d-flex align-items-center justify-content-center me-2 navbar-user-avatar"
+                        style="width:34px;height:34px;border:2px solid #fff;">
+                      <span class="fw-bold text-danger" style="font-size:1.2em;">
+                        {{ usuario_actual.nombre|default:user.username|slice:":1"|upper }}
+                      </span>
+                    </div>
+                  {% endif %}
+                  <span class="nav-link p-0 navbar-user-text">Hola, {{ usuario_actual.nombre|default:user.username }}</span>
+                </a>
               </li>
-              <!--PFP-->
               <li class="nav-item">
                 <form action="{% url 'logout' %}" method="post" class="d-inline">
                   {% csrf_token %}
@@ -118,13 +129,10 @@
         });
       </script>
     {% endif %}
-
     <main class="container my-4">
       {% block content %}{% endblock %}
     </main>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
     {% block extra_js %}{% endblock %}
   </body>
 </html>
