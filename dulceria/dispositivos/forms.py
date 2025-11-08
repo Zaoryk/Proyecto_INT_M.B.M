@@ -191,3 +191,95 @@ class PedidoForm(forms.ModelForm):
         if monto_total and monto_total < 0:
             raise ValidationError("El monto total no puede ser negativo.")
         return monto_total
+
+class PerfilUsuarioForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ['nombre', 'apellido', 'email', 'avatar']
+
+    avatar = forms.ImageField(required=False)
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar')
+        if avatar:
+            if avatar.size > 2*1024*1024:
+                raise ValidationError("La imagen debe ser menor a 2MB.")
+            if not avatar.content_type.startswith('image/'):
+                raise ValidationError("Formato de imagen no válido.")
+        return avatar
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        qs = Usuario.objects.filter(email=email)
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError(f"El email '{email}' ya está en uso.")
+        return email
+    
+class PasswordChangeForm(forms.Form):
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Nueva contraseña'}),
+        label="Nueva contraseña",
+        min_length=8
+    )
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Confirmar contraseña'}),
+        label="Confirmar contraseña",
+        min_length=8
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        p1 = cleaned.get("new_password1")
+        p2 = cleaned.get("new_password2")
+        if p1 != p2:
+            raise ValidationError("Las contraseñas no coinciden.")
+        import re
+        # Validación de mayúsculas y números
+        if not re.search(r"[A-Z]", p1):
+            raise ValidationError("Debe contener al menos una mayúscula.")
+        if not re.search(r"\d", p1):
+            raise ValidationError("Debe contener al menos un número.")
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", p1):
+            raise ValidationError("Debe contener al menos un carácter especial.")
+        return cleaned
+
+class PasswordChangeForm(forms.Form):
+    old_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Contraseña actual', 'class': 'form-control'}),
+        label="Contraseña actual",
+        min_length=8
+    )
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Nueva contraseña', 'class': 'form-control'}),
+        label="Nueva contraseña",
+        min_length=8
+    )
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Confirmar contraseña', 'class': 'form-control'}),
+        label="Confirmar contraseña",
+        min_length=8
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.usuario = kwargs.pop('usuario', None)   # Recibe usuario por instancia
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned = super().clean()
+        old = cleaned.get("old_password")
+        p1 = cleaned.get("new_password1")
+        p2 = cleaned.get("new_password2")
+        # Validar antiguo usando el método del modelo
+        if self.usuario and not self.usuario.check_password(old):
+            raise ValidationError("La contraseña actual es incorrecta.")
+        if p1 != p2:
+            raise ValidationError("Las contraseñas nuevas no coinciden.")
+        if not re.search(r"[A-Z]", p1 or ""):
+            raise ValidationError("Debe contener al menos una letra mayúscula.")
+        if not re.search(r"\d", p1 or ""):
+            raise ValidationError("Debe contener al menos un número.")
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", p1 or ""):
+            raise ValidationError("Debe contener al menos un carácter especial.")
+        return cleaned

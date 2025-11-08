@@ -1,0 +1,221 @@
+{% extends "accounts/base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<!-- Toasts JS/UI -->
+<div id="js-toast-area" style="position:fixed;top:2rem;right:2rem;z-index:2000;"></div>
+
+<div class="container my-4">
+
+  <!-- Mensajes flash Django -->
+  {% if messages %}
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index:1200;width:400px;">
+      {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %} alert-dismissible fade show shadow" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="row">
+    <!-- Actualizar imagen de perfil -->
+    <div class="col-lg-7">
+      <div class="card shadow border-0">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-4">
+            <!-- Formulario SOLO imagen -->
+            <form method="post" enctype="multipart/form-data" class="me-4" style="min-width:120px;">
+              {% csrf_token %}
+              <input type="hidden" name="form_type" value="avatar">
+              <div class="position-relative" style="width:96px;">
+                {% if usuario.avatar %}
+                  <img src="{{ usuario.avatar.url }}" alt="Avatar" id="avatarPreview"
+                    class="rounded-circle border border-2"
+                    style="width:96px; height:96px; object-fit:cover; background:#f8f9fa;">
+                {% else %}
+                  <img src="https://ui-avatars.com/api/?name={{usuario.nombre|default:'U'}}&size=96"
+                    alt="Avatar" id="avatarPreview"
+                    class="rounded-circle border border-2"
+                    style="width:96px; height:96px; object-fit:cover; background:#f8f9fa;">
+                {% endif %}
+                <input type="file" name="avatar" id="avatarInput"
+                  accept=".png,.jpg,.jpeg,image/png,image/jpg,image/jpeg"
+                  class="form-control form-control-sm position-absolute bottom-0 end-0 rounded-circle"
+                  style="width:32px;height:32px; opacity:.8; z-index:2;">
+                <i class="bi bi-pencil position-absolute bottom-0 end-0 text-danger" style="font-size:1.2rem;"></i>
+                <button type="button" class="btn btn-sm btn-light border position-absolute top-0 end-0 rounded-circle"
+                  style="width:26px; height:26px; z-index:3;" id="resetAvatarBtn" title="Restaurar anterior">
+                  <i class="bi bi-x text-danger"></i>
+                </button>
+              </div>
+              <button type="submit" class="btn btn-link p-0 mt-2 text-danger">Actualizar imagen</button>
+              {% if perfil_form.avatar.errors %}
+                <div class="text-danger small mt-1">{{ perfil_form.avatar.errors.0 }}</div>
+              {% endif %}
+            </form>
+            <!-- Nombre y rol -->
+            <div class="ms-3">
+              <h4 class="mb-1 fw-bold text-danger">{{ usuario.nombre }} {{ usuario.apellido }}</h4>
+              <span class="small text-secondary fw-semibold">{{ usuario.get_rol_display }}</span>
+              <br>
+              <span class="small text-muted">{{ usuario.email }}</span>
+            </div>
+          </div>
+          <hr>
+          <!-- Formulario SOLO datos personales -->
+          <form method="post" id="datosPersonalesForm">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="datos">
+            <h6 class="mb-3 fw-bold text-danger">Datos personales</h6>
+            <div class="row mb-3">
+              <div class="col">
+                {{ perfil_form.nombre.label_tag }}
+                <input type="text" name="nombre" value="{{ perfil_form.nombre.value }}" class="form-control" required>
+                {{ perfil_form.nombre.errors }}
+              </div>
+              <div class="col">
+                {{ perfil_form.apellido.label_tag }}
+                <input type="text" name="apellido" value="{{ perfil_form.apellido.value }}" class="form-control" required>
+                {{ perfil_form.apellido.errors }}
+              </div>
+            </div>
+            <div class="mb-3">
+              {{ perfil_form.email.label_tag }}
+              <input type="email" name="email" value="{{ perfil_form.email.value }}" class="form-control" required>
+              {{ perfil_form.email.errors }}
+            </div>
+            <button type="submit" class="btn btn-danger">Actualizar perfil</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cambiar contraseña -->
+    <div class="col-lg-5 mt-4 mt-lg-0">
+      <div class="card shadow border-0">
+        <div class="card-body">
+          <h6 class="fw-bold text-danger mb-3">Cambiar contraseña</h6>
+          <form method="post" id="formPasswordChange" autocomplete="off">
+            {% csrf_token %}
+            {{ pass_form.non_field_errors }}
+            <input type="hidden" name="form_type" value="">
+            <div class="mb-3">
+                {{ pass_form.old_password.label_tag }}
+                {{ pass_form.old_password }}
+                {{ pass_form.old_password.errors }}
+            </div>
+            <div class="mb-3">
+              {{ pass_form.new_password1.label_tag }}
+              {{ pass_form.new_password1 }}
+              {{ pass_form.new_password1.errors }}
+            </div>
+            <div class="mb-3">
+              {{ pass_form.new_password2.label_tag }}
+              {{ pass_form.new_password2 }}
+              {{ pass_form.new_password2.errors }}
+            </div>
+            <button type="submit" name="update_password" class="btn btn-outline-danger">Actualizar contraseña</button>
+          </form>
+          <small class="text-muted d-block mt-2">Mínimo 8 caracteres, al menos una mayúscula, número y símbolo.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const input = document.getElementById("avatarInput");
+  const preview = document.getElementById("avatarPreview");
+  const resetBtn = document.getElementById("resetAvatarBtn");
+  const toastArea = document.getElementById("js-toast-area");
+  const defaultSrc = preview.getAttribute("src");
+  let hasPreview = false;
+
+  function showToast(msg, color) {
+    let id = "toast"+Date.now();
+    let toast = document.createElement("div");
+    toast.className = `toast align-items-center text-bg-${color||'primary'} border-0 show mb-2`;
+    toast.setAttribute("role","alert");
+    toast.setAttribute("aria-live","assertive");
+    toast.setAttribute("id",id);
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">${msg}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>`;
+    toastArea.appendChild(toast);
+    setTimeout(()=>{toast.classList.remove("show");toast.remove();},3500);
+  }
+
+  input.addEventListener("change", function() {
+    const file = this.files[0];
+    if(!file) {
+      preview.src = defaultSrc;
+      preview.classList.remove("border-success", "border-danger");
+      hasPreview = false;
+      return;
+    }
+    const validExt = /\.(png|jpg|jpeg)$/i;
+    if(!validExt.test(file.name)) {
+      showToast("Solo se permiten archivos png, jpg o jpeg.","danger");
+      this.value = "";
+      preview.src = defaultSrc;
+      preview.classList.add("border-danger");
+      hasPreview = false;
+      setTimeout(()=>preview.classList.remove("border-danger"),2000);
+      return;
+    }
+    if(!["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
+      showToast("El tipo de archivo no es válido (solo imágenes PNG/JPG/JPEG).","danger");
+      this.value = "";
+      preview.src = defaultSrc;
+      preview.classList.add("border-danger");
+      hasPreview = false;
+      setTimeout(()=>preview.classList.remove("border-danger"),2000);
+      return;
+    }
+    if(file.size > 2*1024*1024) {
+      showToast("El archivo es demasiado grande. Máximo 2MB.","danger");
+      this.value = "";
+      preview.src = defaultSrc;
+      preview.classList.add("border-danger");
+      hasPreview = false;
+      setTimeout(()=>preview.classList.remove("border-danger"),2000);
+      return;
+    }
+    preview.src = URL.createObjectURL(file);
+    preview.classList.add("border-success");
+    preview.classList.remove("border-danger");
+    hasPreview = true;
+    showToast("Vista previa de la imagen lista. ¡Guarda para aplicar!","success");
+    preview.onload = function() { URL.revokeObjectURL(preview.src); };
+  });
+  resetBtn.addEventListener("click", function(e){
+    e.preventDefault();
+    input.value = "";
+    preview.src = defaultSrc;
+    preview.classList.remove("border-success","border-danger");
+    hasPreview = false;
+    showToast("Imagen descartada.","secondary");
+  });
+})();
+</script>
+
+<style>
+.card {
+  border-radius: 18px !important;
+}
+input, select {
+  border-radius: 8px !important;
+}
+.btn-danger, .bg-danger, .border-danger { background-color: #C40000!important; border-color:#C40000!important; }
+.btn-outline-danger { border-color:#C40000!important; color:#C40000!important; }
+.btn-outline-danger:hover { background:#C40000!important; color:#fff!important;}
+#avatarPreview.border-success { border-width:3px!important; border-color:#2ecc40!important; }
+#avatarPreview.border-danger { border-width:3px!important; border-color:#ff4136!important; }
+.position-fixed { z-index: 2000;}
+</style>
+{% endblock %}

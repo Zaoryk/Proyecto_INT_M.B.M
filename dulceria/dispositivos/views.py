@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from dispositivos.models import Usuario, Producto, Proveedor, ProductoProveedor
-from dispositivos.forms import UsuarioForm, ProveedorForm, ProductoForm, ProductoProveedorForm
+from dispositivos.forms import UsuarioForm, ProveedorForm, ProductoForm, ProductoProveedorForm, PerfilUsuarioForm, PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth import update_session_auth_hash
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib import messages
@@ -524,4 +525,71 @@ def moduloTransaccional(request):
         "can_edit": can_change,
         "can_delete": can_delete,
         "role_name": role_name,
+    })
+# PERFIL :3
+@login_required
+def perfilusuario(request):
+    user = request.user
+    usuario_qs = Usuario.objects.filter(username=user.username)
+    if not usuario_qs.exists() and user.email:
+        usuario_qs = Usuario.objects.filter(email=user.email)
+    usuario = usuario_qs.first()
+    if not usuario:
+        usuario = Usuario.objects.create(
+            username=user.username,
+            email=user.email,
+            nombre=user.first_name if user.first_name else user.username,
+            apellido=user.last_name or "",
+            rol='operador_ventas',
+            estado='activo',
+        )
+
+    perfil_form = PerfilUsuarioForm(instance=usuario)
+    pass_form = PasswordChangeForm(usuario=usuario)
+
+    if request.method == "POST":
+        form_type = request.POST.get("form_type")
+        # --- Avatar solo ---
+        if form_type == "avatar":
+            perfil_form = PerfilUsuarioForm(request.POST, request.FILES, instance=usuario)
+            if perfil_form.is_valid():
+                if perfil_form.cleaned_data.get("avatar"):
+                    usuario.avatar = perfil_form.cleaned_data["avatar"]
+                    usuario.save(update_fields=['avatar'])
+                    messages.success(request, "Foto de perfil actualizada correctamente.")
+                else:
+                    messages.error(request, "Debes seleccionar una imagen válida.")
+            return redirect("perfil_usuario")
+        # --- Datos personales solo ---
+        elif form_type == "datos":
+            perfil_form = PerfilUsuarioForm(request.POST, instance=usuario)
+            if perfil_form.is_valid():
+                usuario.nombre = perfil_form.cleaned_data["nombre"]
+                usuario.apellido = perfil_form.cleaned_data["apellido"]
+                usuario.email = perfil_form.cleaned_data["email"]
+                usuario.save(update_fields=['nombre', 'apellido', 'email'])
+                messages.success(request, "Perfil actualizado correctamente.")
+            else:
+                messages.error(request, "Corrige los errores del formulario.")
+            return redirect("perfil_usuario")
+        # --- Cambio de contraseña ---
+        elif "update_password" in request.POST:
+            pass_form = PasswordChangeForm(request.POST, usuario=usuario)
+            if pass_form.is_valid():
+                new_pass = pass_form.cleaned_data["new_password1"]
+                usuario.set_password(new_pass)
+                usuario.save()
+                user.set_password(new_pass)
+                user.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, "Contraseña actualizada correctamente.")
+            else:
+                messages.error(request, "Hubo un error al cambiar la contraseña.")
+            return redirect("perfil_usuario")
+
+    return render(request, "dispositivos/perfilusuario.html", {
+        "perfil_form": PerfilUsuarioForm(instance=usuario),
+        "pass_form": PasswordChangeForm(usuario=usuario),
+        "usuario": usuario,
+        "user": user,
     })
