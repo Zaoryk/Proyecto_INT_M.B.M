@@ -42,20 +42,25 @@ class UsuarioForm(forms.ModelForm):
         return email
 
 class ProductoForm(forms.ModelForm):
+    categoria_nueva = forms.CharField(required=False, label="Nueva categoría")
+
+    class Meta:
+        model = Producto
+        fields = '__all__'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        from dispositivos.views import CATEGORIAS
-        choices = [('', 'Seleccione...')] + list(CATEGORIAS)
-        data = None
-        if args:
-            data = args[0]
-        if data and hasattr(data, 'get'):
-            val = data.get('categoria')
-            if val and val not in [v for v, t in CATEGORIAS] and val != "":
-                choices.append((val, val))
+        # Poblar dinámicamente las categorías desde la BD
+        categorias_db = Producto.objects.values_list('categoria', flat=True).distinct()
+        categorias_validas = sorted(set([c.strip() for c in categorias_db if c and c.strip()]))
+        choices = [('', 'Seleccione...')] + [(c, c) for c in categorias_validas] + [("Otras", "Otra...")]
         self.fields['categoria'] = forms.ChoiceField(
-            choices=choices, required=False,
-            widget=forms.Select(attrs={'class': 'form-select', 'id': 'categoriaSelect'})
+            choices=choices,
+            required=False,
+            widget=forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'categoriaSelect'
+            })
         )
         self.fields['nombre'].required = False
         self.fields['uom_compra'].required = False
@@ -64,6 +69,8 @@ class ProductoForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        categoria = cleaned.get("categoria")
+        categoria_nueva = cleaned.get("categoria_nueva")
         custom_msgs = {
             "nombre": "Debes ingresar un nombre.",
             "categoria": "Debes seleccionar o ingresar una categoría.",
@@ -71,14 +78,15 @@ class ProductoForm(forms.ModelForm):
             "uom_venta": "Debes seleccionar unidad de venta.",
             "stock_minimo": "Debes ingresar el stock mínimo."
         }
+        if categoria == "Otras":
+            if not categoria_nueva or not categoria_nueva.strip():
+                self.add_error("categoria_nueva", "Debe ingresar un nombre para la nueva categoría.")
+            else:
+                cleaned["categoria"] = categoria_nueva.strip()
         for field, msg in custom_msgs.items():
-            if not self.cleaned_data.get(field):
+            if not cleaned.get(field):
                 self.add_error(field, msg)
         return cleaned
-
-    class Meta:
-        model = Producto
-        fields = '__all__'
 
 class ProveedorForm(forms.ModelForm):
     class Meta:

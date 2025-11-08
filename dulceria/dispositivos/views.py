@@ -4,6 +4,7 @@ from dispositivos.forms import UsuarioForm, ProveedorForm, ProductoForm, Product
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import update_session_auth_hash
+from django.core.paginator import Paginator
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib import messages
@@ -234,13 +235,34 @@ def gestionProductos(request):
     search = request.GET.get('buscar', '')
     productos = Producto.objects.all()
 
-    # Solo busca en campos que realmente existen en Producto
+    # Filtrado por búsqueda
     if search:
         productos = productos.filter(
             Q(nombre__icontains=search) | Q(sku__icontains=search) | Q(categoria__icontains=search)
         )
 
-    # Definir los campos válidos!
+    # Exportar a Excel
+    if "export_excel" in request.GET:
+        import openpyxl
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Productos"
+        headers_excel = ["SKU", "Nombre", "Categoría", "UOM Compra", "UOM Venta", "Conversión", "IVA", "Stock Mín", "Perecible?", "Lote"]
+        sheet.append(headers_excel)
+        for p in productos:
+            sheet.append([
+                p.sku, p.nombre, p.categoria, p.uom_compra, p.uom_venta,
+                p.factor_conversion, p.impuesto_iva, p.stock_minimo,
+                "Sí" if p.perishable else "No", p.lote
+            ])
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response['Content-Disposition'] = 'attachment; filename="productos.xlsx"'
+        workbook.save(response)
+        return response
+
+    # Ordenamiento seguro por campo existente
     VALID_FIELDS = [
         'sku', 'nombre', 'categoria', 'uom_compra', 'uom_venta',
         'factor_conversion', 'impuesto_iva', 'stock_minimo', 'perishable', 'lote'
@@ -258,7 +280,6 @@ def gestionProductos(request):
 
     pag_size = request.GET.get('pag_size') or request.session.get('pag_size', '10')
     request.session['pag_size'] = pag_size
-    from django.core.paginator import Paginator
     paginator = Paginator(productos, int(pag_size))
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -280,8 +301,11 @@ def gestionProductos(request):
     can_change = user_can_change_module(request.user, 'productos')
     can_delete = user_can_delete_module(request.user, 'productos')
 
-    # Si quieres agregar exportar a Excel aquí, hazlo igual que en proveedores (usando la lista de campos headers).
-    # ... Bloque para editar/crear/eliminar si lo usas ...
+    # ------------ CATEGORÍAS DINÁMICAS ------------
+    categorias_db = Producto.objects.values_list('categoria', flat=True).distinct()
+    categorias_validas = sorted(set([c.strip() for c in categorias_db if c and c.strip()]))
+    categorias = [(c, c) for c in categorias_validas]
+    categorias.append(("Otras", "Otra..."))
 
     return render(request, "dispositivos/gestionProductos.html", {
         "visitas": visitas,
@@ -295,7 +319,7 @@ def gestionProductos(request):
         "order_by": order_by,
         "pag_size": pag_size,
         "headers": headers,
-        # agrega lo que necesites para el form si tienes CRUD.
+        "categorias": categorias,
     })
 
 # -------------------------------------------------------------

@@ -9,6 +9,7 @@ input, select { border-radius: 8px !important; }
 .is-invalid { border-color: #dc3545 !important; }
 </style>
 
+
 {% if can_add or edit_mode %}
 <div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
@@ -40,9 +41,11 @@ input, select { border-radius: 8px !important; }
       <div class="tab-content" id="productTabContent">
         <div class="tab-pane fade show active" id="id-precios" role="tabpanel">
           <div class="row mb-3">
+
+            <!-- BLOQUE CATEGORÍA DINÁMICA -->
             <div class="col-md-3">
-              <label class="form-label">Categoría</label>
-              <select class="form-select" name="categoria" id="categoriaSelect" required>
+              <label class="form-label" for="categoriaSelect">Categoría</label>
+              <select class="form-select {% if form.categoria.errors %}is-invalid{% endif %}" name="categoria" id="categoriaSelect" required>
                 <option value="">Seleccione...</option>
                 {% for value, text in categorias %}
                   <option value="{{ value }}" {% if form.categoria.value == value %}selected{% endif %}>{{ text }}</option>
@@ -58,11 +61,22 @@ input, select { border-radius: 8px !important; }
                   {% endif %}
                 {% endwith %}
               </select>
+              {% if form.categoria.errors %}
+                <div class="invalid-feedback d-block">{{ form.categoria.errors.0 }}</div>
+              {% endif %}
               <div id="input-categoria-nueva" style="display:none; margin-top:5px;">
-                <input type="text" name="categoria_nueva" class="form-control"
-                       placeholder="Ingrese nueva categoría" value="{{ request.POST.categoria_nueva }}">
+                <input type="text"
+                       name="categoria_nueva"
+                       class="form-control {% if form.categoria_nueva.errors %}is-invalid{% endif %}"
+                       placeholder="Ingrese nueva categoría"
+                       value="{{ form.categoria_nueva.value|default_if_none:'' }}">
+                {% if form.categoria_nueva.errors %}
+                  <div class="invalid-feedback d-block">{{ form.categoria_nueva.errors.0 }}</div>
+                {% endif %}
               </div>
             </div>
+            <!-- FIN BLOQUE CATEGORÍA DINÁMICA -->
+
             <div class="col-md-3">
               <label class="form-label">SKU</label>
               <select class="form-select" name="sku" id="sku" required>
@@ -264,23 +278,26 @@ input, select { border-radius: 8px !important; }
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  // Campo categoría nueva dinámico
+  // Categoría nueva dinámica
   const selectCat = document.getElementById("categoriaSelect");
   const inputDiv = document.getElementById("input-categoria-nueva");
+  const inputNueva = document.querySelector('input[name="categoria_nueva"]');
   if (selectCat) {
     selectCat.addEventListener('change', function() {
       inputDiv.style.display = (this.value === 'Otras') ? 'block' : 'none';
     });
     if (selectCat.value === 'Otras') inputDiv.style.display = 'block';
   }
-  // Checkboxes: valor seguro para backend
   const productoForm = document.getElementById("productoForm");
   if (productoForm) {
     productoForm.addEventListener("submit", function(e){
       let errores = [];
-
-      // Valida campos requeridos simples
       if (!this.categoria.value.trim()) errores.push("Categoría");
+      if (this.categoria.value === "Otras") {
+        if (!inputNueva.value || !inputNueva.value.trim()) {
+          errores.push("Debe ingresar el nombre de la nueva categoría.");
+        }
+      }
       if (!this.sku.value.trim()) errores.push("SKU");
       if (!this.nombre.value.trim()) errores.push("Nombre");
       if (!this.uom_compra.value.trim()) errores.push("Unidad compra");
@@ -288,12 +305,9 @@ document.addEventListener("DOMContentLoaded", function() {
       if (!this.factor_conversion.value.trim() || parseInt(this.factor_conversion.value) < 1) errores.push("Conversión (min: 1)");
       if (!this.impuesto_iva.value.trim() || parseInt(this.impuesto_iva.value) < 0) errores.push("IVA");
       if (!this.stock_minimo.value.trim() || parseInt(this.stock_minimo.value) < 0) errores.push("Stock mínimo");
-
-      // Validación adicional: nombre solo letras/números
       if (this.nombre.value && !/^[\wÁÉÍÓÚáéíóúÜüÑñ .,-]+$/.test(this.nombre.value)) {
         errores.push("Nombre (solo letras/números y .,- )");
       }
-
       if (errores.length) {
         e.preventDefault();
         Swal.fire({
@@ -304,7 +318,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         return false;
       }
-
+      // Checkboxes backend seguro
       let perishable = document.getElementById("perishableSwitch");
       let controlLote = document.getElementById("controlLoteSwitch");
       if(perishable && !perishable.checked){
