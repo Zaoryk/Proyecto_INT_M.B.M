@@ -1,5 +1,38 @@
 {% extends "accounts/base.html" %}
 {% block content %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const avatarInput = document.getElementById("avatarInput");
+  const avatarPreview = document.getElementById("avatar-preview");
+
+  if (avatarInput) {
+    avatarInput.addEventListener("change", function() {
+      const file = this.files[0];
+      if (file && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          let imgTag = document.createElement("img");
+          imgTag.className = "rounded-circle shadow";
+          imgTag.id = "avatar-img";
+          imgTag.style = "width:80px;height:80px;object-fit:cover;";
+          imgTag.src = e.target.result;
+          avatarPreview.innerHTML = "";
+          avatarPreview.appendChild(imgTag);
+        }
+        reader.readAsDataURL(file);
+      } else {
+        avatarPreview.innerHTML = `
+          <div id="avatar-placeholder"
+              class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+              style="width:80px;height:80px;">
+            <span class="fw-bold text-primary" style="font-size:2em;">U</span>
+          </div>`;
+      }
+    });
+  }
+});
+</script>
+
 <style>
 .card {
   border-radius: 16px !important;
@@ -16,94 +49,96 @@ input, select {
 .btn-acciones {
   min-width: 85px;
 }
-.alert-role {
-  border-left: 4px solid #0d6efd;
-  background-color: #e7f1ff;
-}
 </style>
 
 <div class="row">
-  <!-- FORMULARIO (solo si tiene permisos) -->
-  {% if show_form %}
   <div class="col-md-4">
     <div class="card mb-4 shadow-sm border-0">
       <div class="card-body">
         <h5 class="card-title mb-3 fw-bold">
-          {% if edit_mode %}
-            Editar usuario
-            {% if not is_admin %}
-              <span class="badge bg-info">Solo tu perfil</span>
-            {% endif %}
-          {% else %}
-            Nuevo usuario
-          {% endif %}
+          {% if edit_mode %}Editar usuario{% else %}Nuevo usuario{% endif %}
         </h5>
 
-        <form id="formUsuario" method="post" autocomplete="off" novalidate>
+        <form id="formUsuario" method="post" enctype="multipart/form-data" autocomplete="off" novalidate>
           {% csrf_token %}
           {% if edit_mode %}
             <input type="hidden" name="edit_id" value="{{ edit_id }}">
           {% endif %}
 
+        <div class="mb-3 text-center">
+          <label class="form-label fw-bold">Foto de perfil</label><br>
+          <div id="avatar-preview">
+            {% if form.instance.avatar %}
+              <img id="avatar-img" src="{{ form.instance.avatar.url }}" alt="Avatar" class="rounded-circle shadow"
+                  style="width:80px;height:80px;object-fit:cover;">
+            {% else %}
+              <div id="avatar-placeholder"
+                  class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                  style="width:80px;height:80px;">
+                <span class="fw-bold text-primary" style="font-size:2em;">
+                  {{ form.instance.nombre|default:"U"|slice:":1" }}
+                </span>
+              </div>
+            {% endif %}
+          </div>
+          <input type="file" class="form-control mt-2" name="avatar" id="avatarInput" accept="image/*">
+          {% if form.avatar.errors %}
+            <div class="text-danger small mt-1">{{ form.avatar.errors.0 }}</div>
+          {% endif %}
+          {% if form.instance.avatar %}
+            <form method="post" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="edit_id" value="{{ edit_id }}">
+              <input type="hidden" name="delete_avatar" value="1">
+              <button type="submit" class="btn btn-outline-danger btn-sm mt-2">Eliminar foto</button>
+            </form>
+          {% endif %}
+        </div>
+
+
           <div class="mb-3">
-            <label class="form-label">Username <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" name="username" 
-                   value="{{ form.username.value|default_if_none:'' }}" 
-                   {% if edit_mode %}readonly{% endif %} required>
-            <small class="text-muted">No se puede cambiar después de crear</small>
+            <label class="form-label">Username <span class="text-muted small">(requerido, único)</span></label>
+            <input type="text" class="form-control" name="username" value="{{ form.username.value|default_if_none:'' }}" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Email <span class="text-danger">*</span></label>
-            <input type="email" class="form-control" name="email" 
-                   value="{{ form.email.value|default_if_none:'' }}" required>
+            <label class="form-label">Email <span class="text-muted small">(requerido, único)</span></label>
+            <input type="email" class="form-control" name="email" value="{{ form.email.value|default_if_none:'' }}" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              Contraseña 
-              {% if not edit_mode %}<span class="text-danger">*</span>{% endif %}
-            </label>
+            <label class="form-label">Contraseña <span class="text-muted small">(mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo)</span></label>
             <div class="input-group">
-              <input type="password" class="form-control" name="password" id="passwordField" 
-                     placeholder="{% if edit_mode %}Dejar vacío para mantener actual{% else %}Mínimo 8 caracteres{% endif %}" 
-                     {% if not edit_mode %}required{% endif %}>
+              <input type="password" class="form-control" name="password" id="passwordField"
+                     placeholder="Ingrese una contraseña segura" {% if not edit_mode %}required{% endif %}>
               <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                 <i class="bi bi-eye"></i>
               </button>
             </div>
-            <small class="text-muted">Mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo</small>
           </div>
 
           <div class="row">
             <div class="col">
-              <label class="form-label">Nombres <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="nombre" 
-                     value="{{ form.nombre.value|default_if_none:'' }}" required>
+              <label class="form-label">Nombres <span class="text-muted small">(requerido)</span></label>
+              <input type="text" class="form-control" name="nombre" value="{{ form.nombre.value|default_if_none:'' }}" required>
             </div>
             <div class="col">
-              <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="apellido" 
-                     value="{{ form.apellido.value|default_if_none:'' }}" required>
+              <label class="form-label">Apellidos <span class="text-muted small">(requerido)</span></label>
+              <input type="text" class="form-control" name="apellido" value="{{ form.apellido.value|default_if_none:'' }}" required>
             </div>
           </div>
 
           <div class="mb-3 mt-2">
-            <label class="form-label">Rol <span class="text-danger">*</span></label>
-            <select class="form-select" name="rol" 
-                    {% if not can_assign_roles %}disabled{% endif %} required>
+            <label class="form-label">Rol</label>
+            <select class="form-select" name="rol" required>
               {% for value, text in form.rol.field.choices %}
                 <option value="{{ value }}"{% if form.rol.value == value %} selected{% endif %}>{{ text }}</option>
               {% endfor %}
             </select>
-            {% if not can_assign_roles %}
-              <small class="text-muted">Solo el administrador puede cambiar roles</small>
-              <input type="hidden" name="rol" value="{{ form.rol.value }}">
-            {% endif %}
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Estado <span class="text-danger">*</span></label>
+            <label class="form-label">Estado</label>
             <select class="form-select" name="estado" required>
               {% for value, text in form.estado.field.choices %}
                 <option value="{{ value }}"{% if form.estado.value == value %} selected{% endif %}>{{ text }}</option>
@@ -134,32 +169,26 @@ input, select {
       </div>
     </div>
   </div>
-  {% endif %}
 
-  <!-- TABLA DE USUARIOS -->
-  <div class="{% if show_form %}col-md-8{% else %}col-md-12{% endif %}">
+  <div class="col-md-8">
     <div class="card shadow-sm border-0">
       <div class="card-body">
-        <h5 class="card-title mb-3 fw-bold">
-          Usuarios 
-          <span class="badge bg-secondary">{{ usuarios|length }}</span>
-        </h5>
-        
+        <h5 class="card-title mb-3 fw-bold">Usuarios</h5>
         <form method="get" class="d-flex flex-wrap mb-3 gap-2">
           <input type="text" class="form-control me-2 mb-2" name="buscar"
                  value="{{ request.GET.buscar|default_if_none:'' }}"
-                 placeholder="Buscar..." style="max-width:200px;">
-          <select class="form-select me-2 mb-2" name="rol" style="max-width:150px;">
-            <option value="">Todos los roles</option>
+                 placeholder="Buscar por username o nombre..." style="max-width:200px;">
+          <select class="form-select me-2 mb-2" name="rol" style="max-width:130px;">
+            <option value="">Rol: todos</option>
             <option value="administrador" {% if request.GET.rol == 'administrador' %}selected{% endif %}>Administrador</option>
-            <option value="operador_compras" {% if request.GET.rol == 'operador_compras' %}selected{% endif %}>Op. Compras</option>
-            <option value="operador_inventario" {% if request.GET.rol == 'operador_inventario' %}selected{% endif %}>Op. Inventario</option>
-            <option value="operador_produccion" {% if request.GET.rol == 'operador_produccion' %}selected{% endif %}>Op. Producción</option>
-            <option value="operador_ventas" {% if request.GET.rol == 'operador_ventas' %}selected{% endif %}>Op. Ventas</option>
-            <option value="analista_financiero" {% if request.GET.rol == 'analista_financiero' %}selected{% endif %}>Analista</option>
+            <option value="operador_compras" {% if request.GET.rol == 'operador_compras' %}selected{% endif %}>Operador Compras</option>
+            <option value="operador_inventario" {% if request.GET.rol == 'operador_inventario' %}selected{% endif %}>Operador Inventario</option>
+            <option value="operador_produccion" {% if request.GET.rol == 'operador_produccion' %}selected{% endif %}>Operador Producción</option>
+            <option value="operador_ventas" {% if request.GET.rol == 'operador_ventas' %}selected{% endif %}>Operador Ventas</option>
+            <option value="analista_financiero" {% if request.GET.rol == 'analista_financiero' %}selected{% endif %}>Analista Financiero</option>
           </select>
           <select class="form-select me-2 mb-2" name="estado" style="max-width:130px;">
-            <option value="">Todos estados</option>
+            <option value="">Estado: todos</option>
             <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>Activo</option>
             <option value="inactivo" {% if request.GET.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
             <option value="bloqueado" {% if request.GET.estado == 'bloqueado' %}selected{% endif %}>Bloqueado</option>
@@ -169,41 +198,42 @@ input, select {
           </button>
           <button type="submit" class="btn btn-outline-success ms-auto mb-2"
                   name="export_excel" value="1">
-            <i class="bi bi-file-earmark-excel"></i> Excel
+            <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
           </button>
         </form>
 
         <div class="table-responsive">
           <table class="table align-middle table-hover table-bordered rounded">
             <thead class="table-light">
-              <tr class="text-center">
+              <tr class="align-middle text-center">
                 <th>Username</th>
                 <th>Email</th>
                 <th>Nombre</th>
                 <th>Apellido</th>
+                <th>Contraseña</th>
                 <th>Rol</th>
                 <th>Estado</th>
                 <th>MFA</th>
-                {% if can_edit or can_delete %}<th>Acciones</th>{% endif %}
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {% for usuario in usuarios %}
               <tr>
-                <td>
-                  {{ usuario.username }}
-                  {% if usuario.username == user.username %}
-                    <span class="badge bg-info text-white">Tú</span>
-                  {% endif %}
-                </td>
+                <td>{{ usuario.username }}</td>
                 <td>{{ usuario.email }}</td>
                 <td>{{ usuario.nombre }}</td>
                 <td>{{ usuario.apellido }}</td>
-                <td>
-                  <span class="badge bg-secondary">{{ usuario.get_rol_display }}</span>
+                <td class="text-monospace small text-break" style="max-width:250px;">
+                  {% if usuario.password %}
+                    <span class="text-muted">••••••••</span>
+                  {% else %}
+                    <span class="text-muted">Sin contraseña</span>
+                  {% endif %}
                 </td>
+                <td>{{ usuario.get_rol_display }}</td>
                 <td>
-                  <span class="badge {% if usuario.estado == 'activo' %}bg-success{% elif usuario.estado == 'inactivo' %}bg-warning{% else %}bg-danger{% endif %}">
+                  <span class="badge {% if usuario.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %}">
                     {{ usuario.get_estado_display }}
                   </span>
                 </td>
@@ -212,29 +242,18 @@ input, select {
                     {{ usuario.get_mfa_habilitado_display }}
                   </span>
                 </td>
-                {% if can_edit or can_delete %}
                 <td class="text-center btn-acciones">
-                  {% if can_edit %}
-                    {% if is_admin or usuario.username == user.username %}
-                      <a href="?edit_id={{ usuario.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
-                        <i class="bi bi-pencil-square"></i>
-                      </a>
-                    {% endif %}
-                  {% endif %}
-                  
-                  {% if can_delete and is_admin %}
-                    <button type="button" data-id="{{ usuario.pk }}" class="btn btn-sm btn-outline-danger mb-1 btn-delete-user" title="Eliminar">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  {% endif %}
+                  <a href="?edit_id={{ usuario.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                  <button type="button" data-id="{{ usuario.pk }}" class="btn btn-sm btn-outline-danger mb-1 btn-delete-user" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
                 </td>
-                {% endif %}
               </tr>
               {% empty %}
               <tr>
-                <td colspan="{% if can_edit or can_delete %}7{% else %}6{% endif %}" class="text-center text-muted">
-                  Sin usuarios registrados.
-                </td>
+                <td colspan="9" class="text-center text-muted">Sin usuarios registrados.</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -245,7 +264,6 @@ input, select {
   </div>
 </div>
 
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 {% if form.errors %}
@@ -274,6 +292,23 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 {% endif %}
 
+<!-- MENSAJES DJANGO (éxito/eliminación) -->
+{% if messages %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  {% for message in messages %}
+    Swal.fire({
+      icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}",
+      title: "{% if message.tags == 'success' %}¡Éxito!{% elif message.tags == 'error' %}Error{% elif message.tags == 'warning' %}Atención{% else %}Aviso{% endif %}",
+      text: "{{ message|escapejs }}",
+      showConfirmButton: true,
+      confirmButtonText: "Aceptar"
+    });
+  {% endfor %}
+});
+</script>
+{% endif %}
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("formUsuario");
@@ -288,60 +323,65 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (form) {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-      const username = form.querySelector("[name='username']").value.trim();
-      const email = form.querySelector("[name='email']").value.trim();
-      const password = form.querySelector("[name='password']").value.trim();
-      const nombre = form.querySelector("[name='nombre']").value.trim();
-      const apellido = form.querySelector("[name='apellido']").value.trim();
+    const username = form.querySelector("[name='username']").value.trim();
+    const email = form.querySelector("[name='email']").value.trim();
+    const password = form.querySelector("[name='password']").value.trim();
+    const nombre = form.querySelector("[name='nombre']").value.trim();
+    const apellido = form.querySelector("[name='apellido']").value.trim();
+    const rol = form.querySelector("[name='rol']").value.trim();
+    const estado = form.querySelector("[name='estado']").value.trim();
+    const mfa = form.querySelector("[name='mfa_habilitado']").value.trim();
 
-      const faltantes = [];
-      if (!username) faltantes.push("Username");
-      if (!email) faltantes.push("Email");
-      if (!nombre) faltantes.push("Nombres");
-      if (!apellido) faltantes.push("Apellidos");
+    const faltantes = [];
+    if (!username) faltantes.push("Username");
+    if (!email) faltantes.push("Email");
+    if (!nombre) faltantes.push("Nombres");
+    if (!apellido) faltantes.push("Apellidos");
+    if (!rol) faltantes.push("Rol");
+    if (!estado) faltantes.push("Estado");
+    if (!mfa) faltantes.push("MFA habilitado");
 
-      const editMode = form.querySelector("input[name='edit_id']") !== null;
-      if (!editMode && !password) faltantes.push("Contraseña");
+    const editMode = form.querySelector("input[name='edit_id']") !== null;
+    if (!editMode && !password) faltantes.push("Contraseña");
 
-      if (faltantes.length > 0) {
-        Swal.fire({
-          icon: "warning",
-          title: "Campos obligatorios faltantes",
-          html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>",
-          confirmButtonText: "Corregir"
-        });
-        return;
-      }
+    if (faltantes.length > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Campos obligatorios faltantes",
+        html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>",
+        confirmButtonText: "Corregir"
+      });
+      return;
+    }
 
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (!emailRegex.test(email)) {
-        Swal.fire({
-          icon: "error",
-          title: "Correo inválido",
-          text: "Debe tener un formato válido (ejemplo@dominio.com).",
-          confirmButtonText: "Entendido"
-        });
-        return;
-      }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      Swal.fire({
+        icon: "error",
+        title: "Correo inválido",
+        text: "Debe tener un formato válido (ejemplo@dominio.com).",
+        confirmButtonText: "Entendido"
+      });
+      return;
+    }
 
-      const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
-      if ((!editMode && !passRegex.test(password)) || (editMode && password && !passRegex.test(password))) {
-        Swal.fire({
-          icon: "error",
-          title: "Contraseña insegura",
-          html: "Debe tener al menos:<br>• 8 caracteres<br>• 1 mayúscula<br>• 1 número<br>• 1 carácter especial (@$!%*?&.#_-)",
-          confirmButtonText: "Corregir"
-        });
-        return;
-      }
+    const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
+    if ((!editMode && !passRegex.test(password)) || (editMode && password && !passRegex.test(password))) {
+      Swal.fire({
+        icon: "error",
+        title: "Contraseña insegura",
+        html: "Debe tener al menos:<br>• 8 caracteres<br>• 1 mayúscula<br>• 1 número<br>• 1 carácter especial (@$!%*?&.#_-)",
+        confirmButtonText: "Corregir"
+      });
+      return;
+    }
 
-      form.submit();
-    });
-  }
+    // Enviar formulario
+    form.submit();
+  });
 
   document.querySelectorAll(".btn-delete-user").forEach(btn => {
     btn.addEventListener("click", () => {

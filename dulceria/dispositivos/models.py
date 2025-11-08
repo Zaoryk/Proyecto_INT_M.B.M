@@ -29,6 +29,7 @@ class Usuario(models.Model):
     email = models.CharField(max_length=100, blank=True, null=True, unique=True)
     nombre = models.CharField(max_length=100, blank=True, null=True)
     apellido = models.CharField(max_length=100, blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True) 
     rol = models.CharField(max_length=50, choices=ROLES, default="operador_ventas")
     estado = models.CharField(max_length=50, choices=ESTADOS, default="activo")
     mfa_habilitado = models.CharField(max_length=50, choices=MFA_OPTIONS, default="deshabilitado")
