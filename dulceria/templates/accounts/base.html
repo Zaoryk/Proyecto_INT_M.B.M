@@ -85,6 +85,10 @@
               <li class="nav-item"><a class="nav-link" href="{% url 'Productos' %}">Productos</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'Proveedores' %}">Proveedores</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'Transaccional' %}">Inventario</a></li>
+              <!-- NUEVOS ENLACES  SOLO PARA PRUEBA BACKEND-->
+              <li class="nav-item"><a class="nav-link" href="{% url 'Categorias' %}">Categorías</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'Bodegas' %}">Bodegas</a></li>
+              <!-- Elminar despues-->
               <li class="nav-item d-flex align-items-center">
                 <a href="{% url 'perfil_usuario' %}" class="navbar-user-link d-flex align-items-center">
                   {% if usuario_actual and usuario_actual.avatar %}

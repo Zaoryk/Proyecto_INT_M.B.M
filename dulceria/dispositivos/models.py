@@ -186,14 +186,37 @@ class ProductoProveedor(models.Model):
         db_table = 'Producto_Proveedor'
 
 # Modelos existentes que se mantienen (adaptados para compatibilidad)
+# PARA CRUDS PARA BACK END BORRAR DESPUES
 class Bodega(models.Model):
+    ESTADOS = [
+        ("activo", "Activo"),
+        ("inactivo", "Inactivo"),
+    ]
+        
     idbodega = models.AutoField(db_column='idBodega', primary_key=True)
-    nombre = models.CharField(max_length=120, blank=True, null=True)
+    nombre = models.CharField(max_length=120, unique=True)
     ubicacion = models.CharField(max_length=100, blank=True, null=True)
+    capacidad = models.IntegerField(default=0, help_text="Capacidad en unidades")
+    estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
 
     class Meta:
         managed = False
         db_table = 'bodega'
+
+class Categoria(models.Model):
+    ESTADOS = [
+        ("activo", "Activo"),
+        ("inactivo", "Inactivo"),
+    ]
+    
+    idCategoria = models.AutoField(db_column='idCategoria', primary_key=True)
+    nombre = models.CharField(max_length=100, unique=True)
+    descripcion = models.CharField(max_length=255, blank=True, null=True)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
+
+    class Meta:
+        managed = False
+        db_table = 'categoria'
 
 class Cliente(models.Model):
     idcliente = models.AutoField(db_column='idCliente', primary_key=True)

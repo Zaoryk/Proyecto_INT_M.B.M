@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from dispositivos.models import Usuario, Producto, Proveedor, ProductoProveedor
-from dispositivos.forms import UsuarioForm, ProveedorForm, ProductoForm, ProductoProveedorForm, PerfilUsuarioForm, PasswordChangeForm
+from dispositivos.models import Usuario, Producto, Proveedor, ProductoProveedor, Categoria, Bodega
+from dispositivos.forms import UsuarioForm, ProveedorForm, ProductoForm, ProductoProveedorForm, PerfilUsuarioForm, PasswordChangeForm, CategoriaForm, BodegaForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import update_session_auth_hash
@@ -614,4 +614,204 @@ def perfilusuario(request):
         "pass_form": PasswordChangeForm(usuario=usuario),
         "usuario": usuario,
         "user": user,
+    })
+
+#CRUDS SOLO PARA BACK END ELIMINAR DESPUES
+# -------------------------------------------------------------
+# CATEGORÍAS
+# -------------------------------------------------------------
+@login_required
+@require_module_permission('categorias', 'view')
+def gestionCategorias(request):
+    visitas = request.session.get("visitas", 0)
+    request.session['visitas'] = visitas + 1
+
+    role_name = get_user_role_name(request.user)
+    
+    can_add = user_can_add_module(request.user, 'categorias')
+    can_change = user_can_change_module(request.user, 'categorias')
+    can_delete = user_can_delete_module(request.user, 'categorias')
+
+    # Búsqueda y filtros
+    search = request.GET.get("buscar", "")
+    estado_filter = request.GET.get("estado", "")
+    
+    categorias = Categoria.objects.all()
+    if search:
+        categorias = categorias.filter(Q(nombre__icontains=search) | Q(descripcion__icontains=search))
+    if estado_filter:
+        categorias = categorias.filter(estado__iexact=estado_filter)
+
+    # Exportar a Excel
+    if "export_excel" in request.GET:
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Categorías"
+        headers = ["Nombre", "Descripción", "Estado"]
+        sheet.append(headers)
+        for c in categorias:
+            sheet.append([c.nombre, c.descripcion, c.get_estado_display()])
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response['Content-Disposition'] = 'attachment; filename="categorias.xlsx"'
+        workbook.save(response)
+        return response
+
+    # ELIMINAR
+    if request.method == "GET" and "delete_id" in request.GET:
+        if not can_delete:
+            messages.error(request, "No tienes permiso para eliminar categorías.")
+            return redirect("Categorias")
+        try:
+            categoria = Categoria.objects.get(pk=request.GET.get("delete_id"))
+            categoria.delete()
+            messages.success(request, "Categoría eliminada correctamente.")
+        except Exception as e:
+            messages.error(request, f"Error al eliminar: {str(e)}")
+        return redirect("Categorias")
+
+    # EDITAR
+    edit_mode = False
+    edit_id = ""
+    if request.method == "GET" and "edit_id" in request.GET:
+        if not can_change:
+            messages.error(request, "No tienes permiso para editar categorías.")
+            return redirect("Categorias")
+        edit_id = request.GET.get("edit_id")
+        form = CategoriaForm(instance=get_object_or_404(Categoria, pk=edit_id))
+        edit_mode = True
+    
+    # GUARDAR / ACTUALIZAR
+    elif request.method == "POST":
+        edit_id = request.POST.get("edit_id")
+        if edit_id and not can_change:
+            messages.error(request, "No tienes permiso para editar categorías.")
+            return redirect("Categorias")
+        if not edit_id and not can_add:
+            messages.error(request, "No tienes permiso para crear categorías.")
+            return redirect("Categorias")
+        
+        instance = get_object_or_404(Categoria, pk=edit_id) if edit_id else None
+        form = CategoriaForm(request.POST, instance=instance)
+        edit_mode = bool(edit_id)
+        
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoría guardada correctamente.")
+            return redirect("Categorias")
+    else:
+        form = CategoriaForm() if can_add else None
+        edit_mode = False
+
+    return render(request, "dispositivos/gestionCategorias.html", {
+        "visitas": visitas,
+        "form": form,
+        "categorias": categorias,
+        "edit_mode": edit_mode,
+        "edit_id": edit_id,
+        "can_add": can_add,
+        "can_edit": can_change,
+        "can_delete": can_delete,
+        "role_name": role_name,
+    })
+
+
+# -------------------------------------------------------------
+# BODEGAS
+# -------------------------------------------------------------
+@login_required
+@require_module_permission('bodegas', 'view')
+def gestionBodegas(request):
+    visitas = request.session.get("visitas", 0)
+    request.session['visitas'] = visitas + 1
+
+    role_name = get_user_role_name(request.user)
+    
+    can_add = user_can_add_module(request.user, 'bodegas')
+    can_change = user_can_change_module(request.user, 'bodegas')
+    can_delete = user_can_delete_module(request.user, 'bodegas')
+
+    # Búsqueda y filtros
+    search = request.GET.get("buscar", "")
+    estado_filter = request.GET.get("estado", "")
+    
+    bodegas = Bodega.objects.all()
+    if search:
+        bodegas = bodegas.filter(Q(nombre__icontains=search) | Q(ubicacion__icontains=search))
+    if estado_filter:
+        bodegas = bodegas.filter(estado__iexact=estado_filter)
+
+    # Exportar a Excel
+    if "export_excel" in request.GET:
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Bodegas"
+        headers = ["Nombre", "Ubicación", "Capacidad", "Estado"]
+        sheet.append(headers)
+        for b in bodegas:
+            sheet.append([b.nombre, b.ubicacion, b.capacidad, b.get_estado_display()])
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response['Content-Disposition'] = 'attachment; filename="bodegas.xlsx"'
+        workbook.save(response)
+        return response
+
+    # ELIMINAR
+    if request.method == "GET" and "delete_id" in request.GET:
+        if not can_delete:
+            messages.error(request, "No tienes permiso para eliminar bodegas.")
+            return redirect("Bodegas")
+        try:
+            bodega = Bodega.objects.get(pk=request.GET.get("delete_id"))
+            bodega.delete()
+            messages.success(request, "Bodega eliminada correctamente.")
+        except Exception as e:
+            messages.error(request, f"Error al eliminar: {str(e)}")
+        return redirect("Bodegas")
+
+    # EDITAR
+    edit_mode = False
+    edit_id = ""
+    if request.method == "GET" and "edit_id" in request.GET:
+        if not can_change:
+            messages.error(request, "No tienes permiso para editar bodegas.")
+            return redirect("Bodegas")
+        edit_id = request.GET.get("edit_id")
+        form = BodegaForm(instance=get_object_or_404(Bodega, pk=edit_id))
+        edit_mode = True
+    
+    # GUARDAR / ACTUALIZAR
+    elif request.method == "POST":
+        edit_id = request.POST.get("edit_id")
+        if edit_id and not can_change:
+            messages.error(request, "No tienes permiso para editar bodegas.")
+            return redirect("Bodegas")
+        if not edit_id and not can_add:
+            messages.error(request, "No tienes permiso para crear bodegas.")
+            return redirect("Bodegas")
+        
+        instance = get_object_or_404(Bodega, pk=edit_id) if edit_id else None
+        form = BodegaForm(request.POST, instance=instance)
+        edit_mode = bool(edit_id)
+        
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Bodega guardada correctamente.")
+            return redirect("Bodegas")
+    else:
+        form = BodegaForm() if can_add else None
+        edit_mode = False
+
+    return render(request, "dispositivos/gestionBodegas.html", {
+        "visitas": visitas,
+        "form": form,
+        "bodegas": bodegas,
+        "edit_mode": edit_mode,
+        "edit_id": edit_id,
+        "can_add": can_add,
+        "can_edit": can_change,
+        "can_delete": can_delete,
+        "role_name": role_name,
     })

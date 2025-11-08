@@ -1,24 +1,9 @@
-"""
-URL configuration for dulceria project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from dispositivos.views import dashboard, formularioUsuario, gestionProductos, gestionProveedores, moduloTransaccional, perfilusuario
+from dispositivos.views import (dashboard, formularioUsuario, gestionProductos, gestionProveedores, 
+    moduloTransaccional, perfilusuario, gestionCategorias, gestionBodegas)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +14,8 @@ urlpatterns = [
     path("gestionproveedores/", gestionProveedores, name="Proveedores"),
     path("modulotransaccional/", moduloTransaccional, name="Transaccional"),
     path("perfilusuario/", perfilusuario, name="perfil_usuario"),
+    path("gestioncategorias/", gestionCategorias, name="Categorias"),
+    path("gestionbodegas/", gestionBodegas, name="Bodegas"),
 ]
 
 if settings.DEBUG:

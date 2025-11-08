@@ -5,7 +5,7 @@ from accounts.models import RoleModulePermission
 from dispositivos.models import (
     Usuario, Producto, Proveedor, ProductoProveedor, Bodega, Cliente, 
     Costo, ListarPrecios, MovimientoInventario, OrdenDeCompra, 
-    OrdenProduccion, Pedido
+    OrdenProduccion, Pedido, Categoria
 )
 
 class PermissionMixin:
@@ -233,12 +233,6 @@ class ProductoProveedorAdmin(PermissionMixin, admin.ModelAdmin):
     search_fields = ("producto__nombre", "proveedor__razon_social")
 
 # Admin classes existentes que se mantienen (con pequeños ajustes)
-@admin.register(Bodega)
-class BodegaAdmin(PermissionMixin, admin.ModelAdmin):
-    module_code = 'bodegas'
-    list_display = ("nombre", "ubicacion")
-    search_fields = ("nombre", "ubicacion")
-
 @admin.register(Cliente)
 class ClienteAdmin(PermissionMixin, admin.ModelAdmin):
     module_code = 'clientes'
@@ -313,3 +307,33 @@ class PedidoAdmin(PermissionMixin, admin.ModelAdmin):
     list_display = ("idpedido", "fecha", "cliente", "monto_total", "usuario")
     list_filter = ("fecha", "cliente", "usuario")
     search_fields = ("cliente__nombre", "usuario__nombre")
+
+# ELMINAR DESPUES DE PRUEBA BACKEND
+@admin.register(Categoria)
+class CategoriaAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'categorias'
+    list_display = ("nombre", "estado", "descripcion")
+    list_filter = ("estado",)
+    search_fields = ("nombre", "descripcion")
+    
+    fieldsets = (
+        ('Información General', {
+            'fields': ('nombre', 'descripcion', 'estado')
+        }),
+    )
+
+@admin.register(Bodega)
+class BodegaAdmin(PermissionMixin, admin.ModelAdmin):
+    module_code = 'bodegas'
+    list_display = ("nombre", "ubicacion", "capacidad", "estado")
+    list_filter = ("estado",)
+    search_fields = ("nombre", "ubicacion")
+    
+    fieldsets = (
+        ('Información General', {
+            'fields': ('nombre', 'ubicacion')
+        }),
+        ('Configuración', {
+            'fields': ('capacidad', 'estado')
+        }),
+    )

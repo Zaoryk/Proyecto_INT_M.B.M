@@ -6,20 +6,20 @@ class Command(BaseCommand):
     help = 'Inicializa los módulos y roles del sistema con permisos específicos'
 
     def handle(self, *args, **options):
-        # Módulos actualizados incluyendo las nuevas tablas
         MODULOS_SISTEMA = [
             ('usuarios', 'Usuarios', 'person', 1),
             ('productos', 'Productos', 'inventory_2', 2),
             ('proveedores', 'Proveedores', 'local_shipping', 3),
             ('producto_proveedor', 'Inventario (Movimientos)', 'swap_horiz', 4),
-            ('bodegas', 'Bodegas', 'warehouse', 5),
-            ('clientes', 'Clientes', 'people', 6),
-            ('costos', 'Costos', 'attach_money', 7),
-            ('listar_precios', 'Listar Precios', 'price_check', 8),
-            ('movimiento_inventario', 'Movimiento Inventario', 'swap_horiz', 9),
-            ('orden_compra', 'Orden de Compra', 'shopping_cart', 10),
-            ('orden_produccion', 'Orden de Producción', 'build', 11),
-            ('pedidos', 'Pedidos', 'receipt', 12),
+            ('categorias', 'Categorías', 'grid', 5),  # ← NUEVO SOLO PARA BACKEND
+            ('bodegas', 'Bodegas', 'warehouse', 6),   # ← ESTE YA ESTABA
+            ('clientes', 'Clientes', 'people', 7),
+            ('costos', 'Costos', 'attach_money', 8),
+            ('listar_precios', 'Listar Precios', 'price_check', 9),
+            ('movimiento_inventario', 'Movimiento Inventario', 'swap_horiz', 10),
+            ('orden_compra', 'Orden de Compra', 'shopping_cart', 11),
+            ('orden_produccion', 'Orden de Producción', 'build', 12),
+            ('pedidos', 'Pedidos', 'receipt', 13),
         ]
 
         for code, name, icon, order in MODULOS_SISTEMA:
@@ -83,8 +83,9 @@ class Command(BaseCommand):
                     'producto_proveedor': {'view': True, 'add': True, 'change': True, 'delete': True},
                     'productos': {'view': True, 'add': False, 'change': False, 'delete': False},
                     'proveedores': {'view': True, 'add': False, 'change': False, 'delete': False},
-                    'bodegas': {'view': True, 'add': False, 'change': False, 'delete': False},
-                    'usuarios': {'view': True, 'add': False, 'change': True, 'delete': False},  # Solo editar su perfil
+                    'categorias': {'view': True, 'add': False, 'change': False, 'delete': False},  # ← CRUD COMPLETO
+                    'bodegas': {'view': True, 'add': False, 'change': False, 'delete': False},      # ← CRUD COMPLETO
+                    'usuarios': {'view': True, 'add': False, 'change': True, 'delete': False},
                 }
                 self._aplicar_permisos(role, permisos)
 
@@ -96,7 +97,9 @@ class Command(BaseCommand):
                     'proveedores': {'view': True, 'add': True, 'change': True, 'delete': True},
                     'productos': {'view': True, 'add': False, 'change': False, 'delete': False},
                     'producto_proveedor': {'view': True, 'add': False, 'change': False, 'delete': False},
-                    'usuarios': {'view': True, 'add': False, 'change': True, 'delete': False},  # Solo editar su perfil
+                    'categorias': {'view': True, 'add': False, 'change': False, 'delete': False},  # ← CRUD COMPLETO
+                    'bodegas': {'view': True, 'add': False, 'change': False, 'delete': False},      # ← CRUD COMPLETO
+                    'usuarios': {'view': True, 'add': False, 'change': True, 'delete': False},
                 }
                 self._aplicar_permisos(role, permisos)
 
@@ -109,7 +112,9 @@ class Command(BaseCommand):
                     'clientes': {'view': True, 'add': False, 'change': False, 'delete': False},
                     'pedidos': {'view': True, 'add': False, 'change': False, 'delete': False},
                     'listar_precios': {'view': True, 'add': False, 'change': False, 'delete': False},
-                    'usuarios': {'view': True, 'add': False, 'change': True, 'delete': False},  # Solo editar su perfil
+                    'categorias': {'view': True, 'add': True, 'change': True, 'delete': True},  # ← CRUD COMPLETO
+                    'bodegas': {'view': True, 'add': True, 'change': True, 'delete': True},      # ← CRUD COMPLETO
+                    'usuarios': {'view': True, 'add': False, 'change': True, 'delete': False},
                 }
                 self._aplicar_permisos(role, permisos)
 
@@ -121,6 +126,8 @@ class Command(BaseCommand):
                     'productos': {'view': True, 'add': True, 'change': True, 'delete': True},
                     'producto_proveedor': {'view': True, 'add': False, 'change': False, 'delete': False},
                     'proveedores': {'view': True, 'add': False, 'change': False, 'delete': False},
+                    'categorias': {'view': True, 'add': False, 'change': False, 'delete': False},  # ← CRUD COMPLETO
+                    'bodegas': {'view': True, 'add': False, 'change': False, 'delete': False},      # ← CRUD COMPLETO
                     'usuarios': {'view': True, 'add': False, 'change': True, 'delete': False},  # Solo editar su perfil
                 }
                 self._aplicar_permisos(role, permisos)
@@ -130,16 +137,12 @@ class Command(BaseCommand):
             # =========================================
             elif group_name == 'analista_financiero':
                 permisos = {
-                    'usuarios': {'view': True, 'add': False, 'change': True, 'delete': False},
                     'productos': {'view': True, 'add': False, 'change': False, 'delete': False},
                     'proveedores': {'view': True, 'add': False, 'change': False, 'delete': False},
                     'producto_proveedor': {'view': True, 'add': False, 'change': False, 'delete': False},
-                    'costos': {'view': True, 'add': False, 'change': False, 'delete': False},
-                    'listar_precios': {'view': True, 'add': False, 'change': False, 'delete': False},
-                    'clientes': {'view': True, 'add': False, 'change': False, 'delete': False},
-                    'pedidos': {'view': True, 'add': False, 'change': False, 'delete': False},
-                    'orden_compra': {'view': True, 'add': False, 'change': False, 'delete': False},
-                    'movimiento_inventario': {'view': True, 'add': False, 'change': False, 'delete': False},
+                    'categorias': {'view': True, 'add': False, 'change': False, 'delete': False},  # ← CRUD COMPLETO
+                    'bodegas': {'view': True, 'add': False, 'change': False, 'delete': False},      # ← CRUD COMPLETO
+                    'usuarios': {'view': True, 'add': False, 'change': True, 'delete': False},
                 }
                 self._aplicar_permisos(role, permisos)
 
