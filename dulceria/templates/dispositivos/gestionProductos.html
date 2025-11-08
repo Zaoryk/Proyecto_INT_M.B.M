@@ -4,9 +4,11 @@
 .card { border-radius: 16px !important; }
 input, select { border-radius: 8px !important; }
 .table th, .table td { vertical-align: middle; }
+.table-hover tbody tr:hover { background-color: #f8f9fa; }
+.is-valid { border-color: #28a745 !important; }
+.is-invalid { border-color: #dc3545 !important; }
 </style>
 
-{# --------- FORMULARIO NUEVO/EDITAR PRODUCTO --------- #}
 {% if can_add or edit_mode %}
 <div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
@@ -112,7 +114,7 @@ input, select { border-radius: 8px !important; }
             <div class="col-md-2">
               <label class="form-label">IVA (%)</label>
               <input type="number" class="form-control" name="impuesto_iva"
-                     value="{{ form.impuesto_iva.value|default_if_none:19 }}" readonly>
+                     value="{{ form.impuesto_iva.value|default_if_none:19 }}" min="0" max="100" required>
             </div>
           </div>
         </div>
@@ -159,14 +161,12 @@ input, select { border-radius: 8px !important; }
 </div>
 {% endif %}
 
-{# ------------ TABLA Y PAGINADOR ------------ #}
-
 <div class="card shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold">Productos</h5>
     <form method="get" class="d-flex align-items-center mb-3" id="paginatorForm">
       <input class="form-control me-2" type="text" name="buscar"
-             placeholder="Buscar por SKU o nombre..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:150px;">
+             placeholder="Buscar por SKU, nombre..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:170px;">
       <label class="me-2 mb-0" for="pag_size">Mostrar</label>
       <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
         <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
@@ -205,8 +205,13 @@ input, select { border-radius: 8px !important; }
             <td>{{ producto.sku }}</td>
             <td>{{ producto.nombre }}</td>
             <td>{{ producto.categoria }}</td>
+            <td>{{ producto.uom_compra }}</td>
+            <td>{{ producto.uom_venta }}</td>
+            <td>{{ producto.factor_conversion }}</td>
+            <td>{{ producto.impuesto_iva }}</td>
             <td>{{ producto.stock_minimo }}</td>
-            <td>{{ producto.impuesto_iva }}%</td>
+            <td>{% if producto.perishable %}Sí{% else %}No{% endif %}</td>
+            <td>{{ producto.lote }}</td>
             {% if can_edit or can_delete %}
             <td class="text-center">
               {% if can_edit %}
@@ -224,7 +229,7 @@ input, select { border-radius: 8px !important; }
           </tr>
           {% empty %}
           <tr>
-            <td colspan="{% if can_edit or can_delete %}6{% else %}5{% endif %}" class="text-center text-muted">
+            <td colspan="{% if can_edit or can_delete %}11{% else %}10{% endif %}" class="text-center text-muted">
               Sin productos registrados.
             </td>
           </tr>
@@ -259,7 +264,7 @@ input, select { border-radius: 8px !important; }
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  // Patch para campo categoría nueva:
+  // Campo categoría nueva dinámico
   const selectCat = document.getElementById("categoriaSelect");
   const inputDiv = document.getElementById("input-categoria-nueva");
   if (selectCat) {
@@ -268,10 +273,38 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     if (selectCat.value === 'Otras') inputDiv.style.display = 'block';
   }
-  // Patch checkboxes:
+  // Checkboxes: valor seguro para backend
   const productoForm = document.getElementById("productoForm");
   if (productoForm) {
     productoForm.addEventListener("submit", function(e){
+      let errores = [];
+
+      // Valida campos requeridos simples
+      if (!this.categoria.value.trim()) errores.push("Categoría");
+      if (!this.sku.value.trim()) errores.push("SKU");
+      if (!this.nombre.value.trim()) errores.push("Nombre");
+      if (!this.uom_compra.value.trim()) errores.push("Unidad compra");
+      if (!this.uom_venta.value.trim()) errores.push("Unidad venta");
+      if (!this.factor_conversion.value.trim() || parseInt(this.factor_conversion.value) < 1) errores.push("Conversión (min: 1)");
+      if (!this.impuesto_iva.value.trim() || parseInt(this.impuesto_iva.value) < 0) errores.push("IVA");
+      if (!this.stock_minimo.value.trim() || parseInt(this.stock_minimo.value) < 0) errores.push("Stock mínimo");
+
+      // Validación adicional: nombre solo letras/números
+      if (this.nombre.value && !/^[\wÁÉÍÓÚáéíóúÜüÑñ .,-]+$/.test(this.nombre.value)) {
+        errores.push("Nombre (solo letras/números y .,- )");
+      }
+
+      if (errores.length) {
+        e.preventDefault();
+        Swal.fire({
+          icon: "warning",
+          title: "Campos obligatorios o inválidos",
+          html: "<ul style='text-align:left;margin:0;'>" + errores.map(f => "<li>" + f + "</li>").join("") + "</ul>",
+          confirmButtonText: "OK"
+        });
+        return false;
+      }
+
       let perishable = document.getElementById("perishableSwitch");
       let controlLote = document.getElementById("controlLoteSwitch");
       if(perishable && !perishable.checked){
@@ -294,7 +327,7 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
   }
-  // Autosubmit paginador:
+  // Autosubmit paginador
   const pagSize = document.getElementById("pag_size");
   if(pagSize){
     pagSize.addEventListener("change", function(){

@@ -99,7 +99,6 @@ input, select { border-radius: 8px !important; }
                   <option value="China" data-flag="cn">China</option>
                   <option value="Japón" data-flag="jp">Japón</option>
                   <option value="Australia" data-flag="au">Australia</option>
-                  <!-- Más países si necesitas -->
                 </select>
               </div>
             </div>
@@ -185,6 +184,106 @@ input, select { border-radius: 8px !important; }
 </div>
 {% endif %}
 
+<!-- TABLA Y PAGINADOR CRUD -->
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <h5 class="card-title fw-bold">Proveedores</h5>
+    <form method="get" class="d-flex mb-2 flex-wrap align-items-center" id="paginatorForm">
+      <input class="form-control me-2 mb-2" type="text" name="buscar"
+             value="{{ buscar|default_if_none:'' }}"
+             placeholder="Buscar por RUT/NIF o razón social..." style="max-width:250px;">
+      <label class="me-2 mb-0" for="pag_size">Mostrar</label>
+      <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
+        <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
+        <option value="10"{% if pag_size == '10' %} selected{% endif %}>10</option>
+        <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
+      </select>
+      <span class="me-2">registros</span>
+      <button type="submit" class="btn btn-outline-primary mb-2 me-2"><i class="bi bi-search"></i> Buscar</button>
+      <button type="submit" class="btn btn-outline-success mb-2 ms-auto" name="export_excel" value="1">
+        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+      </button>
+    </form>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover rounded">
+        <thead class="table-light">
+          <tr class="text-center">
+            {% for field, label in headers %}
+              <th>
+                <a href="?{% if buscar %}buscar={{ buscar }}&{% endif %}order_by={{ field }}&order={% if order_by == field %}{% if order == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}">
+                  {{ label }}
+                  {% if order_by == field %}
+                    {% if order == "asc" %}▲{% else %}▼{% endif %}
+                  {% endif %}
+                </a>
+              </th>
+            {% endfor %}
+            {% if can_edit or can_delete %}
+              <th>Acciones</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for proveedor in proveedores %}
+          <tr>
+            <td>{{ proveedor.rut_nif }}</td>
+            <td>{{ proveedor.razon_social }}</td>
+            <td>
+              <span class="badge {% if proveedor.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %}">
+                {{ proveedor.get_estado_display }}
+              </span>
+            </td>
+            <td>{{ proveedor.email }}</td>
+            <td>{{ proveedor.pais }}</td>
+            {% if can_edit or can_delete %}
+            <td class="text-center">
+              {% if can_edit %}
+                <a href="?edit_id={{ proveedor.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+              {% endif %}
+              {% if can_delete %}
+                <a href="?delete_id={{ proveedor.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </a>
+              {% endif %}
+            </td>
+            {% endif %}
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{% if can_edit or can_delete %}6{% else %}5{% endif %}" class="text-center text-muted">
+              Sin proveedores registrados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if proveedores.has_other_pages %}
+    <nav>
+      <ul class="pagination justify-content-end">
+        {% if proveedores.has_previous %}
+          <li class="page-item"><a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ proveedores.previous_page_number }}">Anterior</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+        {% for i in proveedores.paginator.page_range %}
+          <li class="page-item {% if proveedores.number == i %}active{% endif %}">
+            <a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ i }}">{{ i }}</a>
+          </li>
+        {% endfor %}
+        {% if proveedores.has_next %}
+          <li class="page-item"><a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ proveedores.next_page_number }}">Siguiente</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -239,7 +338,7 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
   }
-  // BANDERA DINÁMICA
+  // Bandera país
   const selectPais = document.getElementById("paisSelect");
   const flagSpan = document.querySelector("#flag-icon .fi");
   if (selectPais && flagSpan) {
@@ -255,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function() {
     selectPais.addEventListener("change", cambiarBandera);
     cambiarBandera();
   }
-  // SweetAlert validaciones en submit (igual que antes)
+  // SweetAlert validaciones en submit
   const form = document.getElementById("proveedorForm");
   if (form) {
     form.setAttribute("novalidate", "novalidate");
