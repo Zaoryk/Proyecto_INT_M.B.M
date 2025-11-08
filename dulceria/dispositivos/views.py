@@ -97,64 +97,66 @@ def formularioUsuario(request):
         workbook.save(response)
         return response
 
-    # ELIMINAR - Solo administrador
+    # ELIMINAR USUARIO - Solo administrador
     if request.method == "GET" and "delete_id" in request.GET:
         if not is_admin:
             messages.error(request, "No tienes permiso para eliminar usuarios.")
             return redirect("Formulario")
-        
         if not user_can_delete_module(request.user, 'usuarios'):
             messages.error(request, "No tienes permiso para eliminar usuarios.")
             return redirect("Formulario")
-        
         usuario_id = request.GET.get("delete_id")
         try:
             usuario = Usuario.objects.get(pk=usuario_id)
             username = usuario.username
-            
             try:
                 auth_user = User.objects.get(username=username)
                 auth_user.delete()
             except User.DoesNotExist:
                 pass
-            
             usuario.delete()
             messages.success(request, "Usuario eliminado correctamente.")
         except Exception as e:
             messages.error(request, f"Error al eliminar usuario: {str(e)}")
-        
+        return redirect("Formulario")
+
+    # ELIMINAR AVATAR - Solo administrador
+    if request.method == "POST" and request.POST.get("delete_avatar"):
+        if not is_admin:
+            messages.error(request, "Solo los administradores pueden eliminar la foto de perfil.")
+            return redirect("Formulario")
+        edit_id = request.POST.get("edit_id")
+        usuario = get_object_or_404(Usuario, pk=edit_id)
+        if usuario.avatar:
+            usuario.avatar.delete(save=False)
+            usuario.avatar = None
+            usuario.save()
+        messages.success(request, "Avatar eliminado correctamente.")
         return redirect("Formulario")
 
     # EDITAR
     edit_mode = False
     edit_id = ""
-    
     if request.method == "GET" and "edit_id" in request.GET:
         edit_id = request.GET.get("edit_id")
-        
-        # Verificar si puede editar este usuario
         if not can_edit_own_profile(request.user, edit_id):
             messages.error(request, "Solo puedes editar tu propio perfil.")
             return redirect("Formulario")
-        
         if not user_can_change_module(request.user, 'usuarios'):
             messages.error(request, "No tienes permiso para editar usuarios.")
             return redirect("Formulario")
-        
         form = UsuarioForm(instance=get_object_or_404(Usuario, pk=edit_id))
         edit_mode = True
 
-    # GUARDAR / ACTUALIZAR
-    elif request.method == "POST":
+    # GUARDAR / ACTUALIZAR USUARIO
+    elif request.method == "POST" and not request.POST.get("delete_avatar"):
         edit_id = request.POST.get("edit_id")
-        
         # Verificar permisos
         if edit_id:
             # Actualización
             if not can_edit_own_profile(request.user, edit_id):
                 messages.error(request, "Solo puedes editar tu propio perfil.")
                 return redirect("Formulario")
-            
             if not user_can_change_module(request.user, 'usuarios'):
                 messages.error(request, "No tienes permiso para editar usuarios.")
                 return redirect("Formulario")
@@ -163,12 +165,18 @@ def formularioUsuario(request):
             if not is_admin or not user_can_add_module(request.user, 'usuarios'):
                 messages.error(request, "No tienes permiso para crear usuarios.")
                 return redirect("Formulario")
-        
         instance = get_object_or_404(Usuario, pk=edit_id) if edit_id else None
-        form = UsuarioForm(request.POST, instance=instance)
+        # Solo administrador puede editar avatar; para otros roles, excluye 'avatar' del form
+        if is_admin:
+            form = UsuarioForm(request.POST, request.FILES, instance=instance)
+        else:
+            # Los no-admin no pueden subir/cambiar el avatar vía formulario
+            POST_data = request.POST.copy()
+            FILES_data = None  # Ignorado
+            if instance:
+                POST_data['avatar'] = instance.avatar  # Conserva actual
+            form = UsuarioForm(POST_data, instance=instance)
         edit_mode = bool(edit_id)
-        
-        # Si no es admin, no puede cambiar el rol
         if not is_admin and instance:
             # Preservar el rol original
             original_rol = instance.rol
