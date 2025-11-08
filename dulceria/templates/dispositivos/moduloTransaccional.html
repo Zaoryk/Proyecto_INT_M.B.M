@@ -32,12 +32,13 @@ input, select { border-radius: 8px !important; }
   </div>
 </div>
 
+{% if can_add or edit_mode %}
 <div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title mb-3 fw-bold">
       {% if edit_mode %}Editar movimiento{% else %}Nuevo movimiento{% endif %}
     </h5>
-    <form id="movimientoForm" method="post" autocomplete="off" novalidate>
+    <form id="movimientoForm" method="post" autocomplete="off">
       {% csrf_token %}
       {% if edit_mode %}
         <input type="hidden" name="edit_id" value="{{ edit_id }}">
@@ -100,6 +101,15 @@ input, select { border-radius: 8px !important; }
     </form>
   </div>
 </div>
+{% else %}
+<div class="alert alert-info mb-4">
+  <i class="bi bi-info-circle me-2"></i>
+  <strong>No tienes Los Permisos</strong> - Solo visualizar datos.
+  {% if role_name == 'analista_financiero' %}
+    Puedes exportar los datos a Excel para análisis.
+  {% endif %}
+</div>
+{% endif %}
 
 <div class="card shadow-sm border-0">
   <form method="get" class="d-flex mb-2 flex-wrap align-items-center">
@@ -129,7 +139,9 @@ input, select { border-radius: 8px !important; }
           <th>Producto</th>
           <th>Proveedor</th>
           <th>Cantidad</th>
-          <th>Acciones</th>
+          {% if can_edit or can_delete %}
+            <th>Acciones</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -145,18 +157,27 @@ input, select { border-radius: 8px !important; }
           <td>{{ movimiento.producto.nombre }}</td>
           <td>{{ movimiento.proveedor.razon_social }}</td>
           <td>{{ movimiento.cantidad }}</td>
+          {% if can_edit or can_delete %}
           <td class="text-center">
-            <a href="?edit_id={{ movimiento.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
-              <i class="bi bi-pencil-square"></i>
-            </a>
-            <a href="?delete_id={{ movimiento.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
-              <i class="bi bi-trash"></i>
-            </a>
+            {% if can_edit %}
+              <a href="?edit_id={{ movimiento.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+            {% endif %}
+            
+            {% if can_delete %}
+              <a href="?delete_id={{ movimiento.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </a>
+            {% endif %}
           </td>
+          {% endif %}
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" class="text-center text-muted">Sin movimientos registrados.</td>
+          <td colspan="{% if can_edit or can_delete %}7{% else %}6{% endif %}" class="text-center text-muted">
+            Sin movimientos registrados.
+          </td>
         </tr>
         {% endfor %}
       </tbody>

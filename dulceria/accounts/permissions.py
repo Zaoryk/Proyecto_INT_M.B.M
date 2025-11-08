@@ -11,6 +11,7 @@ from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseForbidden
 from accounts.models import RoleModulePermission
 
 
@@ -30,6 +31,18 @@ def get_user_role(user):
     
     return None
 
+def get_user_role_name(user):
+    """
+    Obtiene el nombre del rol del usuario
+    """
+    if not user.is_authenticated:
+        return None
+    
+    groups = user.groups.all()
+    if groups.exists():
+        return groups.first().name
+    
+    return None
 
 def has_module_permission(user, module_code, permission_type='view'):
     """
@@ -71,6 +84,53 @@ def has_module_permission(user, module_code, permission_type='view'):
     except RoleModulePermission.DoesNotExist:
         return False
 
+def can_edit_own_profile(user, usuario_id):
+    """
+    Verifica si el usuario puede editar un perfil específico.
+    
+    Reglas:
+    - Administrador: puede editar cualquier perfil
+    - Analista Financiero: no puede editar ningún perfil (ni el suyo)
+    - Otros roles: solo pueden editar su propio perfil
+    
+    Args:
+        user: Usuario autenticado
+        usuario_id: ID del usuario a editar
+    
+    Returns:
+        bool: True si puede editar, False si no
+    """
+    if user.is_superuser:
+        return True
+    
+    role_name = get_user_role_name(user)
+    
+    # Analista financiero no puede editar nada
+    if role_name == 'analista_financiero':
+        return False
+    
+    # Administrador puede editar cualquier perfil
+    if role_name == 'administrador':
+        return True
+    
+    # Otros roles solo pueden editar su propio perfil
+    # Necesitamos obtener el usuario_id del usuario autenticado
+    from dispositivos.models import Usuario
+    try:
+        usuario_actual = Usuario.objects.get(username=user.username)
+        return usuario_actual.idUsuario == int(usuario_id)
+    except Usuario.DoesNotExist:
+        return False
+
+def can_assign_roles(user):
+    """
+    Solo el administrador puede asignar roles.
+    """
+    if user.is_superuser:
+        return True
+    
+    role_name = get_user_role_name(user)
+    return role_name == 'administrador'
 
 def get_user_modules(user):
     """
@@ -96,19 +156,23 @@ def get_user_modules(user):
     return [perm.module for perm in perms]
 
 
-def require_module_permission(module_code, permission_type='view', redirect_url='dashboard'):
+def require_module_permission(module_code, permission_type='view', check_own_profile=False):
     """
     Decorador para proteger vistas que requieren permisos específicos.
     
-    Uso:
-        @require_module_permission('inventarios', 'add')
-        def crear_producto(request):
-            ...
-    
     Args:
         module_code: Código del módulo
-        permission_type: Tipo de permiso requerido
-        redirect_url: URL de redirección si no tiene permiso
+        permission_type: Tipo de permiso requerido ('view', 'add', 'change', 'delete')
+        check_own_profile: Si True, verifica que el usuario solo pueda editar su propio perfil
+    
+    Uso:
+        @require_module_permission('productos', 'add')
+        def crear_producto(request):
+            ...
+        
+        @require_module_permission('usuarios', 'change', check_own_profile=True)
+        def editar_usuario(request, usuario_id):
+            ...
     """
     def decorator(view_func):
         @wraps(view_func)
@@ -122,10 +186,22 @@ def require_module_permission(module_code, permission_type='view', redirect_url=
             if not has_module_permission(request.user, module_code, permission_type):
                 messages.error(
                     request, 
-                    f'No tienes permiso para realizar esta acción en el módulo {module_code}.'
+                    f'No tienes permiso para realizar esta acción en {module_code}.'
                 )
-                return redirect(redirect_url)
+                return redirect('dashboard')
             
+            # Verificación adicional para edición de perfil propio
+            if check_own_profile and permission_type == 'change':
+                # Obtener el ID del usuario a editar desde GET o POST
+                usuario_id = request.GET.get('edit_id') or request.POST.get('edit_id')
+                
+                if usuario_id and not can_edit_own_profile(request.user, usuario_id):
+                    messages.error(
+                        request, 
+                        'Solo puedes editar tu propio perfil.'
+                    )
+                    return redirect('Formulario')
+                
             return view_func(request, *args, **kwargs)
         
         return wrapper
@@ -157,29 +233,54 @@ def permissions_context(request):
     """
     Context processor que agrega información de permisos a todos los templates.
     
-    Agregar en settings.py:
-        'context_processors': [
-            ...
-            'accounts.permissions.permissions_context',
-        ]
-    
     Uso en templates:
-        {% if 'inventarios' in user_modules %}
-            <a href="...">Ver Inventarios</a>
+        {% if 'productos' in user_module_codes %}
+            <a href="...">Ver Productos</a>
+        {% endif %}
+        
+        {% if can_add_productos %}
+            <button>Crear Producto</button>
         {% endif %}
     """
     if request.user.is_authenticated:
         modules = get_user_modules(request.user)
         module_codes = [m.code for m in modules]
+        role_name = get_user_role_name(request.user)
+
+        # Crear diccionarios de permisos por módulo
+        can_add = {}
+        can_change = {}
+        can_delete = {}
         
-        return {
+        for module in modules:
+            code = module.code
+            can_add[f'can_add_{code}'] = user_can_add_module(request.user, code)
+            can_change[f'can_change_{code}'] = user_can_change_module(request.user, code)
+            can_delete[f'can_delete_{code}'] = user_can_delete_module(request.user, code)
+        
+        context = {
             'user_modules': modules,
             'user_module_codes': module_codes,
             'user_role': get_user_role(request.user),
+            'user_role_name': role_name,
+            'is_admin': role_name == 'administrador',
+            'is_analyst': role_name == 'analista_financiero',
+            'can_assign_roles': can_assign_roles(request.user),
         }
+        
+        # Agregar permisos específicos al contexto
+        context.update(can_add)
+        context.update(can_change)
+        context.update(can_delete)
+        
+        return context
     
     return {
         'user_modules': [],
         'user_module_codes': [],
         'user_role': None,
+        'user_role_name': None,
+        'is_admin': False,
+        'is_analyst': False,
+        'can_assign_roles': False,
     }

@@ -22,6 +22,15 @@ CATEGORIAS = [
     ("Otras", "Otra...")
 ]
 
+from accounts.permissions import (
+    require_module_permission,
+    get_user_role_name,
+    can_edit_own_profile,
+    can_assign_roles,
+    user_can_add_module,
+    user_can_change_module,
+    user_can_delete_module
+)
 
 # -------------------------------------------------------------
 # DASHBOARD
@@ -38,6 +47,7 @@ def dashboard(request):
         'proveedores_count': Proveedor.objects.count(),
         'movimientos_count': ProductoProveedor.objects.count(),
         'ultimos_usuarios': Usuario.objects.order_by('-idUsuario')[:3],
+        'role_name': get_user_role_name(request.user),
     }
     return render(request, "dispositivos/dashboard.html", context)
 
@@ -46,10 +56,16 @@ def dashboard(request):
 # USUARIOS
 # -------------------------------------------------------------
 @login_required
+@require_module_permission('usuarios', 'view')
 def formularioUsuario(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
+    role_name = get_user_role_name(request.user)
+    is_admin = role_name == 'administrador'
+    is_analyst = role_name == 'analista_financiero'
+
+    # Búsqueda y filtros
     search = request.GET.get("buscar", "")
     rol_filter = request.GET.get("rol", "")
     estado_filter = request.GET.get("estado", "")
@@ -62,7 +78,7 @@ def formularioUsuario(request):
     if estado_filter:
         usuarios = usuarios.filter(estado__iexact=estado_filter)
 
-    # Exportar a Excel
+    # Exportar a Excel (todos pueden exportar si tienen permiso de view)
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -81,8 +97,16 @@ def formularioUsuario(request):
         workbook.save(response)
         return response
 
-    # CRUD - ELIMINAR
+    # ELIMINAR - Solo administrador
     if request.method == "GET" and "delete_id" in request.GET:
+        if not is_admin:
+            messages.error(request, "No tienes permiso para eliminar usuarios.")
+            return redirect("Formulario")
+        
+        if not user_can_delete_module(request.user, 'usuarios'):
+            messages.error(request, "No tienes permiso para eliminar usuarios.")
+            return redirect("Formulario")
+        
         usuario_id = request.GET.get("delete_id")
         try:
             usuario = Usuario.objects.get(pk=usuario_id)
@@ -92,7 +116,8 @@ def formularioUsuario(request):
                 auth_user = User.objects.get(username=username)
                 auth_user.delete()
             except User.DoesNotExist:
-                pass 
+                pass
+            
             usuario.delete()
             messages.success(request, "Usuario eliminado correctamente.")
         except Exception as e:
@@ -100,31 +125,75 @@ def formularioUsuario(request):
         
         return redirect("Formulario")
 
-    # CRUD EDITAR
+    # EDITAR
+    edit_mode = False
+    edit_id = ""
+    
     if request.method == "GET" and "edit_id" in request.GET:
-        form = UsuarioForm(instance=get_object_or_404(Usuario, pk=request.GET.get("edit_id")))
-        edit_mode = True
         edit_id = request.GET.get("edit_id")
+        
+        # Verificar si puede editar este usuario
+        if not can_edit_own_profile(request.user, edit_id):
+            messages.error(request, "Solo puedes editar tu propio perfil.")
+            return redirect("Formulario")
+        
+        if not user_can_change_module(request.user, 'usuarios'):
+            messages.error(request, "No tienes permiso para editar usuarios.")
+            return redirect("Formulario")
+        
+        form = UsuarioForm(instance=get_object_or_404(Usuario, pk=edit_id))
+        edit_mode = True
 
-    # CRUD - GUARDAR Y ACTUALIZAR
+    # GUARDAR / ACTUALIZAR
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
+        
+        # Verificar permisos
+        if edit_id:
+            # Actualización
+            if not can_edit_own_profile(request.user, edit_id):
+                messages.error(request, "Solo puedes editar tu propio perfil.")
+                return redirect("Formulario")
+            
+            if not user_can_change_module(request.user, 'usuarios'):
+                messages.error(request, "No tienes permiso para editar usuarios.")
+                return redirect("Formulario")
+        else:
+            # Creación - Solo admin
+            if not is_admin or not user_can_add_module(request.user, 'usuarios'):
+                messages.error(request, "No tienes permiso para crear usuarios.")
+                return redirect("Formulario")
+        
         instance = get_object_or_404(Usuario, pk=edit_id) if edit_id else None
         form = UsuarioForm(request.POST, instance=instance)
         edit_mode = bool(edit_id)
         
-        if form.is_valid():
-            # Si el form es válido, guardar
-            usuario = form.save()
-            messages.success(request, "Usuario guardado correctamente.")
-            return redirect("Formulario")
-        # Si form.is_valid() es False, NO redirigir
-        # Los errores estarán en form.errors y se mostrarán en el template
-        
+        # Si no es admin, no puede cambiar el rol
+        if not is_admin and instance:
+            # Preservar el rol original
+            original_rol = instance.rol
+            if form.is_valid():
+                usuario = form.save(commit=False)
+                usuario.rol = original_rol
+                usuario.save()
+                messages.success(request, "Usuario actualizado correctamente.")
+                return redirect("Formulario")
+        else:
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Usuario guardado correctamente.")
+                return redirect("Formulario")
     else:
-        form = UsuarioForm()
+        # Nuevo formulario - Solo admin puede crear
+        if is_admin and user_can_add_module(request.user, 'usuarios'):
+            form = UsuarioForm()
+        else:
+            form = None
         edit_mode = False
         edit_id = ""
+
+    # Determinar si mostrar el formulario
+    show_form = is_admin or edit_mode
 
     return render(request, "dispositivos/formularioUsuario.html", {
         "visitas": visitas,
@@ -132,6 +201,13 @@ def formularioUsuario(request):
         "usuarios": usuarios,
         "edit_mode": edit_mode,
         "edit_id": edit_id,
+        "is_admin": is_admin,
+        "is_analyst": is_analyst,
+        "can_assign_roles": can_assign_roles(request.user),
+        "show_form": show_form,
+        "can_add": is_admin and user_can_add_module(request.user, 'usuarios'),
+        "can_edit": user_can_change_module(request.user, 'usuarios'),
+        "can_delete": is_admin and user_can_delete_module(request.user, 'usuarios'),
     })
 
 
@@ -140,15 +216,20 @@ def formularioUsuario(request):
 # PRODUCTOS
 # -------------------------------------------------------------
 @login_required
+@require_module_permission('productos', 'view')
 def gestionProductos(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
+    role_name = get_user_role_name(request.user)
+
+    # Búsqueda
     search = request.GET.get("buscar", "")
     productos = Producto.objects.all()
     if search:
         productos = productos.filter(Q(nombre__icontains=search) | Q(sku__icontains=search))
 
+    # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -166,14 +247,32 @@ def gestionProductos(request):
         workbook.save(response)
         return response
 
+    # Verificar permisos CRUD
+    can_add = user_can_add_module(request.user, 'productos')
+    can_change = user_can_change_module(request.user, 'productos')
+    can_delete = user_can_delete_module(request.user, 'productos')
+
+    # EDITAR
     if request.method == "GET" and "edit_id" in request.GET:
+        if not can_change:
+            messages.error(request, "No tienes permiso para editar productos.")
+            return redirect("Productos")
         form = ProductoForm(instance=get_object_or_404(Producto, pk=request.GET.get("edit_id")))
         edit_mode = True
-
+    
+    # GUARDAR / ACTUALIZAR
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
+        
+        if edit_id and not can_change:
+            messages.error(request, "No tienes permiso para editar productos.")
+            return redirect("Productos")
+        
+        if not edit_id and not can_add:
+            messages.error(request, "No tienes permiso para crear productos.")
+            return redirect("Productos")
+        
         instance = get_object_or_404(Producto, pk=edit_id) if edit_id else None
-
         categoria = request.POST.get("categoria")
         categoria_nueva = request.POST.get("categoria_nueva", "").strip()
         data = request.POST.copy()
@@ -186,17 +285,22 @@ def gestionProductos(request):
 
         if categoria == "Otras" and not categoria_nueva:
             form.add_error('categoria', "Debes ingresar una nueva categoría")
-
+        
         if form.is_valid():
             form.save()
+            messages.success(request, "Producto guardado correctamente.")
             return redirect("Productos")
-
+    
+    # ELIMINAR
     elif request.method == "GET" and "delete_id" in request.GET:
+        if not can_delete:
+            messages.error(request, "No tienes permiso para eliminar productos.")
+            return redirect("Productos")
         Producto.objects.filter(pk=request.GET.get("delete_id")).delete()
+        messages.success(request, "Producto eliminado correctamente.")
         return redirect("Productos")
-
     else:
-        form = ProductoForm()
+        form = ProductoForm() if can_add else None
         edit_mode = False
 
     return render(request, "dispositivos/gestionProductos.html", {
@@ -205,6 +309,10 @@ def gestionProductos(request):
         "productos": productos,
         "edit_mode": edit_mode,
         "edit_id": request.GET.get("edit_id", ""),
+        "can_add": can_add,
+        "can_edit": can_change,
+        "can_delete": can_delete,
+        "role_name": role_name,
         "categorias": CATEGORIAS,
     })
 
@@ -212,10 +320,13 @@ def gestionProductos(request):
 # PROVEEDORES
 # -------------------------------------------------------------
 @login_required
+@require_module_permission('proveedores', 'view')
 def gestionProveedores(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
 
+    role_name = get_user_role_name(request.user)
+    
     buscar = request.GET.get('buscar', '')
     proveedores = Proveedor.objects.all()
     if buscar:
@@ -241,23 +352,50 @@ def gestionProveedores(request):
         workbook.save(response)
         return response
 
-    # CRUD
+    # Verificar permisos CRUD
+    can_add = user_can_add_module(request.user, 'proveedores')
+    can_change = user_can_change_module(request.user, 'proveedores')
+    can_delete = user_can_delete_module(request.user, 'proveedores')
+
+    # EDITAR
     if request.method == "GET" and "edit_id" in request.GET:
+        if not can_change:
+            messages.error(request, "No tienes permiso para editar proveedores.")
+            return redirect("Proveedores")
         form = ProveedorForm(instance=get_object_or_404(Proveedor, pk=request.GET.get("edit_id")))
         edit_mode = True
+    
+    # GUARDAR / ACTUALIZAR
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
+        
+        if edit_id and not can_change:
+            messages.error(request, "No tienes permiso para editar proveedores.")
+            return redirect("Proveedores")
+        
+        if not edit_id and not can_add:
+            messages.error(request, "No tienes permiso para crear proveedores.")
+            return redirect("Proveedores")
+        
         instance = get_object_or_404(Proveedor, pk=edit_id) if edit_id else None
         form = ProveedorForm(request.POST, instance=instance)
         edit_mode = bool(edit_id)
+        
         if form.is_valid():
             form.save()
+            messages.success(request, "Proveedor guardado correctamente.")
             return redirect("Proveedores")
+    
+    # ELIMINAR
     elif request.method == "GET" and "delete_id" in request.GET:
+        if not can_delete:
+            messages.error(request, "No tienes permiso para eliminar proveedores.")
+            return redirect("Proveedores")
         Proveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
+        messages.success(request, "Proveedor eliminado correctamente.")
         return redirect("Proveedores")
     else:
-        form = ProveedorForm()
+        form = ProveedorForm() if can_add else None
         edit_mode = False
 
     return render(request, "dispositivos/gestionProveedores.html", {
@@ -267,16 +405,23 @@ def gestionProveedores(request):
         "edit_mode": edit_mode,
         "edit_id": request.GET.get("edit_id", ""),
         "buscar": buscar,
+        "can_add": can_add,
+        "can_edit": can_change,
+        "can_delete": can_delete,
+        "role_name": role_name,
     })
 
 
 # -------------------------------------------------------------
-# PRODUCTO - PROVEEDOR (MOVIMIENTOS)
+# PRODUCTO - PROVEEDOR (MOVIMIENTOS DE INVENTARIO)
 # -------------------------------------------------------------
 @login_required
+@require_module_permission('producto_proveedor', 'view')
 def moduloTransaccional(request):
     visitas = request.session.get("visitas", 0)
     request.session['visitas'] = visitas + 1
+
+    role_name = get_user_role_name(request.user)
 
     search = request.GET.get("buscar", "")
     tipo = request.GET.get("tipo", "")
@@ -309,23 +454,50 @@ def moduloTransaccional(request):
         workbook.save(response)
         return response
 
-    # CRUD
+    # Verificar permisos CRUD
+    can_add = user_can_add_module(request.user, 'producto_proveedor')
+    can_change = user_can_change_module(request.user, 'producto_proveedor')
+    can_delete = user_can_delete_module(request.user, 'producto_proveedor')
+
+    # EDITAR
     if request.method == "GET" and "edit_id" in request.GET:
+        if not can_change:
+            messages.error(request, "No tienes permiso para editar movimientos.")
+            return redirect("Transaccional")
         form = ProductoProveedorForm(instance=get_object_or_404(ProductoProveedor, pk=request.GET.get("edit_id")))
         edit_mode = True
+    
+    # GUARDAR / ACTUALIZAR
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
+        
+        if edit_id and not can_change:
+            messages.error(request, "No tienes permiso para editar movimientos.")
+            return redirect("Transaccional")
+        
+        if not edit_id and not can_add:
+            messages.error(request, "No tienes permiso para crear movimientos.")
+            return redirect("Transaccional")
+        
         instance = get_object_or_404(ProductoProveedor, pk=edit_id) if edit_id else None
         form = ProductoProveedorForm(request.POST, instance=instance)
         edit_mode = bool(edit_id)
+        
         if form.is_valid():
             form.save()
+            messages.success(request, "Movimiento guardado correctamente.")
             return redirect("Transaccional")
+    
+    # ELIMINAR
     elif request.method == "GET" and "delete_id" in request.GET:
+        if not can_delete:
+            messages.error(request, "No tienes permiso para eliminar movimientos.")
+            return redirect("Transaccional")
         ProductoProveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
+        messages.success(request, "Movimiento eliminado correctamente.")
         return redirect("Transaccional")
     else:
-        form = ProductoProveedorForm()
+        form = ProductoProveedorForm() if can_add else None
         edit_mode = False
 
     movimientos_hoy = ProductoProveedor.objects.filter(
@@ -340,4 +512,8 @@ def moduloTransaccional(request):
         "productos_count": Producto.objects.count(),
         "edit_mode": edit_mode,
         "edit_id": request.GET.get("edit_id", ""),
+        "can_add": can_add,
+        "can_edit": can_change,
+        "can_delete": can_delete,
+        "role_name": role_name,
     })
