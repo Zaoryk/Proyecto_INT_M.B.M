@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from dispositivos.views import dashboard, formularioUsuario, gestionProductos, gestionProveedores, moduloTransaccional
+from dispositivos.views import dashboard, formularioUsuario, gestionProductos, gestionProveedores, moduloTransaccional, perfilusuario
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,4 +28,5 @@ urlpatterns = [
     path("gestionproductos/", gestionProductos, name="Productos"),
     path("gestionproveedores/", gestionProveedores, name="Proveedores"),
     path("modulotransaccional/", moduloTransaccional, name="Transaccional"),
+    path("perfilusuario/", perfilusuario, name="perfil_usuario"),
 ]
