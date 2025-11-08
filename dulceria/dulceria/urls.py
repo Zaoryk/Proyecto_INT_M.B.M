@@ -30,3 +30,6 @@ urlpatterns = [
     path("modulotransaccional/", moduloTransaccional, name="Transaccional"),
     path("perfilusuario/", perfilusuario, name="perfil_usuario"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
