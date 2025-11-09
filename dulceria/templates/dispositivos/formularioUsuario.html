@@ -49,6 +49,22 @@ input, select {
 .btn-acciones {
   min-width: 85px;
 }
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px !important;
+}
+.sortable-header:hover { background-color: #e9ecef; }
+.sort-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  font-size: 0.75rem;
+}
+.sortable-header.active .sort-icon { opacity: 1; }
 </style>
 
 <div class="row">
@@ -193,7 +209,9 @@ input, select {
             <option value="inactivo" {% if request.GET.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
             <option value="bloqueado" {% if request.GET.estado == 'bloqueado' %}selected{% endif %}>Bloqueado</option>
           </select>
-          <button type="submit" class="btn btn-outline-primary mb-2">
+          <input type="hidden" name="order_by" id="order_by" value="{{ order_by }}">
+          <input type="hidden" name="order" id="order" value="{{ order }}">
+          <button type="submit" class="btn btn-outline-primary me-2">
             <i class="bi bi-search"></i> Buscar
           </button>
           <button type="submit" class="btn btn-outline-success ms-auto mb-2"
@@ -206,14 +224,58 @@ input, select {
           <table class="table align-middle table-hover table-bordered rounded">
             <thead class="table-light">
               <tr class="align-middle text-center">
-                <th>Username</th>
-                <th>Email</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Rol</th>
-                <th>Estado</th>
+                <th class="sortable-header" data-field="username">
+                  Username
+                  <span class="sort-icon">
+                    {% if order_by == 'username' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}⇅{% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="email">
+                  Email
+                  <span class="sort-icon">
+                    {% if order_by == 'email' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}⇅{% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="nombre">
+                  Nombre
+                  <span class="sort-icon">
+                    {% if order_by == 'nombre' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}⇅{% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="apellido">
+                  Apellido
+                  <span class="sort-icon">
+                    {% if order_by == 'apellido' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}⇅{% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="rol">
+                  Rol
+                  <span class="sort-icon">
+                    {% if order_by == 'rol' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}⇅{% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="estado">
+                  Estado
+                  <span class="sort-icon">
+                    {% if order_by == 'estado' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}⇅{% endif %}
+                  </span>
+                </th>
                 <th>MFA</th>
-                <th>Acciones</th>
+                {% if can_edit or can_delete %}
+                  <th>Acciones</th>
+                {% endif %}
               </tr>
             </thead>
             <tbody>
@@ -303,6 +365,32 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  const sortableHeaders = document.querySelectorAll('.sortable-header');
+  const orderByInput = document.getElementById('order_by');
+  const orderInput = document.getElementById('order');
+  const searchForm = document.getElementById('searchForm');
+
+  sortableHeaders.forEach(header => {
+    header.addEventListener('click', function() {
+      const field = this.getAttribute('data-field');
+      const currentOrderBy = orderByInput.value;
+      const currentOrder = orderInput.value;
+
+      if (currentOrderBy === field) {
+        orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        orderByInput.value = field;
+        orderInput.value = 'asc';
+      }
+      searchForm.submit();
+    });
+  });
+
+  if (orderByInput.value) {
+    const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
+    if (activeHeader) activeHeader.classList.add('active');
+  }
+
   const form = document.getElementById("formUsuario");
   const toggleBtn = document.getElementById("togglePassword");
   const passwordField = document.getElementById("passwordField");

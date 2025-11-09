@@ -5,6 +5,26 @@
 input, select, textarea { border-radius: 8px !important; }
 .table th, .table td { vertical-align: middle; }
 .table-hover tbody tr:hover { background-color: #f8f9fa; }
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px !important;
+}
+.sortable-header:hover {
+  background-color: #e9ecef;
+}
+.sort-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  font-size: 0.75rem;
+}
+.sortable-header.active .sort-icon {
+  opacity: 1;
+}
 </style>
 
 <div class="row">
@@ -26,22 +46,23 @@ input, select, textarea { border-radius: 8px !important; }
             <input type="text" class="form-control" name="nombre" 
                    value="{{ form.nombre.value|default_if_none:'' }}" 
                    placeholder="Ej: Bodega Central, Almacén Norte..." required>
-            <small class="form-text text-muted">Mínimo 3 caracteres, único</small>
+            <small class="form-text text-muted">Mínimo 3 caracteres, único (no distingue mayúsculas)</small>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Ubicación</label>
+            <label class="form-label">Ubicación <span class="text-danger">*</span></label>
             <input type="text" class="form-control" name="ubicacion" 
                    value="{{ form.ubicacion.value|default_if_none:'' }}"
-                   placeholder="Ej: Calle 123, Piso 2, Bodega A...">
-            <small class="form-text text-muted">Máximo 255 caracteres</small>
+                   placeholder="Ej: Calle 123, Piso 2, Bodega A..." required>
+            <small class="form-text text-muted">Máximo 255 caracteres (obligatorio)</small>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Capacidad (unidades)</label>
+            <label class="form-label">Capacidad (unidades) <span class="text-danger">*</span></label>
             <input type="number" class="form-control" name="capacidad" 
-                   value="{{ form.capacidad.value|default_if_none:0 }}" min="0" max="999999">
-            <small class="form-text text-muted">Capacidad máxima en unidades (0 - 999,999)</small>
+                   value="{{ form.capacidad.value|default_if_none:'' }}" 
+                   min="1" max="999999" required>
+            <small class="form-text text-muted">Entre 1 y 999,999 unidades (obligatorio)</small>
           </div>
 
           <div class="mb-3">
@@ -78,29 +99,29 @@ input, select, textarea { border-radius: 8px !important; }
     <div class="card shadow-sm border-0">
       <div class="card-body">
         <h5 class="card-title mb-3 fw-bold">Bodegas</h5>
-        <form method="get" class="d-flex flex-wrap mb-3 gap-2" id="paginatorForm">
+        <form method="get" class="d-flex flex-wrap mb-3 gap-2" id="searchForm">
           <input type="text" class="form-control me-2 mb-2" name="buscar"
                  value="{{ request.GET.buscar|default_if_none:'' }}"
-                 placeholder="Buscar por ubicación..." style="max-width:200px;">
+                 placeholder="Buscar por nombre o ubicación..." style="max-width:220px;">
           <select class="form-select me-2 mb-2" name="estado" style="max-width:130px;">
             <option value="">Estado: todos</option>
             <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>Activo</option>
             <option value="inactivo" {% if request.GET.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
           </select>
-          <label class="me-2 mb-0" for="pag_size">Mostrar</label>
           <select class="form-select me-2 mb-2" name="pag_size" id="pag_size" style="max-width:90px;">
             <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
             <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
             <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
             <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
           </select>
-          <span class="me-2 mb-2">registros</span>
+          <input type="hidden" name="order_by" id="order_by" value="{{ order_by }}">
+          <input type="hidden" name="order" id="order" value="{{ order }}">
           <button type="submit" class="btn btn-outline-primary mb-2">
             <i class="bi bi-search"></i> Buscar
           </button>
           <button type="submit" class="btn btn-outline-success ms-auto mb-2"
                   name="export_excel" value="1">
-            <i class="bi bi-file-earmark-excel"></i> Excel
+            <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
           </button>
         </form>
 
@@ -108,10 +129,46 @@ input, select, textarea { border-radius: 8px !important; }
           <table class="table align-middle table-hover table-bordered rounded">
             <thead class="table-light">
               <tr class="text-center">
-                <th>Nombre</th>
-                <th>Ubicación</th>
-                <th>Capacidad</th>
-                <th>Estado</th>
+                <th class="sortable-header" data-field="nombre">
+                  Nombre
+                  <span class="sort-icon">
+                    {% if order_by == 'nombre' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="ubicacion">
+                  Ubicación
+                  <span class="sort-icon">
+                    {% if order_by == 'ubicacion' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="capacidad">
+                  Capacidad
+                  <span class="sort-icon">
+                    {% if order_by == 'capacidad' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="estado">
+                  Estado
+                  <span class="sort-icon">
+                    {% if order_by == 'estado' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
                 {% if can_edit or can_delete %}
                   <th>Acciones</th>
                 {% endif %}
@@ -121,8 +178,8 @@ input, select, textarea { border-radius: 8px !important; }
               {% for bodega in bodegas %}
               <tr>
                 <td>{{ bodega.nombre }}</td>
-                <td>{{ bodega.ubicacion|default:"-" }}</td>
-                <td class="text-end">{{ bodega.capacidad|default:0 }}</td>
+                <td>{{ bodega.ubicacion }}</td>
+                <td class="text-end">{{ bodega.capacidad|floatformat:0 }}</td>
                 <td class="text-center">
                   <span class="badge {% if bodega.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %}">
                     {{ bodega.get_estado_display }}
@@ -159,17 +216,17 @@ input, select, textarea { border-radius: 8px !important; }
         <nav>
           <ul class="pagination justify-content-end">
             {% if bodegas.has_previous %}
-              <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ bodegas.previous_page_number }}">Anterior</a></li>
+              <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ bodegas.previous_page_number }}">Anterior</a></li>
             {% else %}
               <li class="page-item disabled"><span class="page-link">Anterior</span></li>
             {% endif %}
             {% for i in bodegas.paginator.page_range %}
               <li class="page-item {% if bodegas.number == i %}active{% endif %}">
-                <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ i }}">{{ i }}</a>
+                <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ i }}">{{ i }}</a>
               </li>
             {% endfor %}
             {% if bodegas.has_next %}
-              <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ bodegas.next_page_number }}">Siguiente</a></li>
+              <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ bodegas.next_page_number }}">Siguiente</a></li>
             {% else %}
               <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
             {% endif %}
@@ -185,6 +242,35 @@ input, select, textarea { border-radius: 8px !important; }
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  const sortableHeaders = document.querySelectorAll('.sortable-header');
+  const orderByInput = document.getElementById('order_by');
+  const orderInput = document.getElementById('order');
+  const searchForm = document.getElementById('searchForm');
+
+  sortableHeaders.forEach(header => {
+    header.addEventListener('click', function() {
+      const field = this.getAttribute('data-field');
+      const currentOrderBy = orderByInput.value;
+      const currentOrder = orderInput.value;
+
+      if (currentOrderBy === field) {
+        orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        orderByInput.value = field;
+        orderInput.value = 'asc';
+      }
+
+      searchForm.submit();
+    });
+  });
+
+  if (orderByInput.value) {
+    const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
+    if (activeHeader) {
+      activeHeader.classList.add('active');
+    }
+  }
+
   const form = document.getElementById("bodegaForm");
   if (form) {
     form.addEventListener("submit", (e) => {
@@ -193,17 +279,24 @@ document.addEventListener("DOMContentLoaded", () => {
       const capacidad = form.querySelector("[name='capacidad']").value.trim();
       const estado = form.querySelector("[name='estado']").value.trim();
       const faltantes = [];
+      
       if (!nombre) faltantes.push("Nombre");
       if (nombre && nombre.length < 3) faltantes.push("Nombre (mínimo 3 caracteres)");
       if (nombre && nombre.length > 120) faltantes.push("Nombre (máximo 120 caracteres)");
-      if (ubicacion && ubicacion.length > 255) faltantes.push("Ubicación (máximo 255 caracteres)");
-      if (!estado) faltantes.push("Estado");
       if (nombre && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$/.test(nombre)) {
         faltantes.push("Nombre (solo letras, números, espacios y guiones)");
       }
-      if (capacidad && (parseInt(capacidad) < 0 || parseInt(capacidad) > 999999)) {
-        faltantes.push("Capacidad (debe estar entre 0 y 999,999)");
+      
+      if (!ubicacion) faltantes.push("Ubicación (obligatoria)");
+      if (ubicacion && ubicacion.length > 255) faltantes.push("Ubicación (máximo 255 caracteres)");
+      
+      if (!capacidad) faltantes.push("Capacidad (obligatoria)");
+      if (capacidad && (parseInt(capacidad) <= 0 || parseInt(capacidad) > 999999)) {
+        faltantes.push("Capacidad (debe estar entre 1 y 999,999)");
       }
+      
+      if (!estado) faltantes.push("Estado");
+      
       if (faltantes.length > 0) {
         e.preventDefault();
         Swal.fire({
@@ -240,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pagSize = document.getElementById("pag_size");
   if (pagSize) {
     pagSize.addEventListener("change", function() {
-      document.getElementById("paginatorForm").submit();
+      searchForm.submit();
     });
   }
 });

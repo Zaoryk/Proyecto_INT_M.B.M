@@ -4,6 +4,22 @@
 .card { border-radius: 16px !important; }
 input, select { border-radius: 8px !important; }
 .table th, .table td { vertical-align: middle; }
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px !important;
+}
+.sortable-header:hover { background-color: #e9ecef; }
+.sort-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  font-size: 0.75rem;
+}
+.sortable-header.active .sort-icon { opacity: 1; }
 </style>
 
 {% if can_add or edit_mode %}
@@ -164,27 +180,66 @@ input, select { border-radius: 8px !important; }
     <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="paginatorForm">
       <input class="form-control me-2" type="text" name="buscar"
              placeholder="Buscar por SKU o nombre..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:170px;">
-      <label class="me-2 mb-0" for="pag_size">Mostrar</label>
       <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
         <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
         <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
         <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
         <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
       </select>
-      <span class="me-2">registros</span>
-      <button type="submit" class="btn btn-outline-primary">Buscar</button>
-      <button type="submit" class="btn btn-outline-success ms-auto"
-              name="export_excel" value="1">Exportar a Excel</button>
+      <input type="hidden" name="order_by" id="order_by" value="{{ order_by }}">
+      <input type="hidden" name="order" id="order" value="{{ order }}">
+      <button type="submit" class="btn btn-outline-primary me-2">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+      <button type="submit" class="btn btn-outline-success ms-auto" name="export_excel" value="1"
+              style="margin-left:auto; white-space:nowrap;">
+        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+      </button>
     </form>
     <div class="table-responsive">
       <table class="table table-bordered table-hover rounded">
         <thead class="table-light text-center">
           <tr>
-            <th>SKU</th>
-            <th>Nombre</th>
-            <th>Categoría</th>
-            <th>Stock mínimo</th>
-            <th>IVA (%)</th>
+            <th class="sortable-header" data-field="sku">
+              SKU
+              <span class="sort-icon">
+                {% if order_by == 'sku' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="nombre">
+              Nombre
+              <span class="sort-icon">
+                {% if order_by == 'nombre' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="categoria">
+              Categoría
+              <span class="sort-icon">
+                {% if order_by == 'categoria' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="stock_minimo">
+              Stock mínimo
+              <span class="sort-icon">
+                {% if order_by == 'stock_minimo' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="impuesto_iva">
+              IVA (%)
+              <span class="sort-icon">
+                {% if order_by == 'impuesto_iva' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
             {% if can_edit or can_delete %}
               <th>Acciones</th>
             {% endif %}
@@ -227,17 +282,19 @@ input, select { border-radius: 8px !important; }
     <nav>
       <ul class="pagination justify-content-end">
         {% if productos.has_previous %}
-          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ productos.previous_page_number }}">Anterior</a></li>
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}&pag_size={{ pag_size }}&page={{ productos.previous_page_number }}">Anterior</a></li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">Anterior</span></li>
         {% endif %}
+        
         {% for i in productos.paginator.page_range %}
           <li class="page-item {% if productos.number == i %}active{% endif %}">
-            <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ i }}">{{ i }}</a>
+            <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}&pag_size={{ pag_size }}&page={{ i }}">{{ i }}</a>
           </li>
         {% endfor %}
+        
         {% if productos.has_next %}
-          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ productos.next_page_number }}">Siguiente</a></li>
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}&pag_size={{ pag_size }}&page={{ productos.next_page_number }}">Siguiente</a></li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
         {% endif %}
@@ -264,7 +321,33 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 {% endif %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", () => {
+  const sortableHeaders = document.querySelectorAll('.sortable-header');
+  const orderByInput = document.getElementById('order_by');
+  const orderInput = document.getElementById('order');
+  const searchForm = document.getElementById('searchForm');
+
+  sortableHeaders.forEach(header => {
+    header.addEventListener('click', function() {
+      const field = this.getAttribute('data-field');
+      const currentOrderBy = orderByInput.value;
+      const currentOrder = orderInput.value;
+
+      if (currentOrderBy === field) {
+        orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        orderByInput.value = field;
+        orderInput.value = 'asc';
+      }
+      searchForm.submit();
+    });
+  });
+
+  if (orderByInput.value) {
+    const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
+    if (activeHeader) activeHeader.classList.add('active');
+  }
+
   // Categoría nueva dinámica
   const selectCat = document.getElementById("categoriaSelect");
   const inputDiv = document.getElementById("input-categoria-nueva");
