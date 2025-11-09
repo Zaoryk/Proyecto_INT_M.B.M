@@ -32,6 +32,7 @@ input, select, textarea { border-radius: 8px !important; }
           <button class="nav-link" id="tab-rel" type="button" data-bs-toggle="tab" data-bs-target="#rel-productos" role="tab">3. Relación con productos</button>
         </li>
       </ul>
+
       <div class="tab-content" id="proveedorTabContent">
         <!-- IDENTIFICACIÓN -->
         <div class="tab-pane fade show active" id="id-contacto" role="tabpanel">
@@ -165,6 +166,7 @@ input, select, textarea { border-radius: 8px !important; }
 </div>
 {% endif %}
 
+<!-- LISTADO -->
 <div class="card shadow-sm border-0 mt-4">
   <div class="card-body">
     <h5 class="card-title fw-bold">Proveedores</h5>
@@ -190,24 +192,46 @@ input, select, textarea { border-radius: 8px !important; }
     </form>
 
     <div class="table-responsive">
-      <table class="table table-bordered table-hover rounded">
+      <table class="table table-bordered table-hover rounded align-middle">
         <thead class="table-light text-center">
           <tr>
-            <th>RUT/NIF</th><th>Razón social</th><th>Email</th><th>País</th><th>Estado</th>
+            <th>#</th>
+            <th>RUT/NIF</th>
+            <th>Razón social</th>
+            <th>Nombre de fantasía</th>
+            <th>Email</th>
+            <th>País</th>
+            <th>Estado</th>
+            <th style="width: 150px;">Acciones</th>
           </tr>
         </thead>
         <tbody>
-        {% for prov in proveedores %}
-        <tr>
-          <td>{{ prov.rut_nif }}</td>
-          <td>{{ prov.razon_social }}</td>
-          <td>{{ prov.email }}</td>
-          <td>{{ prov.pais }}</td>
-          <td>{{ prov.estado }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5" class="text-center text-muted">Sin proveedores registrados.</td></tr>
-        {% endfor %}
+          {% for prov in proveedores %}
+          <tr>
+            <td class="text-center">{{ forloop.counter }}</td>
+            <td>{{ prov.rut_nif }}</td>
+            <td>{{ prov.razon_social }}</td>
+            <td>{{ prov.nombre_fantasia }}</td>
+            <td>{{ prov.email }}</td>
+            <td>{{ prov.pais }}</td>
+            <td>{{ prov.estado }}</td>
+            <td class="text-center">
+              {% if can_edit %}
+                <a href="?edit_id={{ prov.idProveedor }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+              {% endif %}
+              {% if can_delete %}
+                <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar"
+                        onclick="confirmarEliminacion('{{ prov.idProveedor }}')">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center text-muted">Sin proveedores registrados.</td></tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
@@ -226,7 +250,6 @@ document.addEventListener("DOMContentLoaded", function(){
   const btnGuardar = form.querySelector('button.btn-primary[type="submit"]');
   form.setAttribute("novalidate", "true");
 
-  // --- Formatear RUT y controlar 'K' + límite de caracteres ---
   rutField.addEventListener("input", function() {
     let value = this.value.replace(/[^0-9kK]/g, "").toUpperCase();
     if (value.length > 9 && !value.includes("K")) value = value.slice(0, 9);
@@ -239,7 +262,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
   if(btnGuardar){
     btnGuardar.addEventListener("click", function(e){
-      e.preventDefault(); // evitar recarga hasta pasar todas las validaciones
+      e.preventDefault();
       const rut = rutField.value.replace(/\./g, "").toUpperCase();
       const rutRegex = /^[0-9]{7,8}-[0-9K]$/;
 
@@ -285,12 +308,30 @@ document.addEventListener("DOMContentLoaded", function(){
         return;
       }
 
-      form.submit(); // solo si todo pasó
+      form.submit();
     });
   }
 
   const tabTriggerList = [].slice.call(document.querySelectorAll('#proveedorTab button[data-bs-toggle="tab"]'));
   tabTriggerList.forEach(tabEl => new bootstrap.Tab(tabEl));
 });
+
+// Confirmar eliminación
+function confirmarEliminacion(id) {
+  Swal.fire({
+    title: "¿Eliminar proveedor?",
+    text: "Esta acción no se puede deshacer.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = "?delete_id=" + id;
+    }
+  });
+}
 </script>
 {% endblock %}
