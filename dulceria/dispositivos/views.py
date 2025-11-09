@@ -322,9 +322,7 @@ def gestionProductos(request):
         "categorias": categorias,
     })
 
-# -------------------------------------------------------------
-# PROVEEDORES
-# -------------------------------------------------------------
+
 @login_required
 @require_module_permission('proveedores', 'view')
 def gestionProveedores(request):
@@ -333,7 +331,10 @@ def gestionProveedores(request):
 
     role_name = get_user_role_name(request.user)
     buscar = request.GET.get('buscar', '')
+    pais = request.GET.get('pais', '')
     proveedores = Proveedor.objects.all()
+    productos = Producto.objects.all().order_by("nombre")
+    
     if buscar:
         proveedores = proveedores.filter(
             Q(rut_nif__icontains=buscar) | Q(razon_social__icontains=buscar)
@@ -376,7 +377,7 @@ def gestionProveedores(request):
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response['Content-Disposition'] = 'attachment; filename="proveedores.xlsx"'
+        response['Content-Disposition'] = 'attachment; filename=\"proveedores.xlsx\"'
         workbook.save(response)
         return response
 
@@ -393,7 +394,7 @@ def gestionProveedores(request):
     can_change = user_can_change_module(request.user, 'proveedores')
     can_delete = user_can_delete_module(request.user, 'proveedores')
 
-    # EDITAR
+
     if request.method == "GET" and "edit_id" in request.GET:
         if not can_change:
             messages.error(request, "No tienes permiso para editar proveedores.")
@@ -409,10 +410,23 @@ def gestionProveedores(request):
             messages.error(request, "No tienes permiso para crear proveedores.")
             return redirect("Proveedores")
         instance = get_object_or_404(Proveedor, pk=edit_id) if edit_id else None
+
         form = ProveedorForm(request.POST, instance=instance)
         edit_mode = bool(edit_id)
         if form.is_valid():
-            form.save()
+            proveedor = form.save(commit=False)
+            usuario_actual = Usuario.objects.filter(username=request.user.username).first()
+            if not usuario_actual:
+                usuario_actual = Usuario.objects.create(
+                    username=request.user.username,
+                    email=request.user.email or "",
+                    nombre=request.user.first_name or request.user.username,
+                    apellido=request.user.last_name or "",
+                    estado="activo",
+                    rol="operador_compras"  
+                )
+            proveedor.usuario = usuario_actual
+            proveedor.save()
             messages.success(request, "Proveedor guardado correctamente.")
             return redirect("Proveedores")
     elif request.method == "GET" and "delete_id" in request.GET:
@@ -422,6 +436,7 @@ def gestionProveedores(request):
         Proveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
         messages.success(request, "Proveedor eliminado correctamente.")
         return redirect("Proveedores")
+
     else:
         form = ProveedorForm() if can_add else None
         edit_mode = False
@@ -442,7 +457,6 @@ def gestionProveedores(request):
         "pag_size": pag_size,
         "headers": headers,
     })
-
 # -------------------------------------------------------------
 # PRODUCTO - PROVEEDOR (MOVIMIENTOS DE INVENTARIO)
 # -------------------------------------------------------------

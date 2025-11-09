@@ -148,7 +148,7 @@ class Proveedor(models.Model):
         ("activo", "Activo"),
         ("inactivo", "Inactivo"),
     ]
-    
+
     idProveedor = models.AutoField(primary_key=True)
     rut_nif = models.CharField(max_length=20, blank=True, null=True)
     razon_social = models.CharField(max_length=255, blank=True, null=True)
@@ -158,7 +158,11 @@ class Proveedor(models.Model):
     condiciones_pago = models.CharField(max_length=45, blank=True, null=True)
     moneda = models.CharField(max_length=45, blank=True, null=True)
     estado = models.CharField(max_length=45, choices=ESTADOS, default="activo")
-    usuario = models.ForeignKey(Usuario, models.DO_NOTHING, db_column='Usuario_idUsuario')
+    usuario = models.ForeignKey(
+        Usuario, models.DO_NOTHING,
+        db_column='Usuario_idUsuario',
+        blank=True, null=True  # 👈 agregado
+    )
 
     class Meta:
         managed = False

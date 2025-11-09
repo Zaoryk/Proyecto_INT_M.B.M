@@ -2,3 +2,4 @@ django
 pymysql
 mysqlclient
 openpyxl
+Pillow
