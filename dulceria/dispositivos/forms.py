@@ -352,7 +352,7 @@ class CategoriaForm(forms.ModelForm):
             qs = qs.exclude(pk=self.instance.pk)
         
         if qs.exists():
-            raise ValidationError(f"Ya existe una categoría con el nombre '{nombre}'.")
+            raise ValidationError(f"Ya existe una categoría con el nombre exacto '{nombre}'.")
         
         return nombre
     
@@ -390,26 +390,36 @@ class BodegaForm(forms.ModelForm):
             qs = qs.exclude(pk=self.instance.pk)
         
         if qs.exists():
-            raise ValidationError(f"Ya existe una bodega con el nombre '{nombre}'.")
+            raise ValidationError(f"Ya existe una bodega con el nombre exacto '{nombre}'.")
         
         return nombre
     
     def clean_ubicacion(self):
         ubicacion = self.cleaned_data.get('ubicacion', '').strip()
         
-        if ubicacion and len(ubicacion) > 255:
+        # NUEVO: Campo obligatorio
+        if not ubicacion:
+            raise ValidationError("La ubicación es obligatoria.")
+        
+        if len(ubicacion) > 255:
             raise ValidationError("La ubicación no puede superar 255 caracteres.")
         
-        return ubicacion if ubicacion else None
+        return ubicacion
     
     def clean_capacidad(self):
         capacidad = self.cleaned_data.get('capacidad')
         
-        if capacidad is None:
-            return 0
+        # NUEVO: Campo obligatorio y validación mejorada
+        if capacidad is None or capacidad == '':
+            raise ValidationError("La capacidad es obligatoria.")
         
-        if capacidad < 0:
-            raise ValidationError("La capacidad no puede ser negativa.")
+        try:
+            capacidad = int(capacidad)
+        except (ValueError, TypeError):
+            raise ValidationError("La capacidad debe ser un número válido.")
+        
+        if capacidad <= 0:
+            raise ValidationError("La capacidad debe ser mayor a 0.")
         
         if capacidad > 999999:
             raise ValidationError("La capacidad máxima es 999,999 unidades.")

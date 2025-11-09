@@ -186,7 +186,7 @@ class Categoria(models.Model):
     ]
     idCategoria = models.AutoField(db_column='idCategoria', primary_key=True)
     nombre = models.CharField(max_length=100, unique=True)
-    descripcion = models.CharField(max_length=255, blank=True, null=True)
+    descripcion = models.CharField(max_length=255, blank=False, null=False)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
 
     class Meta:

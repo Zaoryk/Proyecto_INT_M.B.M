@@ -164,17 +164,19 @@ input, select { border-radius: 8px !important; }
     <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="paginatorForm">
       <input class="form-control me-2" type="text" name="buscar"
              placeholder="Buscar por SKU o nombre..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:170px;">
-      <label class="me-2 mb-0" for="pag_size">Mostrar</label>
       <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
         <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
         <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
         <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
         <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
       </select>
-      <span class="me-2">registros</span>
-      <button type="submit" class="btn btn-outline-primary">Buscar</button>
-      <button type="submit" class="btn btn-outline-success ms-auto"
-              name="export_excel" value="1">Exportar a Excel</button>
+      <button type="submit" class="btn btn-outline-primary me-2">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+      <button type="submit" class="btn btn-outline-success ms-auto" name="export_excel" value="1"
+              style="margin-left:auto; white-space:nowrap;">
+        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+      </button>
     </form>
     <div class="table-responsive">
       <table class="table table-bordered table-hover rounded">

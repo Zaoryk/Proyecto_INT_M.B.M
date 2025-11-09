@@ -701,22 +701,39 @@ def gestionCategorias(request):
     search = request.GET.get("buscar", "")
     estado_filter = request.GET.get("estado", "")
     categorias = Categoria.objects.all()
+    
     if search:
         categorias = categorias.filter(Q(nombre__icontains=search) | Q(descripcion__icontains=search))
     if estado_filter:
         categorias = categorias.filter(estado__iexact=estado_filter)
 
-    # ----------------- Paginador robusto -----------------
+    # ========== ORDENAMIENTO ==========
+    VALID_FIELDS = ['nombre', 'descripcion', 'estado']
+    order = request.GET.get('order', request.session.get('cat_order', 'asc'))
+    order_by = request.GET.get('order_by', request.session.get('cat_order_by', 'nombre'))
+    
+    if order_by not in VALID_FIELDS:
+        order_by = 'nombre'
+    
+    request.session['cat_order'] = order
+    request.session['cat_order_by'] = order_by
+    
+    if order == 'desc':
+        categorias = categorias.order_by(f'-{order_by}')
+    else:
+        categorias = categorias.order_by(order_by)
+
+    # ========== PAGINADOR ==========
     pag_size = request.GET.get('pag_size') or request.session.get('cat_pag_size', '15')
     if pag_size not in ['5', '15', '30', '100']:
         pag_size = '15'
     request.session['cat_pag_size'] = pag_size
 
-    paginator = Paginator(categorias.order_by('nombre'), int(pag_size))
+    paginator = Paginator(categorias, int(pag_size))
     page_number = request.GET.get('page')
     categorias_page = paginator.get_page(page_number)
 
-    # Exportar a Excel (exporta TODO el queryset filtrado)
+    # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -781,8 +798,10 @@ def gestionCategorias(request):
     return render(request, "dispositivos/gestionCategorias.html", {
         "visitas": visitas,
         "form": form,
-        "categorias": categorias_page,      # <- Página paginada aquí
-        "pag_size": pag_size,               # <- Para el selector de tamaño en el template
+        "categorias": categorias_page,
+        "pag_size": pag_size,
+        "order": order,
+        "order_by": order_by,
         "edit_mode": edit_mode,
         "edit_id": edit_id,
         "can_add": can_add,
@@ -794,15 +813,6 @@ def gestionCategorias(request):
 # -------------------------------------------------------------
 # BODEGAS
 # -------------------------------------------------------------
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from django.contrib import messages
-from django.core.paginator import Paginator
-
-import openpyxl
-from django.http import HttpResponse
-
 @login_required
 @require_module_permission('bodegas', 'view')
 def gestionBodegas(request):
@@ -819,22 +829,39 @@ def gestionBodegas(request):
     search = request.GET.get("buscar", "")
     estado_filter = request.GET.get("estado", "")
     bodegas = Bodega.objects.all()
+    
     if search:
         bodegas = bodegas.filter(Q(nombre__icontains=search) | Q(ubicacion__icontains=search))
     if estado_filter:
         bodegas = bodegas.filter(estado__iexact=estado_filter)
 
-    # ----------- Paginador robusto 5/15/30/100 -----------
+    # ========== ORDENAMIENTO ==========
+    VALID_FIELDS = ['nombre', 'ubicacion', 'capacidad', 'estado']
+    order = request.GET.get('order', request.session.get('bodegas_order', 'asc'))
+    order_by = request.GET.get('order_by', request.session.get('bodegas_order_by', 'nombre'))
+    
+    if order_by not in VALID_FIELDS:
+        order_by = 'nombre'
+    
+    request.session['bodegas_order'] = order
+    request.session['bodegas_order_by'] = order_by
+    
+    if order == 'desc':
+        bodegas = bodegas.order_by(f'-{order_by}')
+    else:
+        bodegas = bodegas.order_by(order_by)
+
+    # ========== PAGINADOR ==========
     pag_size = request.GET.get('pag_size') or request.session.get('bodegas_pag_size', '15')
     if pag_size not in ['5', '15', '30', '100']:
         pag_size = '15'
     request.session['bodegas_pag_size'] = pag_size
 
-    paginator = Paginator(bodegas.order_by('nombre'), int(pag_size))
+    paginator = Paginator(bodegas, int(pag_size))
     page_number = request.GET.get('page')
     bodegas_page = paginator.get_page(page_number)
 
-    # Exportar a Excel (siempre exporta TODO el queryset filtrado, no solo la página)
+    # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -899,8 +926,10 @@ def gestionBodegas(request):
     return render(request, "dispositivos/gestionBodegas.html", {
         "visitas": visitas,
         "form": form,
-        "bodegas": bodegas_page,           # <- Página paginada aquí
-        "pag_size": pag_size,               # <- Para el selector de tamaño en el template
+        "bodegas": bodegas_page,
+        "pag_size": pag_size,
+        "order": order,
+        "order_by": order_by,
         "edit_mode": edit_mode,
         "edit_id": edit_id,
         "can_add": can_add,

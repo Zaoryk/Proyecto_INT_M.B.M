@@ -122,14 +122,12 @@ input, select { border-radius: 8px !important; }
         <option value="salida" {% if request.GET.tipo == 'salida' %}selected{% endif %}>Salida</option>
         <option value="ajuste" {% if request.GET.tipo == 'ajuste' %}selected{% endif %}>Ajuste</option>
       </select>
-      <label class="me-2 mb-0" for="pag_size">Mostrar</label>
       <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
         <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
         <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
         <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
         <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
       </select>
-      <span class="me-2">registros</span>
       <button type="submit" class="btn btn-outline-primary me-2">
         <i class="bi bi-search"></i> Buscar
       </button>
