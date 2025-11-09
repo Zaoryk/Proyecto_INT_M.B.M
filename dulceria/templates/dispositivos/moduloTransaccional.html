@@ -112,76 +112,106 @@ input, select { border-radius: 8px !important; }
 {% endif %}
 
 <div class="card shadow-sm border-0">
-  <form method="get" class="d-flex mb-2 flex-wrap align-items-center">
-    <input class="form-control me-2 mb-2" type="text" name="buscar"
-           value="{{ request.GET.buscar|default_if_none:'' }}"
-           placeholder="Buscar por SKU o nombre..." style="max-width:175px;">
-    <select class="form-select me-2 mb-2" name="tipo" style="max-width:130px;">
-      <option value="">Tipo: todos</option>
-      <option value="entrada" {% if request.GET.tipo == 'entrada' %}selected{% endif %}>Entrada</option>
-      <option value="salida" {% if request.GET.tipo == 'salida' %}selected{% endif %}>Salida</option>
-      <option value="ajuste" {% if request.GET.tipo == 'ajuste' %}selected{% endif %}>Ajuste</option>
-    </select>
-    <button type="submit" class="btn btn-outline-primary mb-2 me-2">
-      <i class="bi bi-search"></i> Buscar
-    </button>
-    <button type="submit" class="btn btn-outline-success mb-2 ms-auto" name="export_excel" value="1">
-      <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
-    </button>
-  </form>
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover table-sm align-middle rounded">
-      <thead class="table-light">
-        <tr class="text-center">
-          <th>Fecha</th>
-          <th>Tipo</th>
-          <th>SKU</th>
-          <th>Producto</th>
-          <th>Proveedor</th>
-          <th>Cantidad</th>
-          {% if can_edit or can_delete %}
-            <th>Acciones</th>
-          {% endif %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for movimiento in movimientos %}
-        <tr>
-          <td>{{ movimiento.fecha_movimiento|date:"Y-m-d H:i" }}</td>
-          <td>
-            <span class="badge {% if movimiento.tipo_movimiento == 'entrada' %}bg-success{% elif movimiento.tipo_movimiento == 'salida' %}bg-danger{% else %}bg-warning{% endif %}">
-              {{ movimiento.get_tipo_movimiento_display }}
-            </span>
-          </td>
-          <td>{{ movimiento.producto.sku }}</td>
-          <td>{{ movimiento.producto.nombre }}</td>
-          <td>{{ movimiento.proveedor.razon_social }}</td>
-          <td>{{ movimiento.cantidad }}</td>
-          {% if can_edit or can_delete %}
-          <td class="text-center">
-            {% if can_edit %}
-              <a href="?edit_id={{ movimiento.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
-                <i class="bi bi-pencil-square"></i>
-              </a>
+  <div class="card-body">
+    <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="paginatorForm">
+      <input class="form-control me-2" type="text" name="buscar"
+             value="{{ request.GET.buscar|default_if_none:'' }}" placeholder="Buscar por SKU o nombre..." style="max-width:175px;">
+      <select class="form-select me-2" name="tipo" style="max-width:130px;">
+        <option value="">Tipo: todos</option>
+        <option value="entrada" {% if request.GET.tipo == 'entrada' %}selected{% endif %}>Entrada</option>
+        <option value="salida" {% if request.GET.tipo == 'salida' %}selected{% endif %}>Salida</option>
+        <option value="ajuste" {% if request.GET.tipo == 'ajuste' %}selected{% endif %}>Ajuste</option>
+      </select>
+      <label class="me-2 mb-0" for="pag_size">Mostrar</label>
+      <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
+        <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
+        <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
+        <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
+        <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
+      </select>
+      <span class="me-2">registros</span>
+      <button type="submit" class="btn btn-outline-primary me-2">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+      <button type="submit" class="btn btn-outline-success ms-auto" name="export_excel" value="1"
+              style="margin-left:auto; white-space:nowrap;">
+        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+      </button>
+    </form>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover table-sm align-middle rounded">
+        <thead class="table-light">
+          <tr class="text-center">
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>SKU</th>
+            <th>Producto</th>
+            <th>Proveedor</th>
+            <th>Cantidad</th>
+            {% if can_edit or can_delete %}
+              <th>Acciones</th>
             {% endif %}
-            
-            {% if can_delete %}
-              <a href="?delete_id={{ movimiento.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
-                <i class="bi bi-trash"></i>
-              </a>
+          </tr>
+        </thead>
+        <tbody>
+          {% for movimiento in movimientos %}
+          <tr>
+            <td>{{ movimiento.fecha_movimiento|date:"Y-m-d H:i" }}</td>
+            <td>
+              <span class="badge {% if movimiento.tipo_movimiento == 'entrada' %}bg-success{% elif movimiento.tipo_movimiento == 'salida' %}bg-danger{% else %}bg-warning{% endif %}">
+                {{ movimiento.get_tipo_movimiento_display }}
+              </span>
+            </td>
+            <td>{{ movimiento.producto.sku }}</td>
+            <td>{{ movimiento.producto.nombre }}</td>
+            <td>{{ movimiento.proveedor.razon_social }}</td>
+            <td>{{ movimiento.cantidad }}</td>
+            {% if can_edit or can_delete %}
+            <td class="text-center">
+              {% if can_edit %}
+                <a href="?edit_id={{ movimiento.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+              {% endif %}
+              {% if can_delete %}
+                <a href="?delete_id={{ movimiento.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </a>
+              {% endif %}
+            </td>
             {% endif %}
-          </td>
-          {% endif %}
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="{% if can_edit or can_delete %}7{% else %}6{% endif %}" class="text-center text-muted">
-            Sin movimientos registrados.
-          </td>
-        </tr>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{% if can_edit or can_delete %}7{% else %}6{% endif %}" class="text-center text-muted">
+              Sin movimientos registrados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if movimientos.has_other_pages %}
+    <nav>
+      <ul class="pagination justify-content-end">
+        {% if movimientos.has_previous %}
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.tipo %}tipo={{ request.GET.tipo }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ movimientos.previous_page_number }}">Anterior</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+        {% for i in movimientos.paginator.page_range %}
+          <li class="page-item {% if movimientos.number == i %}active{% endif %}">
+            <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.tipo %}tipo={{ request.GET.tipo }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ i }}">{{ i }}</a>
+          </li>
         {% endfor %}
-      </tbody>
-    </table>
+        {% if movimientos.has_next %}
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.tipo %}tipo={{ request.GET.tipo }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ movimientos.next_page_number }}">Siguiente</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
   </div>
 </div>
 
@@ -291,6 +321,14 @@ document.addEventListener("DOMContentLoaded", function() {
       confirmButtonText: "Corregir"
     });
   {% endif %}
+
+  // Paginador autosubmit
+  const pagSize = document.getElementById("pag_size");
+  if(pagSize){
+    pagSize.addEventListener("change", function(){
+      document.getElementById("paginatorForm").submit();
+    });
+  }
 });
 </script>
 {% endblock %}

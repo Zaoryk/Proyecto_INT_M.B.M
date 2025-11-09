@@ -56,6 +56,160 @@
     }
   },
   {
+    "model": "dispositivos.categoria",
+    "pk": 1,
+    "fields": {
+      "nombre": "Chocolates",
+      "descripcion": "Producto a base de cacao",
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.categoria",
+    "pk": 2,
+    "fields": {
+      "nombre": "Caramelos",
+      "descripcion": "Golosinas duras y blandas variadas",
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.categoria",
+    "pk": 3,
+    "fields": {
+      "nombre": "Galletas",
+      "descripcion": "Dulces secos, ideales para café o té",
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.categoria",
+    "pk": 4,
+    "fields": {
+      "nombre": "Bombones",
+      "descripcion": "Pequeños dulces de chocolate y relleno",
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.categoria",
+    "pk": 5,
+    "fields": {
+      "nombre": "Gomitas",
+      "descripcion": "Golosinas masticables de sabores",
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.categoria",
+    "pk": 6,
+    "fields": {
+      "nombre": "Confites",
+      "descripcion": "Variedad de grajeas y pastillas",
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 1,
+    "fields": {
+      "nombre": "Central Norte",
+      "ubicacion": "Av. Independencia 1001",
+      "capacidad": 5222,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 2,
+    "fields": {
+      "nombre": "Alimentaria Sur",
+      "ubicacion": "Calle Dulzura 2020",
+      "capacidad": 5444,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 3,
+    "fields": {
+      "nombre": "Dulce Oriente",
+      "ubicacion": "Ruta 5 Sur Km 15",
+      "capacidad": 5666,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 4,
+    "fields": {
+      "nombre": "ChocoStore",
+      "ubicacion": "Costanera 2590",
+      "capacidad": 5888,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 5,
+    "fields": {
+      "nombre": "Galletilandia",
+      "ubicacion": "Manuel Montt 765",
+      "capacidad": 6110,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 6,
+    "fields": {
+      "nombre": "Candy Box",
+      "ubicacion": "Granaderos 400",
+      "capacidad": 6332,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 7,
+    "fields": {
+      "nombre": "Depósito Frutal",
+      "ubicacion": "Libertador 844",
+      "capacidad": 6554,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 8,
+    "fields": {
+      "nombre": "Fiesta Express",
+      "ubicacion": "Irarrázaval 2341",
+      "capacidad": 6776,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 9,
+    "fields": {
+      "nombre": "Stock Express",
+      "ubicacion": "Mall Center Piso 3",
+      "capacidad": 6998,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 10,
+    "fields": {
+      "nombre": "Bodega Fantasía",
+      "ubicacion": "Camino Real 127",
+      "capacidad": 7220,
+      "estado": "activo"
+    }
+  },
+  {
     "model": "dispositivos.producto",
     "pk": 1,
     "fields": {

@@ -511,7 +511,6 @@ def moduloTransaccional(request):
     request.session['visitas'] = visitas + 1
 
     role_name = get_user_role_name(request.user)
-
     search = request.GET.get("buscar", "")
     tipo = request.GET.get("tipo", "")
     movimientos = ProductoProveedor.objects.select_related('producto', 'proveedor').all()
@@ -521,7 +520,17 @@ def moduloTransaccional(request):
     if tipo:
         movimientos = movimientos.filter(tipo_movimiento__iexact=tipo)
 
-    # Exportar a Excel
+    # --- Paginador robusto ---
+    pag_size = request.GET.get('pag_size') or request.session.get('pag_size', '15')
+    if pag_size not in ['5', '15', '30', '100']:
+        pag_size = '15'
+    request.session['pag_size'] = pag_size
+
+    paginator = Paginator(movimientos.order_by('-fecha_movimiento'), int(pag_size))
+    page_number = request.GET.get('page')
+    movimientos_page = paginator.get_page(page_number)
+
+    # Exportar a Excel (siempre exporta TODO el queryset filtrado, no solo la página)
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -555,28 +564,24 @@ def moduloTransaccional(request):
             return redirect("Transaccional")
         form = ProductoProveedorForm(instance=get_object_or_404(ProductoProveedor, pk=request.GET.get("edit_id")))
         edit_mode = True
-    
+
     # GUARDAR / ACTUALIZAR
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
-        
         if edit_id and not can_change:
             messages.error(request, "No tienes permiso para editar movimientos.")
             return redirect("Transaccional")
-        
         if not edit_id and not can_add:
             messages.error(request, "No tienes permiso para crear movimientos.")
             return redirect("Transaccional")
-        
         instance = get_object_or_404(ProductoProveedor, pk=edit_id) if edit_id else None
         form = ProductoProveedorForm(request.POST, instance=instance)
         edit_mode = bool(edit_id)
-        
         if form.is_valid():
             form.save()
             messages.success(request, "Proveedor guardado correctamente.")
             return redirect("Proveedores")
-    
+
     # ELIMINAR
     elif request.method == "GET" and "delete_id" in request.GET:
         if not can_delete:
@@ -585,6 +590,7 @@ def moduloTransaccional(request):
         ProductoProveedor.objects.filter(pk=request.GET.get("delete_id")).delete()
         messages.success(request, "Movimiento eliminado correctamente.")
         return redirect("Transaccional")
+
     else:
         form = ProductoProveedorForm() if can_add else None
         edit_mode = False
@@ -596,7 +602,8 @@ def moduloTransaccional(request):
     return render(request, "dispositivos/moduloTransaccional.html", {
         "visitas": visitas,
         "form": form,
-        "movimientos": movimientos,
+        "movimientos": movimientos_page,      # <- Aquí está el objeto paginado, OBLIGATORIO
+        "pag_size": pag_size,                 # <- Para que el selector funcione y se conserve
         "movimientos_hoy": movimientos_hoy,
         "productos_count": Producto.objects.count(),
         "edit_mode": edit_mode,
@@ -678,6 +685,15 @@ def perfilusuario(request):
 # -------------------------------------------------------------
 # CATEGORÍAS
 # -------------------------------------------------------------
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.contrib import messages
+from django.core.paginator import Paginator
+
+import openpyxl
+from django.http import HttpResponse
+
 @login_required
 @require_module_permission('categorias', 'view')
 def gestionCategorias(request):
@@ -690,17 +706,25 @@ def gestionCategorias(request):
     can_change = user_can_change_module(request.user, 'categorias')
     can_delete = user_can_delete_module(request.user, 'categorias')
 
-    # Búsqueda y filtros
     search = request.GET.get("buscar", "")
     estado_filter = request.GET.get("estado", "")
-    
     categorias = Categoria.objects.all()
     if search:
         categorias = categorias.filter(Q(nombre__icontains=search) | Q(descripcion__icontains=search))
     if estado_filter:
         categorias = categorias.filter(estado__iexact=estado_filter)
 
-    # Exportar a Excel
+    # ----------------- Paginador robusto -----------------
+    pag_size = request.GET.get('pag_size') or request.session.get('cat_pag_size', '15')
+    if pag_size not in ['5', '15', '30', '100']:
+        pag_size = '15'
+    request.session['cat_pag_size'] = pag_size
+
+    paginator = Paginator(categorias.order_by('nombre'), int(pag_size))
+    page_number = request.GET.get('page')
+    categorias_page = paginator.get_page(page_number)
+
+    # Exportar a Excel (exporta TODO el queryset filtrado)
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -765,7 +789,8 @@ def gestionCategorias(request):
     return render(request, "dispositivos/gestionCategorias.html", {
         "visitas": visitas,
         "form": form,
-        "categorias": categorias,
+        "categorias": categorias_page,      # <- Página paginada aquí
+        "pag_size": pag_size,               # <- Para el selector de tamaño en el template
         "edit_mode": edit_mode,
         "edit_id": edit_id,
         "can_add": can_add,
@@ -774,10 +799,18 @@ def gestionCategorias(request):
         "role_name": role_name,
     })
 
-
 # -------------------------------------------------------------
 # BODEGAS
 # -------------------------------------------------------------
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.contrib import messages
+from django.core.paginator import Paginator
+
+import openpyxl
+from django.http import HttpResponse
+
 @login_required
 @require_module_permission('bodegas', 'view')
 def gestionBodegas(request):
@@ -793,14 +826,23 @@ def gestionBodegas(request):
     # Búsqueda y filtros
     search = request.GET.get("buscar", "")
     estado_filter = request.GET.get("estado", "")
-    
     bodegas = Bodega.objects.all()
     if search:
         bodegas = bodegas.filter(Q(nombre__icontains=search) | Q(ubicacion__icontains=search))
     if estado_filter:
         bodegas = bodegas.filter(estado__iexact=estado_filter)
 
-    # Exportar a Excel
+    # ----------- Paginador robusto 5/15/30/100 -----------
+    pag_size = request.GET.get('pag_size') or request.session.get('bodegas_pag_size', '15')
+    if pag_size not in ['5', '15', '30', '100']:
+        pag_size = '15'
+    request.session['bodegas_pag_size'] = pag_size
+
+    paginator = Paginator(bodegas.order_by('nombre'), int(pag_size))
+    page_number = request.GET.get('page')
+    bodegas_page = paginator.get_page(page_number)
+
+    # Exportar a Excel (siempre exporta TODO el queryset filtrado, no solo la página)
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -865,7 +907,8 @@ def gestionBodegas(request):
     return render(request, "dispositivos/gestionBodegas.html", {
         "visitas": visitas,
         "form": form,
-        "bodegas": bodegas,
+        "bodegas": bodegas_page,           # <- Página paginada aquí
+        "pag_size": pag_size,               # <- Para el selector de tamaño en el template
         "edit_mode": edit_mode,
         "edit_id": edit_id,
         "can_add": can_add,

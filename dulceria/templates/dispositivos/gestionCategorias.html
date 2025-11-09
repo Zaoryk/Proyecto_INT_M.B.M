@@ -70,8 +70,7 @@ input, select, textarea { border-radius: 8px !important; }
     <div class="card shadow-sm border-0">
       <div class="card-body">
         <h5 class="card-title mb-3 fw-bold">Categorías</h5>
-        
-        <form method="get" class="d-flex flex-wrap mb-3 gap-2">
+        <form method="get" class="d-flex flex-wrap mb-3 gap-2" id="paginatorForm">
           <input type="text" class="form-control me-2 mb-2" name="buscar"
                  value="{{ request.GET.buscar|default_if_none:'' }}"
                  placeholder="Buscar por nombre..." style="max-width:200px;">
@@ -80,12 +79,20 @@ input, select, textarea { border-radius: 8px !important; }
             <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>Activo</option>
             <option value="inactivo" {% if request.GET.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
           </select>
+          <label class="me-2 mb-0" for="pag_size">Mostrar</label>
+          <select class="form-select me-2 mb-2" name="pag_size" id="pag_size" style="max-width:90px;">
+            <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
+            <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
+            <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
+            <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
+          </select>
+          <span class="me-2 mb-2">registros</span>
           <button type="submit" class="btn btn-outline-primary mb-2">
             <i class="bi bi-search"></i> Buscar
           </button>
           <button type="submit" class="btn btn-outline-success ms-auto mb-2"
                   name="export_excel" value="1">
-            <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+            <i class="bi bi-file-earmark-excel"></i> Excel
           </button>
         </form>
 
@@ -137,6 +144,28 @@ input, select, textarea { border-radius: 8px !important; }
             </tbody>
           </table>
         </div>
+
+        {% if categorias.has_other_pages %}
+        <nav>
+          <ul class="pagination justify-content-end">
+            {% if categorias.has_previous %}
+              <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ categorias.previous_page_number }}">Anterior</a></li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+            {% endif %}
+            {% for i in categorias.paginator.page_range %}
+              <li class="page-item {% if categorias.number == i %}active{% endif %}">
+                <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ i }}">{{ i }}</a>
+              </li>
+            {% endfor %}
+            {% if categorias.has_next %}
+              <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ categorias.next_page_number }}">Siguiente</a></li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -144,29 +173,23 @@ input, select, textarea { border-radius: 8px !important; }
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Validaciones del formulario -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("categoriaForm");
-  
   if (form) {
     form.addEventListener("submit", (e) => {
       const nombre = form.querySelector("[name='nombre']").value.trim();
       const descripcion = form.querySelector("[name='descripcion']").value.trim();
       const estado = form.querySelector("[name='estado']").value.trim();
-      
       const faltantes = [];
       if (!nombre) faltantes.push("Nombre");
       if (nombre && nombre.length < 3) faltantes.push("Nombre (mínimo 3 caracteres)");
       if (nombre && nombre.length > 100) faltantes.push("Nombre (máximo 100 caracteres)");
       if (descripcion && descripcion.length > 255) faltantes.push("Descripción (máximo 255 caracteres)");
       if (!estado) faltantes.push("Estado");
-      
-      // Validar solo letras, números, espacios y guiones
       if (nombre && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$/.test(nombre)) {
         faltantes.push("Nombre (solo letras, números, espacios y guiones)");
       }
-      
       if (faltantes.length > 0) {
         e.preventDefault();
         Swal.fire({
@@ -180,7 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Confirmación de eliminación
   document.querySelectorAll(".btn-delete-categoria").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-id");
@@ -200,10 +222,16 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   });
+
+  const pagSize = document.getElementById("pag_size");
+  if (pagSize) {
+    pagSize.addEventListener("change", function() {
+      document.getElementById("paginatorForm").submit();
+    });
+  }
 });
 </script>
 
-<!-- Errores del backend -->
 {% if form.errors %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -219,7 +247,6 @@ document.addEventListener("DOMContentLoaded", function() {
     erroresHTML += "<li>{{ error|escapejs }}</li>";
   {% endfor %}
   erroresHTML += "</ul>";
-  
   Swal.fire({
     icon: "error",
     title: "Error en el formulario",

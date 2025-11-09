@@ -69,6 +69,49 @@ class Command(BaseCommand):
         ]
         fixtures.extend(usuarios)
 
+                # 5. Categorías (6 creativas)
+        categorias_lista = [
+            {"nombre": "Chocolates", "descripcion": "Producto a base de cacao", "estado": "activo"},
+            {"nombre": "Caramelos", "descripcion": "Golosinas duras y blandas variadas", "estado": "activo"},
+            {"nombre": "Galletas", "descripcion": "Dulces secos, ideales para café o té", "estado": "activo"},
+            {"nombre": "Bombones", "descripcion": "Pequeños dulces de chocolate y relleno", "estado": "activo"},
+            {"nombre": "Gomitas", "descripcion": "Golosinas masticables de sabores", "estado": "inactivo"},
+            {"nombre": "Confites", "descripcion": "Variedad de grajeas y pastillas", "estado": "activo"},
+        ]
+        categorias_fixture = []
+        for i, cat in enumerate(categorias_lista, start=1):
+            categorias_fixture.append({
+                "model": "dispositivos.categoria",
+                "pk": i,
+                "fields": cat
+            })
+        fixtures.extend(categorias_fixture)
+
+        # 6. Bodegas (10 creativas)
+        nombres_bodegas = [
+            "Central Norte", "Alimentaria Sur", "Dulce Oriente", "ChocoStore", "Galletilandia",
+            "Candy Box", "Depósito Frutal", "Fiesta Express", "Stock Express", "Bodega Fantasía"
+        ]
+        ubicaciones = [
+            "Av. Independencia 1001", "Calle Dulzura 2020", "Ruta 5 Sur Km 15", "Costanera 2590",
+            "Manuel Montt 765", "Granaderos 400", "Libertador 844", "Irarrázaval 2341", "Mall Center Piso 3", "Camino Real 127"
+        ]
+        bodegas_fixture = []
+        for i in range(1, 11):
+            bodega = {
+                "model": "dispositivos.bodega",
+                "pk": i,
+                "fields": {
+                    "nombre": nombres_bodegas[(i-1) % len(nombres_bodegas)],
+                    "ubicacion": ubicaciones[(i-1) % len(ubicaciones)],
+                    "capacidad": 5000 + (i * 222),
+                    "estado": "activo" if i % 3 != 0 else "inactivo"
+                }
+            }
+            bodegas_fixture.append(bodega)
+        fixtures.extend(bodegas_fixture)
+
+
         # Listas para variedad creativa
         nombres_productos = [
             "Trufas de Avellana", "Alfajor Cordobés", "Turrón de Maní", "Chocolate Rubí 75g", "Cinta de Caramelo",
