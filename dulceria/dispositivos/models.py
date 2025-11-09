@@ -12,24 +12,21 @@ class Usuario(models.Model):
         ("operador_ventas", "Operador de Ventas"),
         ("analista_financiero", "Analista Financiero"),
     ]
-    
     ESTADOS = [
         ("activo", "Activo"),
         ("inactivo", "Inactivo"),
         ("bloqueado", "Bloqueado")
     ]
-    
     MFA_OPTIONS = [
         ("habilitado", "Habilitado"),
         ("deshabilitado", "Deshabilitado"),
     ]
-    
     idUsuario = models.AutoField(primary_key=True)
     username = models.CharField(max_length=100, blank=True, null=True, unique=True)
     email = models.CharField(max_length=100, blank=True, null=True, unique=True)
     nombre = models.CharField(max_length=100, blank=True, null=True)
     apellido = models.CharField(max_length=100, blank=True, null=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True) 
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     rol = models.CharField(max_length=50, choices=ROLES, default="operador_ventas")
     estado = models.CharField(max_length=50, choices=ESTADOS, default="activo")
     mfa_habilitado = models.CharField(max_length=50, choices=MFA_OPTIONS, default="deshabilitado")
@@ -43,38 +40,26 @@ class Usuario(models.Model):
         return f"{self.username} - {self.nombre} {self.apellido}"
 
     def set_password(self, raw_password):
-        """Hashea la contraseña usando el sistema de Django"""
         self.password = make_password(raw_password)
 
     def check_password(self, raw_password):
-        """Verifica si la contraseña coincide"""
         if not self.password:
             return False
         return check_password(raw_password, self.password)
 
     def sync_to_auth_user(self):
-        """
-        Sincroniza este usuario con la tabla auth_user de Django
-        Crea o actualiza el usuario en auth_user para permitir login
-        """
         try:
-
             auth_user = User.objects.filter(username=self.username).first()
-
             if auth_user:
                 auth_user.email = self.email or ''
                 auth_user.first_name = self.nombre or ''
                 auth_user.last_name = self.apellido or ''
                 auth_user.is_active = (self.estado == 'activo')
-                
                 if self.password and not auth_user.check_password(self.password):
-
                     if self.password.startswith('pbkdf2_'):
                         auth_user.password = self.password
                     else:
-
                         auth_user.set_password(self.password)
-                
                 auth_user.save()
             else:
                 auth_user = User.objects.create(
@@ -86,42 +71,30 @@ class Usuario(models.Model):
                     is_staff=False,
                     is_superuser=False
                 )
-                
                 if self.password:
                     if self.password.startswith('pbkdf2_'):
                         auth_user.password = self.password
                     else:
                         auth_user.set_password(self.password)
                     auth_user.save()
-            
-            # Asignar al grupo según rol
             from django.contrib.auth.models import Group
-            
-            # Limpiar grupos anteriores
             auth_user.groups.clear()
-            
-            # Asignar nuevo grupo
             try:
                 group = Group.objects.get(name=self.rol)
                 auth_user.groups.add(group)
             except Group.DoesNotExist:
                 pass
-            
             return auth_user
-            
         except Exception as e:
             print(f"Error sincronizando usuario {self.username}: {e}")
             return None
-#HASHEA Y SINCRONIZA CON AUTH_USER
-    def save(self, *args, **kwargs):
 
+    def save(self, *args, **kwargs):
         if self.password and not self.password.startswith('pbkdf2_'):
             self.set_password(self.password)
-        
         super().save(*args, **kwargs)
-        
-        # Sincronizar con auth_user después de guardar
         self.sync_to_auth_user()
+
 
 class Producto(models.Model):
     idProducto = models.AutoField(primary_key=True)
@@ -143,33 +116,34 @@ class Producto(models.Model):
     def __str__(self):
         return f"{self.sku} - {self.nombre}"
 
+
 class Proveedor(models.Model):
     ESTADOS = [
-        ("activo", "Activo"),
-        ("inactivo", "Inactivo"),
+        ("ACTIVO", "Activo"),
+        ("INACTIVO", "Inactivo"),
+        ("BLOQUEADO", "Bloqueado"),
     ]
 
     idProveedor = models.AutoField(primary_key=True)
-    rut_nif = models.CharField(max_length=20, blank=True, null=True)
-    razon_social = models.CharField(max_length=255, blank=True, null=True)
+    rut_nif = models.CharField(max_length=20)
+    razon_social = models.CharField(max_length=255)
     nombre_fantasia = models.CharField(max_length=255, blank=True, null=True)
-    email = models.CharField(max_length=254, blank=True, null=True)
-    pais = models.CharField(max_length=45, blank=True, null=True)
+    email = models.CharField(max_length=254)
+    pais = models.CharField(max_length=64, default="Chile")
     condiciones_pago = models.CharField(max_length=45, blank=True, null=True)
-    moneda = models.CharField(max_length=45, blank=True, null=True)
-    estado = models.CharField(max_length=45, choices=ESTADOS, default="activo")
+    moneda = models.CharField(max_length=8, default="CLP")
+    estado = models.CharField(max_length=15, choices=ESTADOS, default="ACTIVO")
     usuario = models.ForeignKey(
-        Usuario, models.DO_NOTHING,
-        db_column='Usuario_idUsuario',
-        blank=True, null=True  # 👈 agregado
+        Usuario, models.DO_NOTHING, db_column="Usuario_idUsuario", blank=True, null=True
     )
 
     class Meta:
         managed = False
-        db_table = 'Proveedor'
+        db_table = "Proveedor"
 
     def __str__(self):
         return self.razon_social
+
 
 class ProductoProveedor(models.Model):
     TIPOS_MOVIMIENTO = [
@@ -177,7 +151,6 @@ class ProductoProveedor(models.Model):
         ("salida", "Salida"),
         ("ajuste", "Ajuste"),
     ]
-    
     idProducto_Proveedor = models.AutoField(primary_key=True)
     tipo_movimiento = models.CharField(max_length=100, choices=TIPOS_MOVIMIENTO, blank=True, null=True)
     cantidad = models.IntegerField(blank=True, null=True)
@@ -189,30 +162,28 @@ class ProductoProveedor(models.Model):
         managed = False
         db_table = 'Producto_Proveedor'
 
-# Modelos existentes que se mantienen (adaptados para compatibilidad)
-# PARA CRUDS PARA BACK END BORRAR DESPUES
+
 class Bodega(models.Model):
     ESTADOS = [
         ("activo", "Activo"),
         ("inactivo", "Inactivo"),
     ]
-        
     idbodega = models.AutoField(db_column='idBodega', primary_key=True)
     nombre = models.CharField(max_length=120, unique=True)
     ubicacion = models.CharField(max_length=100, blank=True, null=True)
-    capacidad = models.IntegerField(default=0, help_text="Capacidad en unidades")
+    capacidad = models.IntegerField(default=0)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
 
     class Meta:
         managed = False
         db_table = 'bodega'
 
+
 class Categoria(models.Model):
     ESTADOS = [
         ("activo", "Activo"),
         ("inactivo", "Inactivo"),
     ]
-    
     idCategoria = models.AutoField(db_column='idCategoria', primary_key=True)
     nombre = models.CharField(max_length=100, unique=True)
     descripcion = models.CharField(max_length=255, blank=True, null=True)
@@ -222,6 +193,7 @@ class Categoria(models.Model):
         managed = False
         db_table = 'categoria'
 
+
 class Cliente(models.Model):
     idcliente = models.AutoField(db_column='idCliente', primary_key=True)
     nombre = models.CharField(max_length=100, blank=True, null=True)
@@ -230,6 +202,7 @@ class Cliente(models.Model):
     class Meta:
         managed = False
         db_table = 'cliente'
+
 
 class Costo(models.Model):
     idcosto = models.AutoField(db_column='idCosto', primary_key=True)
@@ -241,6 +214,7 @@ class Costo(models.Model):
         managed = False
         db_table = 'costo'
         unique_together = (('idcosto', 'producto'),)
+
 
 class ListarPrecios(models.Model):
     idlistarprecios = models.AutoField(db_column='idListarPrecios', primary_key=True)
@@ -254,29 +228,20 @@ class ListarPrecios(models.Model):
         db_table = 'listarprecios'
         unique_together = (('idlistarprecios', 'cliente'),)
 
+
 class MovimientoInventario(models.Model):
     idmovimiento = models.AutoField(db_column='idMovimientoInventario', primary_key=True)
     tipo = models.CharField(max_length=45, blank=True, null=True)
     fecha = models.DateField(blank=True, null=True)
     cantidad = models.PositiveIntegerField()
-    bodega = models.ForeignKey(
-        Bodega,
-        models.DO_NOTHING,
-        db_column='Bodega_idBodega',
-        null=True, blank=True  
-    )
+    bodega = models.ForeignKey(Bodega, models.DO_NOTHING, db_column='Bodega_idBodega', null=True, blank=True)
     producto = models.ForeignKey(Producto, models.DO_NOTHING, db_column='Producto_idProducto')
-    
-    def clean(self):
-        # Esta validación podría necesitar ajustarse según la nueva estructura
-        if self.tipo == "Salida" and hasattr(self.producto, 'stock'):
-            if self.cantidad > self.producto.stock:
-                raise ValidationError("No puedes registrar una salida mayor al stock disponible.")
 
     class Meta:
         managed = False
         db_table = 'movimientoinventario'
         unique_together = (('idmovimiento', 'bodega', 'producto'),)
+
 
 class OrdenDeCompra(models.Model):
     ESTADOS = [
@@ -284,19 +249,17 @@ class OrdenDeCompra(models.Model):
         ("en_proceso", "En proceso"),
         ("cerrada", "Cerrada"),
     ]
-
     id = models.AutoField(primary_key=True)
     fecha = models.DateField(blank=True, null=True)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="no_iniciado")
     monto_total = models.IntegerField(blank=True, null=True)
-    proveedor = models.ForeignKey(
-        Proveedor, models.DO_NOTHING, db_column="proveedor_id_proveedor"
-    )
+    proveedor = models.ForeignKey(Proveedor, models.DO_NOTHING, db_column="proveedor_id_proveedor")
 
     class Meta:
         managed = False
         db_table = 'ordendecompra'
         unique_together = (('id', 'proveedor'),)
+
 
 class OrdenProduccion(models.Model):
     id = models.AutoField(primary_key=True)
@@ -310,6 +273,7 @@ class OrdenProduccion(models.Model):
         managed = False
         db_table = 'ordenproduccion'
         unique_together = (('id', 'usuario', 'producto'),)
+
 
 class Pedido(models.Model):
     idpedido = models.AutoField(db_column='idPedido', primary_key=True)

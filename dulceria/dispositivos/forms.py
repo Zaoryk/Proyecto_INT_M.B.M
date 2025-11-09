@@ -92,7 +92,38 @@ class ProductoForm(forms.ModelForm):
 class ProveedorForm(forms.ModelForm):
     class Meta:
         model = Proveedor
-        fields = '__all__'
+        fields = [
+            'rut_nif',
+            'razon_social',
+            'nombre_fantasia',
+            'email',
+            'pais',
+            'condiciones_pago',
+            'moneda',
+            'estado',
+        ]
+        widgets = {
+            'rut_nif': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'razon_social': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'nombre_fantasia': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'required': True}),
+            'pais': forms.Select(attrs={'class': 'form-select', 'required': True}),
+            'condiciones_pago': forms.Select(attrs={'class': 'form-select', 'required': True}),
+            'moneda': forms.Select(attrs={'class': 'form-select', 'required': True}),
+            'estado': forms.Select(attrs={'class': 'form-select', 'required': True}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        rut = cleaned_data.get("rut_nif")
+        email = cleaned_data.get("email")
+
+        if not rut:
+            self.add_error("rut_nif", "El RUT/NIF es obligatorio.")
+        if not email:
+            self.add_error("email", "El correo electrónico es obligatorio.")
+
+        return cleaned_data
 
 
 class ProductoProveedorForm(forms.ModelForm):

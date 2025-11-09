@@ -322,7 +322,9 @@ def gestionProductos(request):
         "categorias": categorias,
     })
 
-
+# -------------------------------------------------------------
+# PROVEEDORES
+# -------------------------------------------------------------
 @login_required
 @require_module_permission('proveedores', 'view')
 def gestionProveedores(request):
@@ -332,15 +334,17 @@ def gestionProveedores(request):
     role_name = get_user_role_name(request.user)
     buscar = request.GET.get('buscar', '')
     pais = request.GET.get('pais', '')
+
     proveedores = Proveedor.objects.all()
     productos = Producto.objects.all().order_by("nombre")
-    
+
     if buscar:
         proveedores = proveedores.filter(
             Q(rut_nif__icontains=buscar) | Q(razon_social__icontains=buscar)
         )
+    if pais:
+        proveedores = proveedores.filter(pais__iexact=pais)
 
-    # Ordenamiento seguro por campo existente
     VALID_FIELDS = ['rut_nif', 'razon_social', 'estado', 'email', 'pais']
     order = request.GET.get('order', request.session.get('order', 'asc'))
     order_by = request.GET.get('order_by', request.session.get('order_by', 'razon_social'))
@@ -348,40 +352,29 @@ def gestionProveedores(request):
         order_by = 'razon_social'
     request.session['order'] = order
     request.session['order_by'] = order_by
-    if order == 'desc':
-        proveedores = proveedores.order_by(f'-{order_by}')
-    else:
-        proveedores = proveedores.order_by(order_by)
+    proveedores = proveedores.order_by(f'-{order_by}' if order == 'desc' else order_by)
 
-    # Paginador
     pag_size = request.GET.get('pag_size') or request.session.get('pag_size', '10')
     request.session['pag_size'] = pag_size
-    from django.core.paginator import Paginator
     paginator = Paginator(proveedores, int(pag_size))
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Exportar a Excel (siempre usando queryset filtrado/ordenado)
     if "export_excel" in request.GET:
-        import openpyxl
-        from django.http import HttpResponse
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "Proveedores"
         headers_excel = ["RUT/NIF", "Razón Social", "Estado", "Email", "País"]
         sheet.append(headers_excel)
         for p in proveedores:
-            sheet.append([
-                p.rut_nif, p.razon_social, p.get_estado_display(), p.email, p.pais
-            ])
+            sheet.append([p.rut_nif, p.razon_social, p.get_estado_display(), p.email, p.pais])
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response['Content-Disposition'] = 'attachment; filename=\"proveedores.xlsx\"'
+        response['Content-Disposition'] = 'attachment; filename="proveedores.xlsx"'
         workbook.save(response)
         return response
 
-    # Headers para la tabla
     headers = [
         ("rut_nif", "RUT/NIF"),
         ("razon_social", "Razón Social"),
@@ -394,27 +387,31 @@ def gestionProveedores(request):
     can_change = user_can_change_module(request.user, 'proveedores')
     can_delete = user_can_delete_module(request.user, 'proveedores')
 
-
+    # --- Modo edición / creación / eliminación ---
     if request.method == "GET" and "edit_id" in request.GET:
         if not can_change:
             messages.error(request, "No tienes permiso para editar proveedores.")
             return redirect("Proveedores")
         form = ProveedorForm(instance=get_object_or_404(Proveedor, pk=request.GET.get("edit_id")))
         edit_mode = True
+
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
+
         if edit_id and not can_change:
             messages.error(request, "No tienes permiso para editar proveedores.")
             return redirect("Proveedores")
         if not edit_id and not can_add:
             messages.error(request, "No tienes permiso para crear proveedores.")
             return redirect("Proveedores")
-        instance = get_object_or_404(Proveedor, pk=edit_id) if edit_id else None
 
+        instance = get_object_or_404(Proveedor, pk=edit_id) if edit_id else None
         form = ProveedorForm(request.POST, instance=instance)
         edit_mode = bool(edit_id)
+
         if form.is_valid():
             proveedor = form.save(commit=False)
+
             usuario_actual = Usuario.objects.filter(username=request.user.username).first()
             if not usuario_actual:
                 usuario_actual = Usuario.objects.create(
@@ -423,12 +420,17 @@ def gestionProveedores(request):
                     nombre=request.user.first_name or request.user.username,
                     apellido=request.user.last_name or "",
                     estado="activo",
-                    rol="operador_compras"  
+                    rol="operador_compras"
                 )
+
             proveedor.usuario = usuario_actual
             proveedor.save()
             messages.success(request, "Proveedor guardado correctamente.")
             return redirect("Proveedores")
+
+        else:
+            messages.error(request, "Por favor, revisa los campos obligatorios antes de guardar.")
+
     elif request.method == "GET" and "delete_id" in request.GET:
         if not can_delete:
             messages.error(request, "No tienes permiso para eliminar proveedores.")
@@ -445,9 +447,11 @@ def gestionProveedores(request):
         "visitas": visitas,
         "form": form,
         "proveedores": page_obj,
+        "productos": productos,
         "edit_mode": edit_mode,
         "edit_id": request.GET.get("edit_id", ""),
         "buscar": buscar,
+        "pais": pais,
         "can_add": can_add,
         "can_edit": can_change,
         "can_delete": can_delete,
@@ -457,6 +461,7 @@ def gestionProveedores(request):
         "pag_size": pag_size,
         "headers": headers,
     })
+
 # -------------------------------------------------------------
 # PRODUCTO - PROVEEDOR (MOVIMIENTOS DE INVENTARIO)
 # -------------------------------------------------------------
@@ -530,8 +535,8 @@ def moduloTransaccional(request):
         
         if form.is_valid():
             form.save()
-            messages.success(request, "Movimiento guardado correctamente.")
-            return redirect("Transaccional")
+            messages.success(request, "Proveedor guardado correctamente.")
+            return redirect("Proveedores")
     
     # ELIMINAR
     elif request.method == "GET" and "delete_id" in request.GET:

@@ -2,11 +2,10 @@
 {% block content %}
 <style>
 .card { border-radius: 16px !important; }
-input, select { border-radius: 8px !important; }
+input, select, textarea { border-radius: 8px !important; }
 .table th, .table td { vertical-align: middle; }
 .table-hover tbody tr:hover { background-color: #f8f9fa; }
 </style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
 {% if can_add or edit_mode %}
 <div class="card mb-4 shadow-sm border-0">
@@ -152,6 +151,7 @@ input, select { border-radius: 8px !important; }
           </div>
         </div>
       </div>
+
       <div class="d-flex justify-content-end mt-4">
         <button type="submit" class="btn btn-primary me-2">{% if edit_mode %}Actualizar{% else %}Guardar{% endif %}</button>
         {% if edit_mode %}
@@ -188,6 +188,7 @@ input, select { border-radius: 8px !important; }
         <i class="bi bi-file-earmark-excel"></i> Exportar
       </button>
     </form>
+
     <div class="table-responsive">
       <table class="table table-bordered table-hover rounded">
         <thead class="table-light text-center">
@@ -196,41 +197,20 @@ input, select { border-radius: 8px !important; }
           </tr>
         </thead>
         <tbody>
-          {% for proveedor in proveedores %}
-          <tr>
-            <td>{{ proveedor.rut_nif }}</td>
-            <td>{{ proveedor.razon_social }}</td>
-            <td>{{ proveedor.email }}</td>
-            <td>{{ proveedor.pais }}</td>
-            <td>{{ proveedor.estado }}</td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="5" class="text-center text-muted">Sin proveedores registrados.</td></tr>
-          {% endfor %}
+        {% for prov in proveedores %}
+        <tr>
+          <td>{{ prov.rut_nif }}</td>
+          <td>{{ prov.razon_social }}</td>
+          <td>{{ prov.email }}</td>
+          <td>{{ prov.pais }}</td>
+          <td>{{ prov.estado }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted">Sin proveedores registrados.</td></tr>
+        {% endfor %}
         </tbody>
       </table>
     </div>
-    {% if proveedores.has_other_pages %}
-    <nav>
-      <ul class="pagination justify-content-end">
-        {% if proveedores.has_previous %}
-          <li class="page-item"><a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ proveedores.previous_page_number }}">Anterior</a></li>
-        {% else %}
-          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-        {% endif %}
-        {% for i in proveedores.paginator.page_range %}
-          <li class="page-item {% if proveedores.number == i %}active{% endif %}">
-            <a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ i }}">{{ i }}</a>
-          </li>
-        {% endfor %}
-        {% if proveedores.has_next %}
-          <li class="page-item"><a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ proveedores.next_page_number }}">Siguiente</a></li>
-        {% else %}
-          <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
-        {% endif %}
-      </ul>
-    </nav>
-    {% endif %}
   </div>
 </div>
 
