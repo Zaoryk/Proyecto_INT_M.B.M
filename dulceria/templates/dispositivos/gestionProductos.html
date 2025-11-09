@@ -4,11 +4,7 @@
 .card { border-radius: 16px !important; }
 input, select { border-radius: 8px !important; }
 .table th, .table td { vertical-align: middle; }
-.table-hover tbody tr:hover { background-color: #f8f9fa; }
-.is-valid { border-color: #28a745 !important; }
-.is-invalid { border-color: #dc3545 !important; }
 </style>
-
 
 {% if can_add or edit_mode %}
 <div class="card mb-4 shadow-sm border-0">
@@ -41,11 +37,9 @@ input, select { border-radius: 8px !important; }
       <div class="tab-content" id="productTabContent">
         <div class="tab-pane fade show active" id="id-precios" role="tabpanel">
           <div class="row mb-3">
-
-            <!-- BLOQUE CATEGORÍA DINÁMICA -->
             <div class="col-md-3">
-              <label class="form-label" for="categoriaSelect">Categoría</label>
-              <select class="form-select {% if form.categoria.errors %}is-invalid{% endif %}" name="categoria" id="categoriaSelect" required>
+              <label class="form-label">Categoría</label>
+              <select class="form-select" name="categoria" id="categoriaSelect" required>
                 <option value="">Seleccione...</option>
                 {% for value, text in categorias %}
                   <option value="{{ value }}" {% if form.categoria.value == value %}selected{% endif %}>{{ text }}</option>
@@ -61,22 +55,11 @@ input, select { border-radius: 8px !important; }
                   {% endif %}
                 {% endwith %}
               </select>
-              {% if form.categoria.errors %}
-                <div class="invalid-feedback d-block">{{ form.categoria.errors.0 }}</div>
-              {% endif %}
               <div id="input-categoria-nueva" style="display:none; margin-top:5px;">
-                <input type="text"
-                       name="categoria_nueva"
-                       class="form-control {% if form.categoria_nueva.errors %}is-invalid{% endif %}"
-                       placeholder="Ingrese nueva categoría"
-                       value="{{ form.categoria_nueva.value|default_if_none:'' }}">
-                {% if form.categoria_nueva.errors %}
-                  <div class="invalid-feedback d-block">{{ form.categoria_nueva.errors.0 }}</div>
-                {% endif %}
+                <input type="text" name="categoria_nueva" class="form-control"
+                       placeholder="Ingrese nueva categoría" value="{{ request.POST.categoria_nueva }}">
               </div>
             </div>
-            <!-- FIN BLOQUE CATEGORÍA DINÁMICA -->
-
             <div class="col-md-3">
               <label class="form-label">SKU</label>
               <select class="form-select" name="sku" id="sku" required>
@@ -128,7 +111,7 @@ input, select { border-radius: 8px !important; }
             <div class="col-md-2">
               <label class="form-label">IVA (%)</label>
               <input type="number" class="form-control" name="impuesto_iva"
-                     value="{{ form.impuesto_iva.value|default_if_none:19 }}" min="0" max="100" required>
+                     value="{{ form.impuesto_iva.value|default_if_none:19 }}" readonly>
             </div>
           </div>
         </div>
@@ -178,16 +161,9 @@ input, select { border-radius: 8px !important; }
 <div class="card shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold">Productos</h5>
-    <form method="get" class="d-flex align-items-center mb-3" id="paginatorForm">
+    <form method="get" class="d-flex mb-2">
       <input class="form-control me-2" type="text" name="buscar"
-             placeholder="Buscar por SKU, nombre..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:170px;">
-      <label class="me-2 mb-0" for="pag_size">Mostrar</label>
-      <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
-        <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
-        <option value="10"{% if pag_size == '10' %} selected{% endif %}>10</option>
-        <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
-      </select>
-      <span class="me-2">registros</span>
+             placeholder="Buscar por SKU o nombre..." style="max-width:150px;">
       <button type="submit" class="btn btn-outline-primary">Buscar</button>
       <button type="submit" class="btn btn-outline-success ms-auto"
               name="export_excel" value="1">Exportar a Excel</button>
@@ -196,18 +172,11 @@ input, select { border-radius: 8px !important; }
       <table class="table table-bordered table-hover rounded">
         <thead class="table-light text-center">
           <tr>
-            {% for field, label in headers %}
-            <th>
-              <a href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}
-                order_by={{ field }}&order={% if order_by == field %}{% if order == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}
-                {% if pag_size %}&pag_size={{ pag_size }}{% endif %}">
-                {{ label }}
-                {% if order_by == field %}
-                  {% if order == "asc" %}▲{% else %}▼{% endif %}
-                {% endif %}
-              </a>
-            </th>
-            {% endfor %}
+            <th>SKU</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Stock mínimo</th>
+            <th>IVA (%)</th>
             {% if can_edit or can_delete %}
               <th>Acciones</th>
             {% endif %}
@@ -219,13 +188,8 @@ input, select { border-radius: 8px !important; }
             <td>{{ producto.sku }}</td>
             <td>{{ producto.nombre }}</td>
             <td>{{ producto.categoria }}</td>
-            <td>{{ producto.uom_compra }}</td>
-            <td>{{ producto.uom_venta }}</td>
-            <td>{{ producto.factor_conversion }}</td>
-            <td>{{ producto.impuesto_iva }}</td>
             <td>{{ producto.stock_minimo }}</td>
-            <td>{% if producto.perishable %}Sí{% else %}No{% endif %}</td>
-            <td>{{ producto.lote }}</td>
+            <td>{{ producto.impuesto_iva }}%</td>
             {% if can_edit or can_delete %}
             <td class="text-center">
               {% if can_edit %}
@@ -233,6 +197,7 @@ input, select { border-radius: 8px !important; }
                   <i class="bi bi-pencil-square"></i>
                 </a>
               {% endif %}
+              
               {% if can_delete %}
                 <a href="?delete_id={{ producto.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
                   <i class="bi bi-trash"></i>
@@ -242,8 +207,8 @@ input, select { border-radius: 8px !important; }
             {% endif %}
           </tr>
           {% empty %}
-          <tr>
-            <td colspan="{% if can_edit or can_delete %}11{% else %}10{% endif %}" class="text-center text-muted">
+          <tr>            
+            <td colspan="{% if can_edit or can_delete %}6{% else %}5{% endif %}" class="text-center text-muted">
               Sin productos registrados.
             </td>
           </tr>
@@ -251,104 +216,21 @@ input, select { border-radius: 8px !important; }
         </tbody>
       </table>
     </div>
-    {% if productos.has_other_pages %}
-    <nav>
-      <ul class="pagination justify-content-end">
-        {% if productos.has_previous %}
-          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ productos.previous_page_number }}">Anterior</a></li>
-        {% else %}
-          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-        {% endif %}
-        {% for i in productos.paginator.page_range %}
-          <li class="page-item {% if productos.number == i %}active{% endif %}">
-            <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ i }}">{{ i }}</a>
-          </li>
-        {% endfor %}
-        {% if productos.has_next %}
-          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ productos.next_page_number }}">Siguiente</a></li>
-        {% else %}
-          <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
-        {% endif %}
-      </ul>
-    </nav>
-    {% endif %}
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  // Categoría nueva dinámica
   const selectCat = document.getElementById("categoriaSelect");
   const inputDiv = document.getElementById("input-categoria-nueva");
-  const inputNueva = document.querySelector('input[name="categoria_nueva"]');
   if (selectCat) {
     selectCat.addEventListener('change', function() {
       inputDiv.style.display = (this.value === 'Otras') ? 'block' : 'none';
     });
     if (selectCat.value === 'Otras') inputDiv.style.display = 'block';
   }
-  const productoForm = document.getElementById("productoForm");
-  if (productoForm) {
-    productoForm.addEventListener("submit", function(e){
-      let errores = [];
-      if (!this.categoria.value.trim()) errores.push("Categoría");
-      if (this.categoria.value === "Otras") {
-        if (!inputNueva.value || !inputNueva.value.trim()) {
-          errores.push("Debe ingresar el nombre de la nueva categoría.");
-        }
-      }
-      if (!this.sku.value.trim()) errores.push("SKU");
-      if (!this.nombre.value.trim()) errores.push("Nombre");
-      if (!this.uom_compra.value.trim()) errores.push("Unidad compra");
-      if (!this.uom_venta.value.trim()) errores.push("Unidad venta");
-      if (!this.factor_conversion.value.trim() || parseInt(this.factor_conversion.value) < 1) errores.push("Conversión (min: 1)");
-      if (!this.impuesto_iva.value.trim() || parseInt(this.impuesto_iva.value) < 0) errores.push("IVA");
-      if (!this.stock_minimo.value.trim() || parseInt(this.stock_minimo.value) < 0) errores.push("Stock mínimo");
-      if (this.nombre.value && !/^[\wÁÉÍÓÚáéíóúÜüÑñ .,-]+$/.test(this.nombre.value)) {
-        errores.push("Nombre (solo letras/números y .,- )");
-      }
-      if (errores.length) {
-        e.preventDefault();
-        Swal.fire({
-          icon: "warning",
-          title: "Campos obligatorios o inválidos",
-          html: "<ul style='text-align:left;margin:0;'>" + errores.map(f => "<li>" + f + "</li>").join("") + "</ul>",
-          confirmButtonText: "OK"
-        });
-        return false;
-      }
-      // Checkboxes backend seguro
-      let perishable = document.getElementById("perishableSwitch");
-      let controlLote = document.getElementById("controlLoteSwitch");
-      if(perishable && !perishable.checked){
-        let input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "perishable";
-        input.value = "0";
-        this.appendChild(input);
-      } else if(perishable && perishable.checked) {
-        perishable.value = "1";
-      }
-      if(controlLote && !controlLote.checked){
-        let input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "lote";
-        input.value = "0";
-        this.appendChild(input);
-      } else if(controlLote && controlLote.checked) {
-        controlLote.value = "1";
-      }
-    });
-  }
-  // Autosubmit paginador
-  const pagSize = document.getElementById("pag_size");
-  if(pagSize){
-    pagSize.addEventListener("change", function(){
-      document.getElementById("paginatorForm").submit();
-    });
-  }
-  // Confirmación SweetAlert2
+
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -366,7 +248,8 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     });
   });
-  // Errores backend en SweetAlert2
+
+  // SweetAlert para todos los errores del form
   {% if form.errors %}
     let erroresHTML = "<ul style='text-align:left; margin:0; padding-left:20px;'>";
     {% for field in form %}
@@ -380,7 +263,7 @@ document.addEventListener("DOMContentLoaded", function() {
       erroresHTML += "<li>{{ error|escapejs }}</li>";
     {% endfor %}
     erroresHTML += "</ul>";
-    Swal.fire({
+    Swal.fire({ 
       icon: "error",
       title: "Error en el formulario",
       html: erroresHTML,
