@@ -80,6 +80,16 @@ def formularioUsuario(request):
     if estado_filter:
         usuarios = usuarios.filter(estado__iexact=estado_filter)
 
+    # PAGINADOR 5/15/30/100
+    pag_size = request.GET.get('pag_size') or request.session.get('usuarios_pag_size', '15')
+    if pag_size not in ['5', '15', '30', '100']:
+        pag_size = '15'
+    request.session['usuarios_pag_size'] = pag_size
+
+    paginator = Paginator(usuarios.order_by('username'), int(pag_size))
+    page_number = request.GET.get('page')
+    usuarios_page = paginator.get_page(page_number)
+
     # Exportar a Excel (todos pueden exportar si tienen permiso de view)
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
@@ -172,7 +182,6 @@ def formularioUsuario(request):
         if is_admin:
             form = UsuarioForm(request.POST, request.FILES, instance=instance)
         else:
-            # Los no-admin no pueden subir/cambiar el avatar vía formulario
             POST_data = request.POST.copy()
             FILES_data = None  # Ignorado
             if instance:
@@ -180,7 +189,6 @@ def formularioUsuario(request):
             form = UsuarioForm(POST_data, instance=instance)
         edit_mode = bool(edit_id)
         if not is_admin and instance:
-            # Preservar el rol original
             original_rol = instance.rol
             if form.is_valid():
                 usuario = form.save(commit=False)
@@ -208,7 +216,7 @@ def formularioUsuario(request):
     return render(request, "dispositivos/formularioUsuario.html", {
         "visitas": visitas,
         "form": form,
-        "usuarios": usuarios,
+        "usuarios": usuarios_page,
         "edit_mode": edit_mode,
         "edit_id": edit_id,
         "is_admin": is_admin,
@@ -218,6 +226,7 @@ def formularioUsuario(request):
         "can_add": is_admin and user_can_add_module(request.user, 'usuarios'),
         "can_edit": user_can_change_module(request.user, 'usuarios'),
         "can_delete": is_admin and user_can_delete_module(request.user, 'usuarios'),
+        "pag_size": pag_size, # <-- NECESARIO PARA EL TEMPLATE!!!
     })
 
 
