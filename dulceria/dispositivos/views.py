@@ -685,14 +685,6 @@ def perfilusuario(request):
 # -------------------------------------------------------------
 # CATEGORÍAS
 # -------------------------------------------------------------
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from django.contrib import messages
-from django.core.paginator import Paginator
-
-import openpyxl
-from django.http import HttpResponse
 
 @login_required
 @require_module_permission('categorias', 'view')

@@ -22,7 +22,6 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-
 def error_404_view(request, exception):
     return render(request, 'dispositivos/Error404.html', status=404)
 
