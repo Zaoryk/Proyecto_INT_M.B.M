@@ -6,6 +6,8 @@ from dispositivos.views import dashboard, formularioUsuario, gestionProductos, g
 from django.conf import settings
 from django.conf.urls import handler404, handler500
 from django.shortcuts import render
+from django.views.static import serve
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("accounts.urls")),
@@ -21,7 +23,10 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
+else:
+    urlpatterns += [
+        path("media/<path:path>", serve, {"document_root": settings.MEDIA_ROOT}),
+    ]
 
 def error_404_view(request, exception):
     return render(request, 'dispositivos/Error404.html', status=404)
@@ -31,3 +36,5 @@ def error_500_view(request):
 
 handler404 = error_404_view
 handler500 = error_500_view
+
+

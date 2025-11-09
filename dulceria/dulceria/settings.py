@@ -24,8 +24,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-hh$-saop#x9!&w!3!8d$ibww$uws@z9(s-rnw1!4-ru2&+2^z6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-ALLOWED_HOSTS = ['*']
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+DEBUG = False  
+
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / "media"
 
 
 # Application definition
@@ -171,3 +182,14 @@ EMAIL_USE_SSL = True
 EMAIL_HOST_USER = '@gmail.com'  # AGREGAR CORREO PARA QUE FUNCIONE
 EMAIL_HOST_PASSWORD = 'pufeuguygtdrmwqe'  # Contraseña de aplicación ESTA CAMBIA SEGUN CUENTA
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
