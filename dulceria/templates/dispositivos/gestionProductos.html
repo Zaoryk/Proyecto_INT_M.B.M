@@ -161,9 +161,17 @@ input, select { border-radius: 8px !important; }
 <div class="card shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold">Productos</h5>
-    <form method="get" class="d-flex mb-2">
+    <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="paginatorForm">
       <input class="form-control me-2" type="text" name="buscar"
-             placeholder="Buscar por SKU o nombre..." style="max-width:150px;">
+             placeholder="Buscar por SKU o nombre..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:170px;">
+      <label class="me-2 mb-0" for="pag_size">Mostrar</label>
+      <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
+        <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
+        <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
+        <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
+        <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
+      </select>
+      <span class="me-2">registros</span>
       <button type="submit" class="btn btn-outline-primary">Buscar</button>
       <button type="submit" class="btn btn-outline-success ms-auto"
               name="export_excel" value="1">Exportar a Excel</button>
@@ -197,7 +205,6 @@ input, select { border-radius: 8px !important; }
                   <i class="bi bi-pencil-square"></i>
                 </a>
               {% endif %}
-              
               {% if can_delete %}
                 <a href="?delete_id={{ producto.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
                   <i class="bi bi-trash"></i>
@@ -207,7 +214,7 @@ input, select { border-radius: 8px !important; }
             {% endif %}
           </tr>
           {% empty %}
-          <tr>            
+          <tr>
             <td colspan="{% if can_edit or can_delete %}6{% else %}5{% endif %}" class="text-center text-muted">
               Sin productos registrados.
             </td>
@@ -216,21 +223,119 @@ input, select { border-radius: 8px !important; }
         </tbody>
       </table>
     </div>
+    {% if productos.has_other_pages %}
+    <nav>
+      <ul class="pagination justify-content-end">
+        {% if productos.has_previous %}
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ productos.previous_page_number }}">Anterior</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+        {% for i in productos.paginator.page_range %}
+          <li class="page-item {% if productos.number == i %}active{% endif %}">
+            <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ i }}">{{ i }}</a>
+          </li>
+        {% endfor %}
+        {% if productos.has_next %}
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ productos.next_page_number }}">Siguiente</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% if messages %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  {% for message in messages %}
+    Swal.fire({
+      icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}",
+      title: "{% if message.tags == 'success' %}¡Éxito!{% elif message.tags == 'error' %}Error{% elif message.tags == 'warning' %}Atención{% else %}Aviso{% endif %}",
+      text: "{{ message|escapejs }}",
+      showConfirmButton: true,
+      confirmButtonText: "Aceptar"
+    });
+  {% endfor %}
+});
+</script>
+{% endif %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Categoría nueva dinámica
   const selectCat = document.getElementById("categoriaSelect");
   const inputDiv = document.getElementById("input-categoria-nueva");
+  const inputNueva = document.querySelector('input[name="categoria_nueva"]');
   if (selectCat) {
     selectCat.addEventListener('change', function() {
       inputDiv.style.display = (this.value === 'Otras') ? 'block' : 'none';
     });
     if (selectCat.value === 'Otras') inputDiv.style.display = 'block';
   }
-
+  // Validaciones JS y SweetAlert2
+  const productoForm = document.getElementById("productoForm");
+  if (productoForm) {
+    productoForm.addEventListener("submit", function(e){
+      let errores = [];
+      if (!this.categoria.value.trim()) errores.push("Categoría");
+      if (this.categoria.value === "Otras") {
+        if (!inputNueva.value || !inputNueva.value.trim()) {
+          errores.push("Debe ingresar el nombre de la nueva categoría.");
+        }
+      }
+      if (!this.sku.value.trim()) errores.push("SKU");
+      if (!this.nombre.value.trim()) errores.push("Nombre");
+      if (!this.uom_compra.value.trim()) errores.push("Unidad compra");
+      if (!this.uom_venta.value.trim()) errores.push("Unidad venta");
+      if (!this.factor_conversion.value.trim() || parseInt(this.factor_conversion.value) < 1) errores.push("Conversión (min: 1)");
+      if (!this.impuesto_iva.value.trim() || parseInt(this.impuesto_iva.value) < 0) errores.push("IVA");
+      if (!this.stock_minimo.value.trim() || parseInt(this.stock_minimo.value) < 0) errores.push("Stock mínimo");
+      if (this.nombre.value && !/^[\wÁÉÍÓÚáéíóúÜüÑñ .,-]+$/.test(this.nombre.value)) {
+        errores.push("Nombre (solo letras/números y .,- )");
+      }
+      if (errores.length) {
+        e.preventDefault();
+        Swal.fire({
+          icon: "warning",
+          title: "Campos obligatorios o inválidos",
+          html: "<ul style='text-align:left;margin:0;'>" + errores.map(f => "<li>" + f + "</li>").join("") + "</ul>",
+          confirmButtonText: "OK"
+        });
+        return false;
+      }
+      // Checkboxes backend seguro
+      let perishable = document.getElementById("perishableSwitch");
+      let controlLote = document.getElementById("controlLoteSwitch");
+      if(perishable && !perishable.checked){
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "perishable";
+        input.value = "0";
+        this.appendChild(input);
+      } else if(perishable && perishable.checked) {
+        perishable.value = "1";
+      }
+      if(controlLote && !controlLote.checked){
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "lote";
+        input.value = "0";
+        this.appendChild(input);
+      } else if(controlLote && controlLote.checked) {
+        controlLote.value = "1";
+      }
+    });
+  }
+  const pagSize = document.getElementById("pag_size");
+  if(pagSize){
+    pagSize.addEventListener("change", function(){
+      document.getElementById("paginatorForm").submit();
+    });
+  }
+  // SweetAlert2 eliminar confirmación
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -248,8 +353,7 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     });
   });
-
-  // SweetAlert para todos los errores del form
+  // Errores backen (form.errors)
   {% if form.errors %}
     let erroresHTML = "<ul style='text-align:left; margin:0; padding-left:20px;'>";
     {% for field in form %}
@@ -263,7 +367,7 @@ document.addEventListener("DOMContentLoaded", function() {
       erroresHTML += "<li>{{ error|escapejs }}</li>";
     {% endfor %}
     erroresHTML += "</ul>";
-    Swal.fire({ 
+    Swal.fire({
       icon: "error",
       title: "Error en el formulario",
       html: erroresHTML,

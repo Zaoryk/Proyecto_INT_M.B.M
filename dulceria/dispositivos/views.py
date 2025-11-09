@@ -232,6 +232,41 @@ def gestionProductos(request):
     request.session['visitas'] = visitas + 1
 
     role_name = get_user_role_name(request.user)
+
+    # --- ELIMINAR ---
+    delete_id = request.GET.get('delete_id')
+    if delete_id and request.method == 'GET':
+        producto = get_object_or_404(Producto, pk=delete_id)
+        producto.delete()
+        messages.success(request, "Producto eliminado correctamente.")
+        return redirect('Productos')  # tu url name
+
+    # --- EDITAR (Cargar producto a form) ---
+    edit_id = request.GET.get('edit_id')
+    if edit_id:
+        producto_obj = get_object_or_404(Producto, pk=edit_id)
+        form = ProductoForm(instance=producto_obj)
+        edit_mode = True
+    else:
+        producto_obj = None
+        form = ProductoForm()
+        edit_mode = False
+
+    # --- CREAR/ACTUALIZAR (POST) ---
+    if request.method == "POST":
+        if 'edit_id' in request.POST:
+            instance = get_object_or_404(Producto, pk=request.POST['edit_id'])
+            form = ProductoForm(request.POST, instance=instance)
+            edit_mode = True
+        else:
+            form = ProductoForm(request.POST)
+            edit_mode = False
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Producto guardado correctamente.")
+            return redirect('Productos')
+        # Si error, renderizas abajo (form.errors)
+
     search = request.GET.get('buscar', '')
     productos = Producto.objects.all()
 
@@ -241,7 +276,7 @@ def gestionProductos(request):
             Q(nombre__icontains=search) | Q(sku__icontains=search) | Q(categoria__icontains=search)
         )
 
-    # Exportar a Excel
+    # Exportar a Excel (igual que tienes)
     if "export_excel" in request.GET:
         import openpyxl
         workbook = openpyxl.Workbook()
@@ -307,6 +342,7 @@ def gestionProductos(request):
     categorias = [(c, c) for c in categorias_validas]
     categorias.append(("Otras", "Otra..."))
 
+    # NUEVO: Retornar form y estado de edición
     return render(request, "dispositivos/gestionProductos.html", {
         "visitas": visitas,
         "productos": page_obj,
@@ -320,6 +356,9 @@ def gestionProductos(request):
         "pag_size": pag_size,
         "headers": headers,
         "categorias": categorias,
+        "form": form,                 # <-- Esto es clave para validaciones y el form
+        "edit_mode": edit_mode,       # <-- Indica si tocas editar
+        "edit_id": edit_id,           # <-- Para que el form tenga el id al editar
     })
 
 # -------------------------------------------------------------

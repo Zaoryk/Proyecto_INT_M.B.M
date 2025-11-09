@@ -13,13 +13,11 @@ input, select, textarea { border-radius: 8px !important; }
     <h5 class="card-title mb-3 fw-bold">
       {% if edit_mode %}Editar proveedor{% else %}Nuevo proveedor{% endif %}
     </h5>
-
     <form id="proveedorForm" method="post" autocomplete="off" novalidate>
       {% csrf_token %}
       {% if edit_mode %}
         <input type="hidden" name="edit_id" value="{{ edit_id }}">
       {% endif %}
-
       <!-- Tabs -->
       <ul class="nav nav-tabs mb-3" id="proveedorTab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -53,7 +51,6 @@ input, select, textarea { border-radius: 8px !important; }
               </select>
             </div>
           </div>
-
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label">Nombre de fantasía</label>
@@ -65,7 +62,6 @@ input, select, textarea { border-radius: 8px !important; }
             </div>
           </div>
         </div>
-
         <!-- DIRECCIÓN Y COMERCIAL -->
         <div class="tab-pane fade" id="direccion-comercial" role="tabpanel">
           <div class="row mb-3">
@@ -73,16 +69,15 @@ input, select, textarea { border-radius: 8px !important; }
               <label class="form-label">País *</label>
               <select class="form-select me-2 mb-2 flag-select" name="pais" style="max-width:200px;">
                 <option value="">Seleccione el país</option>
-                <option value="Chile" {% if request.GET.pais == "Chile" %}selected{% endif %}>🇨🇱 Chile</option>
-                <option value="Argentina" {% if request.GET.pais == "Argentina" %}selected{% endif %}>🇦🇷 Argentina</option>
-                <option value="Brasil" {% if request.GET.pais == "Brasil" %}selected{% endif %}>🇧🇷 Brasil</option>
-                <option value="Colombia" {% if request.GET.pais == "Colombia" %}selected{% endif %}>🇨🇴 Colombia</option>
-                <option value="México" {% if request.GET.pais == "México" %}selected{% endif %}>🇲🇽 México</option>
-                <option value="Perú" {% if request.GET.pais == "Perú" %}selected{% endif %}>🇵🇪 Perú</option>
-                <option value="España" {% if request.GET.pais == "España" %}selected{% endif %}>🇪🇸 España</option>
+                <option value="Chile" {% if request.GET.pais == "Chile" %}selected{% endif %}>Chile</option>
+                <option value="Argentina" {% if request.GET.pais == "Argentina" %}selected{% endif %}>Argentina</option>
+                <option value="Brasil" {% if request.GET.pais == "Brasil" %}selected{% endif %}>Brasil</option>
+                <option value="Colombia" {% if request.GET.pais == "Colombia" %}selected{% endif %}>Colombia</option>
+                <option value="México" {% if request.GET.pais == "México" %}selected{% endif %}>México</option>
+                <option value="Perú" {% if request.GET.pais == "Perú" %}selected{% endif %}>Perú</option>
+                <option value="España" {% if request.GET.pais == "España" %}selected{% endif %}>España</option>
               </select>
             </div>
-
             <div class="col-md-4">
               <label class="form-label">Condiciones de pago *</label>
               <select class="form-select" name="condiciones_pago" required>
@@ -94,7 +89,6 @@ input, select, textarea { border-radius: 8px !important; }
                 <option value="90 días" {% if form.condiciones_pago.value == "90 días" %}selected{% endif %}>90 días</option>
               </select>
             </div>
-
             <div class="col-md-4">
               <label class="form-label">Moneda *</label>
               <select class="form-select" name="moneda" required>
@@ -111,7 +105,6 @@ input, select, textarea { border-radius: 8px !important; }
             </div>
           </div>
         </div>
-
         <!-- RELACIÓN CON PRODUCTOS -->
         <div class="tab-pane fade" id="rel-productos" role="tabpanel">
           <div class="row mb-3">
@@ -126,7 +119,6 @@ input, select, textarea { border-radius: 8px !important; }
                 {% endfor %}
               </select>
             </div>
-
             <div class="col-md-4 d-flex align-items-center">
               <div class="form-check form-switch mt-4">
                 <input class="form-check-input" type="checkbox" role="switch" id="preferente_global" name="preferente_global"
@@ -151,7 +143,6 @@ input, select, textarea { border-radius: 8px !important; }
           </div>
         </div>
       </div>
-
       <div class="d-flex justify-content-end mt-4">
         <button type="submit" class="btn btn-primary me-2">{% if edit_mode %}Actualizar{% else %}Guardar{% endif %}</button>
         {% if edit_mode %}
@@ -194,6 +185,7 @@ input, select, textarea { border-radius: 8px !important; }
         <thead class="table-light text-center">
           <tr>
             <th>RUT/NIF</th><th>Razón social</th><th>Email</th><th>País</th><th>Estado</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -204,9 +196,17 @@ input, select, textarea { border-radius: 8px !important; }
           <td>{{ prov.email }}</td>
           <td>{{ prov.pais }}</td>
           <td>{{ prov.estado }}</td>
+          <td class="text-center">
+            <a href="?edit_id={{ prov.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-danger mb-1 delete-btn" data-id="{{ prov.pk }}" title="Eliminar">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="text-center text-muted">Sin proveedores registrados.</td></tr>
+        <tr><td colspan="6" class="text-center text-muted">Sin proveedores registrados.</td></tr>
         {% endfor %}
         </tbody>
       </table>
@@ -231,50 +231,37 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 {% endif %}
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
 document.addEventListener("DOMContentLoaded", function(){
+  // Validación form en tabs
   const form = document.getElementById("proveedorForm");
-  if(!form) return;
-
-  const rutField = document.getElementById("rutField");
-  const btnGuardar = form.querySelector('button.btn-primary[type="submit"]');
-  form.setAttribute("novalidate", "true");
-
-  // --- Formatear RUT y controlar 'K' + límite de caracteres ---
-  rutField.addEventListener("input", function() {
-    let value = this.value.replace(/[^0-9kK]/g, "").toUpperCase();
-    if (value.length > 9 && !value.includes("K")) value = value.slice(0, 9);
-    if (value.includes("K") && value.indexOf("K") !== value.length - 1) value = value.replace(/K/g, "");
-    let cuerpo = value, dv = "";
-    if (value.length > 1) { cuerpo = value.slice(0, -1); dv = value.slice(-1); }
-    cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    this.value = dv ? cuerpo + "-" + dv : cuerpo;
-  });
-
-  if(btnGuardar){
+  if(form){
+    const rutField = document.getElementById("rutField");
+    const btnGuardar = form.querySelector('button.btn-primary[type="submit"]');
+    rutField.addEventListener("input", function() {
+      let value = this.value.replace(/[^0-9kK]/g, "").toUpperCase();
+      if (value.length > 9 && !value.includes("K")) value = value.slice(0, 9);
+      if (value.includes("K") && value.indexOf("K") !== value.length - 1) value = value.replace(/K/g, "");
+      let cuerpo = value, dv = "";
+      if (value.length > 1) { cuerpo = value.slice(0, -1); dv = value.slice(-1); }
+      cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      this.value = dv ? cuerpo + "-" + dv : cuerpo;
+    });
     btnGuardar.addEventListener("click", function(e){
-      e.preventDefault(); // evitar recarga hasta pasar todas las validaciones
+      e.preventDefault();
       const rut = rutField.value.replace(/\./g, "").toUpperCase();
       const rutRegex = /^[0-9]{7,8}-[0-9K]$/;
-
       if(!rutRegex.test(rut)){
-        Swal.fire({ icon: "error", title: "RUT inválido", text: "Debe tener entre 8 y 9 dígitos antes del guion (formato: xx.xxx.xxx-x).", confirmButtonText: "Aceptar" });
+        Swal.fire({icon:"error",title:"RUT inválido",text:"Debe tener entre 8 y 9 dígitos antes del guion (formato: xx.xxx.xxx-x).",confirmButtonText:"Aceptar"});
         return;
       }
-
       const cuerpo = rut.split("-")[0];
       if(/^([0-9])\1+$/.test(cuerpo)){
-        Swal.fire({ icon: "warning", title: "RUT no válido", text: "No se permiten RUT con todos los dígitos iguales (ej: 11111111-1).", confirmButtonText: "Aceptar" });
+        Swal.fire({icon:"warning",title:"RUT no válido",text:"No se permiten RUT con todos los dígitos iguales (ej: 11111111-1).",confirmButtonText:"Aceptar"});
         return;
       }
-
       const requiredFields = {
-        "rut_nif": "RUT/NIF", "razon_social": "Razón social", "email": "Email",
-        "pais": "País", "condiciones_pago": "Condiciones de pago",
-        "moneda": "Moneda", "estado": "Estado", "producto": "Producto",
-        "costo_promedio": "Costo promedio", "lead_time_dias": "Lead time (días)"
+        "rut_nif":"RUT/NIF","razon_social":"Razón social","email":"Email","pais":"País","condiciones_pago":"Condiciones de pago","moneda":"Moneda","estado":"Estado","producto":"Producto","costo_promedio":"Costo promedio","lead_time_dias":"Lead time (días)"
       };
       const missing = [];
       Object.keys(requiredFields).forEach(f=>{
@@ -282,31 +269,36 @@ document.addEventListener("DOMContentLoaded", function(){
         if(!el || !el.value.trim()) missing.push(requiredFields[f]);
       });
       if(missing.length){
-        Swal.fire({
-          icon:"warning", title:"Campos obligatorios faltantes",
-          html:"<ul style='text-align:left'>" + missing.map(f=>"<li>"+f+"</li>").join("") + "</ul>",
-          confirmButtonText:"Aceptar"
-        });
+        Swal.fire({icon:"warning",title:"Campos obligatorios faltantes",html:"<ul style='text-align:left'>" + missing.map(f=>"<li>"+f+"</li>").join("") + "</ul>",confirmButtonText:"Aceptar"});
         return;
       }
-
       const email = form.querySelector('[name="email"]').value.trim();
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if(!emailRegex.test(email)){
-        Swal.fire({
-          icon:"error", title:"Correo inválido",
-          text:"Debe tener un formato válido (ejemplo@correo.com)",
-          confirmButtonText:"Aceptar"
-        });
+        Swal.fire({icon:"error",title:"Correo inválido",text:"Debe tener un formato válido (ejemplo@correo.com)",confirmButtonText:"Aceptar"});
         return;
       }
-
-      form.submit(); // solo si todo pasó
+      form.submit();
     });
   }
-
-  const tabTriggerList = [].slice.call(document.querySelectorAll('#proveedorTab button[data-bs-toggle="tab"]'));
-  tabTriggerList.forEach(tabEl => new bootstrap.Tab(tabEl));
+  // SweetAlert2 para eliminar
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const id = btn.getAttribute('data-id');
+      Swal.fire({
+        icon: 'warning',
+        title: '¿Seguro de eliminar?',
+        text: '¡Esta acción no se puede deshacer!',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((res) => {
+        if (res.isConfirmed) window.location.href = '?delete_id=' + id;
+      });
+    });
+  });
 });
 </script>
 {% endblock %}
