@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
       });
       return;
     }
-    const passRegex = /^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
+    const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
     if ((!editMode && !passRegex.test(password)) || (editMode && password && !passRegex.test(password))) {
       Swal.fire({
         icon: "error",
