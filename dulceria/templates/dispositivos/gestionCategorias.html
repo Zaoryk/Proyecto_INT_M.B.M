@@ -81,7 +81,8 @@ input, select, textarea { border-radius: 8px !important; }
     {% else %}
     <div class="alert alert-info">
       <i class="bi bi-info-circle me-2"></i>
-      <strong>Solo visualización</strong> - No tienes permisos para crear/editar categorías.
+      <strong>No tienes Los Permisos</strong> - Solo visualizar datos.
+
     </div>
     {% endif %}
   </div>
@@ -289,7 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ========== BOTÓN ELIMINAR ==========
   document.querySelectorAll(".btn-delete-categoria").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-id");
@@ -310,7 +310,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ========== AUTO-SUBMIT PAGINADOR ==========
   const pagSize = document.getElementById("pag_size");
   if (pagSize) {
     pagSize.addEventListener("change", function() {

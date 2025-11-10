@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Password toggle
   const toggleBtn = document.getElementById("togglePassword");
   const passwordField = document.getElementById("passwordField");
   if (toggleBtn && passwordField) {
@@ -42,7 +41,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Validación JS para formUsuario
   const form = document.getElementById("formUsuario");
   form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -96,7 +94,6 @@ document.addEventListener("DOMContentLoaded", function() {
     form.submit();
   });
 
-  // Sweetalert eliminar usuario
   document.querySelectorAll(".btn-delete-user").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-id");
@@ -116,6 +113,44 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     });
   });
+
+  // ========== ORDENAMIENTO DE TABLA ==========
+  const sortableHeaders = document.querySelectorAll('.sortable-header');
+  const orderByInput = document.getElementById('order_by');
+  const orderInput = document.getElementById('order');
+  const searchForm = document.getElementById('searchForm');
+
+  sortableHeaders.forEach(header => {
+    header.addEventListener('click', function() {
+      const field = this.getAttribute('data-field');
+      const currentOrderBy = orderByInput.value;
+      const currentOrder = orderInput.value;
+
+      if (currentOrderBy === field) {
+        orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        orderByInput.value = field;
+        orderInput.value = 'asc';
+      }
+
+      searchForm.submit();
+    });
+  });
+
+  if (orderByInput.value) {
+    const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
+    if (activeHeader) {
+      activeHeader.classList.add('active');
+    }
+  }
+
+  // ========== AUTO-SUBMIT PAGINADOR ==========
+  const pagSize = document.getElementById("pag_size");
+  if (pagSize) {
+    pagSize.addEventListener("change", function() {
+      searchForm.submit();
+    });
+  }
 });
 </script>
 <style>
@@ -134,10 +169,31 @@ input, select {
 .btn-acciones {
   min-width: 85px;
 }
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px !important;
+}
+.sortable-header:hover {
+  background-color: #e9ecef;
+}
+.sort-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  font-size: 0.75rem;
+}
+.sortable-header.active .sort-icon {
+  opacity: 1;
+}
 </style>
 
 <div class="row">
   <div class="col-md-4">
+    {% if can_add or edit_mode %}
     <div class="card mb-4 shadow-sm border-0">
       <div class="card-body">
         <h5 class="card-title mb-3 fw-bold">
@@ -242,13 +298,19 @@ input, select {
         </form>
       </div>
     </div>
+  
+    {% else %}
+    <div class="alert alert-info">
+      <i class="bi bi-info-circle me-2"></i>
+      <strong>No tienes Los Permisos</strong> - Solo ver datos y editar perfil.
+    </div>
+    {% endif %}
   </div>
-
   <div class="col-md-8">
     <div class="card shadow-sm border-0">
       <div class="card-body">
         <h5 class="card-title mb-3 fw-bold">Usuarios</h5>
-        <form method="get" class="d-flex flex-wrap mb-3 gap-2">
+        <form method="get" class="d-flex flex-wrap mb-3 gap-2" id="searchForm">
           <input type="text" class="form-control me-2 mb-2" name="buscar"
                  value="{{ request.GET.buscar|default_if_none:'' }}"
                  placeholder="Buscar por..." style="max-width:130px;">
@@ -273,6 +335,9 @@ input, select {
             <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
             <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
           </select>
+          <!-- Campos ocultos para mantener orden -->
+          <input type="hidden" name="order_by" id="order_by" value="{{ order_by|default:'username' }}">
+          <input type="hidden" name="order" id="order" value="{{ order|default:'asc' }}">
           <button type="submit" class="btn btn-outline-primary mb-2">
             <i class="bi bi-search"></i> Buscar
           </button>
@@ -285,14 +350,79 @@ input, select {
           <table class="table align-middle table-hover table-bordered rounded">
             <thead class="table-light">
               <tr class="align-middle text-center">
-                <th>Username</th>
-                <th>Email</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>MFA</th>
-                <th>Acciones</th>
+                <th class="sortable-header" data-field="username">
+                  Username
+                  <span class="sort-icon">
+                    {% if order_by == 'username' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="email">
+                  Email
+                  <span class="sort-icon">
+                    {% if order_by == 'email' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="nombre">
+                  Nombre
+                  <span class="sort-icon">
+                    {% if order_by == 'nombre' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="apellido">
+                  Apellido
+                  <span class="sort-icon">
+                    {% if order_by == 'apellido' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="rol">
+                  Rol
+                  <span class="sort-icon">
+                    {% if order_by == 'rol' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="estado">
+                  Estado
+                  <span class="sort-icon">
+                    {% if order_by == 'estado' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="sortable-header" data-field="mfa_habilitado">
+                  MFA
+                  <span class="sort-icon">
+                    {% if order_by == 'mfa_habilitado' %}
+                      {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% else %}
+                      ⇅
+                    {% endif %}
+                  </span>
+                </th>
+                {% if can_edit or can_delete %}
+                  <th>Acciones</th>
+                {% endif %}
               </tr>
             </thead>
             <tbody>
@@ -304,7 +434,7 @@ input, select {
                 <td>{{ usuario.apellido }}</td>
                 <td>{{ usuario.get_rol_display }}</td>
                 <td>
-                  <span class="badge {% if usuario.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %}">
+                  <span class="badge {% if usuario.estado == 'activo' %}bg-success{% elif usuario.estado == 'inactivo' %}bg-danger{% else %}bg-warning{% endif %}">
                     {{ usuario.get_estado_display }}
                   </span>
                 </td>
@@ -313,18 +443,24 @@ input, select {
                     {{ usuario.get_mfa_habilitado_display }}
                   </span>
                 </td>
+                {% if can_edit or can_delete %}
                 <td class="text-center btn-acciones">
-                  <a href="?edit_id={{ usuario.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
-                    <i class="bi bi-pencil-square"></i>
-                  </a>
-                  <button type="button" data-id="{{ usuario.pk }}" class="btn btn-sm btn-outline-danger mb-1 btn-delete-user" title="Eliminar">
-                    <i class="bi bi-trash"></i>
-                  </button>
+                  {% if can_edit or can_delete %}
+                    <a href="?edit_id={{ usuario.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+                      <i class="bi bi-pencil-square"></i>
+                    </a>
+                  {% endif %}
+                  {% if can_delete %}
+                    <button type="button" data-id="{{ usuario.pk }}" class="btn btn-sm btn-outline-danger mb-1 btn-delete-user" title="Eliminar">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  {% endif %}
                 </td>
+                {% endif %}
               </tr>
               {% empty %}
               <tr>
-                <td colspan="9" class="text-center text-muted">Sin usuarios registrados.</td>
+                <td colspan="8" class="text-center text-muted">Sin usuarios registrados.</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -336,7 +472,7 @@ input, select {
             {% if usuarios.has_previous %}
               <li class="page-item">
                 <a class="page-link"
-                   href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.rol %}rol={{ request.GET.rol }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ usuarios.previous_page_number }}">Anterior</a>
+                   href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.rol %}rol={{ request.GET.rol }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ usuarios.previous_page_number }}">Anterior</a>
               </li>
             {% else %}
               <li class="page-item disabled"><span class="page-link">Anterior</span></li>
@@ -344,13 +480,13 @@ input, select {
             {% for i in usuarios.paginator.page_range %}
               <li class="page-item {% if usuarios.number == i %}active{% endif %}">
                 <a class="page-link"
-                   href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.rol %}rol={{ request.GET.rol }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ i }}">{{ i }}</a>
+                   href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.rol %}rol={{ request.GET.rol }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ i }}">{{ i }}</a>
               </li>
             {% endfor %}
             {% if usuarios.has_next %}
               <li class="page-item">
                 <a class="page-link"
-                   href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.rol %}rol={{ request.GET.rol }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ usuarios.next_page_number }}">Siguiente</a>
+                   href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.rol %}rol={{ request.GET.rol }}&{% endif %}{% if request.GET.estado %}estado={{ request.GET.estado }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ usuarios.next_page_number }}">Siguiente</a>
               </li>
             {% else %}
               <li class="page-item disabled"><span class="page-link">Siguiente</span></li>

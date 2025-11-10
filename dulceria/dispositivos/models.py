@@ -119,9 +119,9 @@ class Producto(models.Model):
 
 class Proveedor(models.Model):
     ESTADOS = [
-        ("ACTIVO", "Activo"),
-        ("INACTIVO", "Inactivo"),
-        ("BLOQUEADO", "Bloqueado"),
+        ("activo", "Activo"),
+        ("inactivo", "Inactivo"),
+        ("bloqueado", "Bloqueado"),
     ]
 
     idProveedor = models.AutoField(primary_key=True)
@@ -132,7 +132,7 @@ class Proveedor(models.Model):
     pais = models.CharField(max_length=64, default="Chile")
     condiciones_pago = models.CharField(max_length=45, blank=True, null=True)
     moneda = models.CharField(max_length=8, default="CLP")
-    estado = models.CharField(max_length=15, choices=ESTADOS, default="ACTIVO")
+    estado = models.CharField(max_length=15, choices=ESTADOS, default="activo")
     usuario = models.ForeignKey(
         Usuario, models.DO_NOTHING, db_column="Usuario_idUsuario", blank=True, null=True
     )

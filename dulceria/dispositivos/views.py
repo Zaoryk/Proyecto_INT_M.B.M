@@ -80,17 +80,33 @@ def formularioUsuario(request):
     if estado_filter:
         usuarios = usuarios.filter(estado__iexact=estado_filter)
 
+    # ========== ORDENAMIENTO ==========
+    VALID_FIELDS = ['username', 'email', 'nombre', 'apellido', 'rol', 'estado', 'mfa_habilitado']
+    order = request.GET.get('order', request.session.get('usuarios_order', 'asc'))
+    order_by = request.GET.get('order_by', request.session.get('usuarios_order_by', 'username'))
+    
+    if order_by not in VALID_FIELDS:
+        order_by = 'username'
+    
+    request.session['usuarios_order'] = order
+    request.session['usuarios_order_by'] = order_by
+    
+    if order == 'desc':
+        usuarios = usuarios.order_by(f'-{order_by}')
+    else:
+        usuarios = usuarios.order_by(order_by)
+
     # PAGINADOR 5/15/30/100
     pag_size = request.GET.get('pag_size') or request.session.get('usuarios_pag_size', '15')
     if pag_size not in ['5', '15', '30', '100']:
         pag_size = '15'
     request.session['usuarios_pag_size'] = pag_size
 
-    paginator = Paginator(usuarios.order_by('username'), int(pag_size))
+    paginator = Paginator(usuarios, int(pag_size))
     page_number = request.GET.get('page')
     usuarios_page = paginator.get_page(page_number)
 
-    # Exportar a Excel (todos pueden exportar si tienen permiso de view)
+    # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -226,7 +242,9 @@ def formularioUsuario(request):
         "can_add": is_admin and user_can_add_module(request.user, 'usuarios'),
         "can_edit": user_can_change_module(request.user, 'usuarios'),
         "can_delete": is_admin and user_can_delete_module(request.user, 'usuarios'),
-        "pag_size": pag_size, # <-- NECESARIO PARA EL TEMPLATE!!!
+        "pag_size": pag_size,
+        "order": order,
+        "order_by": order_by,
     })
 
 
@@ -245,14 +263,20 @@ def gestionProductos(request):
     # --- ELIMINAR ---
     delete_id = request.GET.get('delete_id')
     if delete_id and request.method == 'GET':
+        if not user_can_delete_module(request.user, 'productos'):
+            messages.error(request, "No tienes permiso para eliminar productos.")
+            return redirect('Productos')
         producto = get_object_or_404(Producto, pk=delete_id)
         producto.delete()
         messages.success(request, "Producto eliminado correctamente.")
-        return redirect('Productos')  # tu url name
+        return redirect('Productos')
 
     # --- EDITAR (Cargar producto a form) ---
     edit_id = request.GET.get('edit_id')
     if edit_id:
+        if not user_can_change_module(request.user, 'productos'):
+            messages.error(request, "No tienes permiso para editar productos.")
+            return redirect('Productos')
         producto_obj = get_object_or_404(Producto, pk=edit_id)
         form = ProductoForm(instance=producto_obj)
         edit_mode = True
@@ -264,17 +288,22 @@ def gestionProductos(request):
     # --- CREAR/ACTUALIZAR (POST) ---
     if request.method == "POST":
         if 'edit_id' in request.POST:
+            if not user_can_change_module(request.user, 'productos'):
+                messages.error(request, "No tienes permiso para editar productos.")
+                return redirect('Productos')
             instance = get_object_or_404(Producto, pk=request.POST['edit_id'])
             form = ProductoForm(request.POST, instance=instance)
             edit_mode = True
         else:
+            if not user_can_add_module(request.user, 'productos'):
+                messages.error(request, "No tienes permiso para crear productos.")
+                return redirect('Productos')
             form = ProductoForm(request.POST)
             edit_mode = False
         if form.is_valid():
             form.save()
             messages.success(request, "Producto guardado correctamente.")
             return redirect('Productos')
-        # Si error, renderizas abajo (form.errors)
 
     search = request.GET.get('buscar', '')
     productos = Producto.objects.all()
@@ -285,7 +314,7 @@ def gestionProductos(request):
             Q(nombre__icontains=search) | Q(sku__icontains=search) | Q(categoria__icontains=search)
         )
 
-    # Exportar a Excel (igual que tienes)
+    # Exportar a Excel
     if "export_excel" in request.GET:
         import openpyxl
         workbook = openpyxl.Workbook()
@@ -306,52 +335,43 @@ def gestionProductos(request):
         workbook.save(response)
         return response
 
-    # Ordenamiento seguro por campo existente
-    VALID_FIELDS = [
-        'sku', 'nombre', 'categoria', 'uom_compra', 'uom_venta',
-        'factor_conversion', 'impuesto_iva', 'stock_minimo', 'perishable', 'lote'
-    ]
-    order = request.GET.get('order', request.session.get('order', 'asc'))
-    order_by = request.GET.get('order_by', request.session.get('order_by', 'nombre'))
+    # ========== ORDENAMIENTO ==========
+    VALID_FIELDS = ['sku', 'nombre', 'categoria', 'uom_compra', 'uom_venta',
+                    'factor_conversion', 'impuesto_iva', 'stock_minimo', 'perishable', 'lote']
+    order = request.GET.get('order', request.session.get('productos_order', 'asc'))
+    order_by = request.GET.get('order_by', request.session.get('productos_order_by', 'nombre'))
+    
     if order_by not in VALID_FIELDS:
         order_by = 'nombre'
-    request.session['order'] = order
-    request.session['order_by'] = order_by
+    
+    request.session['productos_order'] = order
+    request.session['productos_order_by'] = order_by
+    
     if order == 'desc':
         productos = productos.order_by(f'-{order_by}')
     else:
         productos = productos.order_by(order_by)
 
-    pag_size = request.GET.get('pag_size') or request.session.get('pag_size', '10')
-    request.session['pag_size'] = pag_size
+    # Paginador
+    pag_size = request.GET.get('pag_size') or request.session.get('productos_pag_size', '15')
+    if pag_size not in ['5', '15', '30', '100']:
+        pag_size = '15'
+    request.session['productos_pag_size'] = pag_size
+    
     paginator = Paginator(productos, int(pag_size))
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
-    headers = [
-        ("sku", "SKU"),
-        ("nombre", "Nombre"),
-        ("categoria", "Categoría"),
-        ("uom_compra", "UOM Compra"),
-        ("uom_venta", "UOM Venta"),
-        ("factor_conversion", "Factor Conv"),
-        ("impuesto_iva", "IVA"),
-        ("stock_minimo", "Stock Mín"),
-        ("perishable", "Perecible?"),
-        ("lote", "Lote"),
-    ]
 
     can_add = user_can_add_module(request.user, 'productos')
     can_change = user_can_change_module(request.user, 'productos')
     can_delete = user_can_delete_module(request.user, 'productos')
 
-    # ------------ CATEGORÍAS DINÁMICAS ------------
+    # Categorías dinámicas
     categorias_db = Producto.objects.values_list('categoria', flat=True).distinct()
     categorias_validas = sorted(set([c.strip() for c in categorias_db if c and c.strip()]))
     categorias = [(c, c) for c in categorias_validas]
     categorias.append(("Otras", "Otra..."))
 
-    # NUEVO: Retornar form y estado de edición
     return render(request, "dispositivos/gestionProductos.html", {
         "visitas": visitas,
         "productos": page_obj,
@@ -363,11 +383,10 @@ def gestionProductos(request):
         "order": order,
         "order_by": order_by,
         "pag_size": pag_size,
-        "headers": headers,
         "categorias": categorias,
-        "form": form,                 # <-- Esto es clave para validaciones y el form
-        "edit_mode": edit_mode,       # <-- Indica si tocas editar
-        "edit_id": edit_id,           # <-- Para que el form tenga el id al editar
+        "form": form,
+        "edit_mode": edit_mode,
+        "edit_id": edit_id,
     })
 
 # -------------------------------------------------------------
@@ -393,21 +412,33 @@ def gestionProveedores(request):
     if pais:
         proveedores = proveedores.filter(pais__iexact=pais)
 
+    # ========== ORDENAMIENTO ==========
     VALID_FIELDS = ['rut_nif', 'razon_social', 'estado', 'email', 'pais']
-    order = request.GET.get('order', request.session.get('order', 'asc'))
-    order_by = request.GET.get('order_by', request.session.get('order_by', 'razon_social'))
+    order = request.GET.get('order', request.session.get('proveedores_order', 'asc'))
+    order_by = request.GET.get('order_by', request.session.get('proveedores_order_by', 'razon_social'))
+    
     if order_by not in VALID_FIELDS:
         order_by = 'razon_social'
-    request.session['order'] = order
-    request.session['order_by'] = order_by
-    proveedores = proveedores.order_by(f'-{order_by}' if order == 'desc' else order_by)
+    
+    request.session['proveedores_order'] = order
+    request.session['proveedores_order_by'] = order_by
+    
+    if order == 'desc':
+        proveedores = proveedores.order_by(f'-{order_by}')
+    else:
+        proveedores = proveedores.order_by(order_by)
 
-    pag_size = request.GET.get('pag_size') or request.session.get('pag_size', '10')
-    request.session['pag_size'] = pag_size
+    # Paginador
+    pag_size = request.GET.get('pag_size') or request.session.get('proveedores_pag_size', '15')
+    if pag_size not in ['5', '15', '30', '100']:
+        pag_size = '15'
+    request.session['proveedores_pag_size'] = pag_size
+    
     paginator = Paginator(proveedores, int(pag_size))
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -422,14 +453,6 @@ def gestionProveedores(request):
         response['Content-Disposition'] = 'attachment; filename="proveedores.xlsx"'
         workbook.save(response)
         return response
-
-    headers = [
-        ("rut_nif", "RUT/NIF"),
-        ("razon_social", "Razón Social"),
-        ("estado", "Estado"),
-        ("email", "Email"),
-        ("pais", "País"),
-    ]
 
     can_add = user_can_add_module(request.user, 'proveedores')
     can_change = user_can_change_module(request.user, 'proveedores')
@@ -507,7 +530,6 @@ def gestionProveedores(request):
         "order": order,
         "order_by": order_by,
         "pag_size": pag_size,
-        "headers": headers,
     })
 
 # -------------------------------------------------------------
@@ -529,13 +551,30 @@ def moduloTransaccional(request):
     if tipo:
         movimientos = movimientos.filter(tipo_movimiento__iexact=tipo)
 
+    # ========== ORDENAMIENTO ==========
+    VALID_FIELDS = ['fecha_movimiento', 'tipo_movimiento', 'producto__sku', 
+                    'producto__nombre', 'proveedor__razon_social', 'cantidad']
+    order = request.GET.get('order', request.session.get('inventario_order', 'desc'))
+    order_by = request.GET.get('order_by', request.session.get('inventario_order_by', 'fecha_movimiento'))
+    
+    if order_by not in VALID_FIELDS:
+        order_by = 'fecha_movimiento'
+    
+    request.session['inventario_order'] = order
+    request.session['inventario_order_by'] = order_by
+    
+    if order == 'desc':
+        movimientos = movimientos.order_by(f'-{order_by}')
+    else:
+        movimientos = movimientos.order_by(order_by)
+
     # --- Paginador robusto ---
-    pag_size = request.GET.get('pag_size') or request.session.get('pag_size', '15')
+    pag_size = request.GET.get('pag_size') or request.session.get('inventario_pag_size', '15')
     if pag_size not in ['5', '15', '30', '100']:
         pag_size = '15'
-    request.session['pag_size'] = pag_size
+    request.session['inventario_pag_size'] = pag_size
 
-    paginator = Paginator(movimientos.order_by('-fecha_movimiento'), int(pag_size))
+    paginator = Paginator(movimientos, int(pag_size))
     page_number = request.GET.get('page')
     movimientos_page = paginator.get_page(page_number)
 
@@ -588,8 +627,8 @@ def moduloTransaccional(request):
         edit_mode = bool(edit_id)
         if form.is_valid():
             form.save()
-            messages.success(request, "Proveedor guardado correctamente.")
-            return redirect("Proveedores")
+            messages.success(request, "Movimiento guardado correctamente.")
+            return redirect("Transaccional")
 
     # ELIMINAR
     elif request.method == "GET" and "delete_id" in request.GET:
@@ -611,8 +650,8 @@ def moduloTransaccional(request):
     return render(request, "dispositivos/moduloTransaccional.html", {
         "visitas": visitas,
         "form": form,
-        "movimientos": movimientos_page,      # <- Aquí está el objeto paginado, OBLIGATORIO
-        "pag_size": pag_size,                 # <- Para que el selector funcione y se conserve
+        "movimientos": movimientos_page,
+        "pag_size": pag_size,
         "movimientos_hoy": movimientos_hoy,
         "productos_count": Producto.objects.count(),
         "edit_mode": edit_mode,
@@ -621,7 +660,10 @@ def moduloTransaccional(request):
         "can_edit": can_change,
         "can_delete": can_delete,
         "role_name": role_name,
+        "order": order,
+        "order_by": order_by,
     })
+    
 # PERFIL :3
 @login_required
 def perfilusuario(request):

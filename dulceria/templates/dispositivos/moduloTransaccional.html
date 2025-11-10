@@ -3,6 +3,26 @@
 <style>
 .card { border-radius: 16px !important; }
 input, select { border-radius: 8px !important; }
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px !important;
+}
+.sortable-header:hover {
+  background-color: #e9ecef;
+}
+.sort-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  font-size: 0.75rem;
+}
+.sortable-header.active .sort-icon {
+  opacity: 1;
+}
 </style>
 
 <div class="row mb-4">
@@ -18,7 +38,7 @@ input, select { border-radius: 8px !important; }
     <div class="card text-center shadow-sm">
       <div class="card-body">
         <h6 class="card-title">Total movimientos</h6>
-        <span class="h5">{{ movimientos|length }}</span>
+        <span class="h5">{{ movimientos.paginator.count }}</span>
       </div>
     </div>
   </div>
@@ -105,15 +125,12 @@ input, select { border-radius: 8px !important; }
 <div class="alert alert-info mb-4">
   <i class="bi bi-info-circle me-2"></i>
   <strong>No tienes Los Permisos</strong> - Solo visualizar datos.
-  {% if role_name == 'analista_financiero' %}
-    Puedes exportar los datos a Excel para análisis.
-  {% endif %}
 </div>
 {% endif %}
 
 <div class="card shadow-sm border-0">
   <div class="card-body">
-    <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="paginatorForm">
+    <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="searchForm">
       <input class="form-control me-2" type="text" name="buscar"
              value="{{ request.GET.buscar|default_if_none:'' }}" placeholder="Buscar por SKU o nombre..." style="max-width:175px;">
       <select class="form-select me-2" name="tipo" style="max-width:130px;">
@@ -128,6 +145,9 @@ input, select { border-radius: 8px !important; }
         <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
         <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
       </select>
+      <!-- Campos ocultos para mantener orden -->
+      <input type="hidden" name="order_by" id="order_by" value="{{ order_by|default:'fecha_movimiento' }}">
+      <input type="hidden" name="order" id="order" value="{{ order|default:'desc' }}">
       <button type="submit" class="btn btn-outline-primary me-2">
         <i class="bi bi-search"></i> Buscar
       </button>
@@ -140,12 +160,66 @@ input, select { border-radius: 8px !important; }
       <table class="table table-bordered table-hover table-sm align-middle rounded">
         <thead class="table-light">
           <tr class="text-center">
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>SKU</th>
-            <th>Producto</th>
-            <th>Proveedor</th>
-            <th>Cantidad</th>
+            <th class="sortable-header" data-field="fecha_movimiento">
+              Fecha
+              <span class="sort-icon">
+                {% if order_by == 'fecha_movimiento' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="tipo_movimiento">
+              Tipo
+              <span class="sort-icon">
+                {% if order_by == 'tipo_movimiento' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="producto__sku">
+              SKU
+              <span class="sort-icon">
+                {% if order_by == 'producto__sku' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="producto__nombre">
+              Producto
+              <span class="sort-icon">
+                {% if order_by == 'producto__nombre' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="proveedor__razon_social">
+              Proveedor
+              <span class="sort-icon">
+                {% if order_by == 'proveedor__razon_social' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="cantidad">
+              Cantidad
+              <span class="sort-icon">
+                {% if order_by == 'cantidad' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
             {% if can_edit or can_delete %}
               <th>Acciones</th>
             {% endif %}
@@ -193,17 +267,17 @@ input, select { border-radius: 8px !important; }
     <nav>
       <ul class="pagination justify-content-end">
         {% if movimientos.has_previous %}
-          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.tipo %}tipo={{ request.GET.tipo }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ movimientos.previous_page_number }}">Anterior</a></li>
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.tipo %}tipo={{ request.GET.tipo }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ movimientos.previous_page_number }}">Anterior</a></li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">Anterior</span></li>
         {% endif %}
         {% for i in movimientos.paginator.page_range %}
           <li class="page-item {% if movimientos.number == i %}active{% endif %}">
-            <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.tipo %}tipo={{ request.GET.tipo }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ i }}">{{ i }}</a>
+            <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.tipo %}tipo={{ request.GET.tipo }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ i }}">{{ i }}</a>
           </li>
         {% endfor %}
         {% if movimientos.has_next %}
-          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.tipo %}tipo={{ request.GET.tipo }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ movimientos.next_page_number }}">Siguiente</a></li>
+          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}{% if request.GET.tipo %}tipo={{ request.GET.tipo }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ movimientos.next_page_number }}">Siguiente</a></li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
         {% endif %}
@@ -216,6 +290,37 @@ input, select { border-radius: 8px !important; }
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  // ========== ORDENAMIENTO DE TABLA ==========
+  const sortableHeaders = document.querySelectorAll('.sortable-header');
+  const orderByInput = document.getElementById('order_by');
+  const orderInput = document.getElementById('order');
+  const searchForm = document.getElementById('searchForm');
+
+  sortableHeaders.forEach(header => {
+    header.addEventListener('click', function() {
+      const field = this.getAttribute('data-field');
+      const currentOrderBy = orderByInput.value;
+      const currentOrder = orderInput.value;
+
+      if (currentOrderBy === field) {
+        orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        orderByInput.value = field;
+        orderInput.value = 'asc';
+      }
+
+      searchForm.submit();
+    });
+  });
+
+  if (orderByInput.value) {
+    const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
+    if (activeHeader) {
+      activeHeader.classList.add('active');
+    }
+  }
+
+  // Validación formulario
   document.getElementById("movimientoForm").addEventListener("submit", function(e) {
     let errores = [];
     let fecha = document.getElementById("fecha_movimiento").value;
@@ -324,7 +429,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const pagSize = document.getElementById("pag_size");
   if(pagSize){
     pagSize.addEventListener("change", function(){
-      document.getElementById("paginatorForm").submit();
+      searchForm.submit();
     });
   }
 });

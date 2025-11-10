@@ -5,6 +5,26 @@
 input, select, textarea { border-radius: 8px !important; }
 .table th, .table td { vertical-align: middle; }
 .table-hover tbody tr:hover { background-color: #f8f9fa; }
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px !important;
+}
+.sortable-header:hover {
+  background-color: #e9ecef;
+}
+.sort-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  font-size: 0.75rem;
+}
+.sortable-header.active .sort-icon {
+  opacity: 1;
+}
 </style>
 
 {% if can_add or edit_mode %}
@@ -30,7 +50,6 @@ input, select, textarea { border-radius: 8px !important; }
         </li>
       </ul>
       <div class="tab-content" id="proveedorTabContent">
-        <!-- IDENTIFICACIÓN -->
         <div class="tab-pane fade show active" id="id-contacto" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-3">
@@ -61,20 +80,19 @@ input, select, textarea { border-radius: 8px !important; }
             </div>
           </div>
         </div>
-        <!-- DIRECCIÓN Y COMERCIAL -->
         <div class="tab-pane fade" id="direccion-comercial" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-4">
               <label class="form-label">País *</label>
               <select class="form-select me-2 mb-2 flag-select" name="pais" style="max-width:200px;">
                 <option value="">Seleccione el país</option>
-                <option value="Chile" {% if request.GET.pais == "Chile" %}selected{% endif %}>🇨🇱 Chile</option>
-                <option value="Argentina" {% if request.GET.pais == "Argentina" %}selected{% endif %}>🇦🇷 Argentina</option>
-                <option value="Brasil" {% if request.GET.pais == "Brasil" %}selected{% endif %}>🇧🇷 Brasil</option>
-                <option value="Colombia" {% if request.GET.pais == "Colombia" %}selected{% endif %}>🇨🇴 Colombia</option>
-                <option value="México" {% if request.GET.pais == "México" %}selected{% endif %}>🇲🇽 México</option>
-                <option value="Perú" {% if request.GET.pais == "Perú" %}selected{% endif %}>🇵🇪 Perú</option>
-                <option value="España" {% if request.GET.pais == "España" %}selected{% endif %}>🇪🇸 España</option>
+                <option value="Chile" {% if form.pais.value == "Chile" %}selected{% endif %}>🇨🇱 Chile</option>
+                <option value="Argentina" {% if form.pais.value == "Argentina" %}selected{% endif %}>🇦🇷 Argentina</option>
+                <option value="Brasil" {% if form.pais.value == "Brasil" %}selected{% endif %}>🇧🇷 Brasil</option>
+                <option value="Colombia" {% if form.pais.value == "Colombia" %}selected{% endif %}>🇨🇴 Colombia</option>
+                <option value="México" {% if form.pais.value == "México" %}selected{% endif %}>🇲🇽 México</option>
+                <option value="Perú" {% if form.pais.value == "Perú" %}selected{% endif %}>🇵🇪 Perú</option>
+                <option value="España" {% if form.pais.value == "España" %}selected{% endif %}>🇪🇸 España</option>
               </select>
             </div>
             <div class="col-md-4">
@@ -104,7 +122,6 @@ input, select, textarea { border-radius: 8px !important; }
             </div>
           </div>
         </div>
-        <!-- RELACIÓN CON PRODUCTOS -->
         <div class="tab-pane fade" id="rel-productos" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-4">
@@ -153,12 +170,17 @@ input, select, textarea { border-radius: 8px !important; }
     </form>
   </div>
 </div>
+{% else %}
+<div class="alert alert-info mb-4">
+  <i class="bi bi-info-circle me-2"></i>
+  <strong>No tienes Los Permisos</strong> - Solo visualizar datos.
+</div>
 {% endif %}
 
 <div class="card shadow-sm border-0 mt-4">
   <div class="card-body">
     <h5 class="card-title fw-bold">Proveedores</h5>
-    <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="paginatorForm">
+    <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="searchForm">
       <input class="form-control me-2" type="text" name="buscar"
              placeholder="Buscar por RUT/NIF o razón social..." value="{{ buscar|default_if_none:'' }}" style="max-width:200px;">
       <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
@@ -167,6 +189,9 @@ input, select, textarea { border-radius: 8px !important; }
         <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
         <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
       </select>
+      <!-- Campos ocultos para mantener orden -->
+      <input type="hidden" name="order_by" id="order_by" value="{{ order_by|default:'razon_social' }}">
+      <input type="hidden" name="order" id="order" value="{{ order|default:'asc' }}">
       <button type="submit" class="btn btn-outline-primary me-2">
         <i class="bi bi-search"></i> Buscar
       </button>
@@ -180,12 +205,59 @@ input, select, textarea { border-radius: 8px !important; }
       <table class="table table-bordered table-hover rounded">
         <thead class="table-light text-center">
           <tr>
-            <th>RUT/NIF</th>
-            <th>Razón social</th>
-            <th>Email</th>
-            <th>País</th>
-            <th>Estado</th>
-            <th>Acciones</th>
+            <th class="sortable-header" data-field="rut_nif">
+              RUT/NIF
+              <span class="sort-icon">
+                {% if order_by == 'rut_nif' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="razon_social">
+              Razón social
+              <span class="sort-icon">
+                {% if order_by == 'razon_social' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="email">
+              Email
+              <span class="sort-icon">
+                {% if order_by == 'email' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="pais">
+              País
+              <span class="sort-icon">
+                {% if order_by == 'pais' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="estado">
+              Estado
+              <span class="sort-icon">
+                {% if order_by == 'estado' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            {% if can_edit or can_delete %}
+              <th>Acciones</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -195,7 +267,12 @@ input, select, textarea { border-radius: 8px !important; }
           <td>{{ prov.razon_social }}</td>
           <td>{{ prov.email }}</td>
           <td>{{ prov.pais }}</td>
-          <td>{{ prov.estado }}</td>
+          <td>
+            <span class="badge {% if prov.estado == 'activo' %}bg-success{% elif prov.estado == 'inactivo' %}bg-danger{% else %}bg-warning{% endif %}">
+              {{ prov.get_estado_display }}
+            </span>
+          </td>
+          {% if can_edit or can_delete %}
           <td class="text-center">
             <a href="?edit_id={{ prov.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
               <i class="bi bi-pencil-square"></i>
@@ -204,6 +281,7 @@ input, select, textarea { border-radius: 8px !important; }
               <i class="bi bi-trash"></i>
             </button>
           </td>
+          {% endif %}
         </tr>
         {% empty %}
         <tr><td colspan="6" class="text-center text-muted">Sin proveedores registrados.</td></tr>
@@ -215,17 +293,17 @@ input, select, textarea { border-radius: 8px !important; }
     <nav>
       <ul class="pagination justify-content-end">
         {% if proveedores.has_previous %}
-          <li class="page-item"><a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ proveedores.previous_page_number }}">Anterior</a></li>
+          <li class="page-item"><a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ proveedores.previous_page_number }}">Anterior</a></li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">Anterior</span></li>
         {% endif %}
         {% for i in proveedores.paginator.page_range %}
           <li class="page-item {% if proveedores.number == i %}active{% endif %}">
-            <a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ i }}">{{ i }}</a>
+            <a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ i }}">{{ i }}</a>
           </li>
         {% endfor %}
         {% if proveedores.has_next %}
-          <li class="page-item"><a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}page={{ proveedores.next_page_number }}">Siguiente</a></li>
+          <li class="page-item"><a class="page-link" href="?{% if buscar %}buscar={{ buscar }}&{% endif %}{% if pag_size %}pag_size={{ pag_size }}&{% endif %}order_by={{ order_by }}&order={{ order }}&page={{ proveedores.next_page_number }}">Siguiente</a></li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
         {% endif %}
@@ -253,6 +331,36 @@ document.addEventListener("DOMContentLoaded", function() {
 {% endif %}
 <script>
 document.addEventListener("DOMContentLoaded", function(){
+  // ========== ORDENAMIENTO DE TABLA ==========
+  const sortableHeaders = document.querySelectorAll('.sortable-header');
+  const orderByInput = document.getElementById('order_by');
+  const orderInput = document.getElementById('order');
+  const searchForm = document.getElementById('searchForm');
+
+  sortableHeaders.forEach(header => {
+    header.addEventListener('click', function() {
+      const field = this.getAttribute('data-field');
+      const currentOrderBy = orderByInput.value;
+      const currentOrder = orderInput.value;
+
+      if (currentOrderBy === field) {
+        orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        orderByInput.value = field;
+        orderInput.value = 'asc';
+      }
+
+      searchForm.submit();
+    });
+  });
+
+  if (orderByInput.value) {
+    const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
+    if (activeHeader) {
+      activeHeader.classList.add('active');
+    }
+  }
+
   // SweetAlert2 eliminar proveedor
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -273,6 +381,7 @@ document.addEventListener("DOMContentLoaded", function(){
       });
     });
   });
+
   // Validaciones form proveedor
   const form = document.getElementById("proveedorForm");
   if(form){
@@ -335,11 +444,12 @@ document.addEventListener("DOMContentLoaded", function(){
   }
   const tabTriggerList = [].slice.call(document.querySelectorAll('#proveedorTab button[data-bs-toggle="tab"]'));
   tabTriggerList.forEach(tabEl => new bootstrap.Tab(tabEl));
+  
   // Paginador autosubmit
   const pagSize = document.getElementById("pag_size");
   if(pagSize){
     pagSize.addEventListener("change", function(){
-      document.getElementById("paginatorForm").submit();
+      searchForm.submit();
     });
   }
 });

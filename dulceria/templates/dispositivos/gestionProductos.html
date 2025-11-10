@@ -4,6 +4,26 @@
 .card { border-radius: 16px !important; }
 input, select { border-radius: 8px !important; }
 .table th, .table td { vertical-align: middle; }
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px !important;
+}
+.sortable-header:hover {
+  background-color: #e9ecef;
+}
+.sort-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  font-size: 0.75rem;
+}
+.sortable-header.active .sort-icon {
+  opacity: 1;
+}
 </style>
 
 {% if can_add or edit_mode %}
@@ -152,16 +172,13 @@ input, select { border-radius: 8px !important; }
 <div class="alert alert-info mb-4">
   <i class="bi bi-info-circle me-2"></i>
   <strong>No tienes Los Permisos</strong> - Solo visualizar datos.
-  {% if role_name == 'analista_financiero' %}
-    Puedes exportar los datos a Excel para análisis.
-  {% endif %}
 </div>
 {% endif %}
 
 <div class="card shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold">Productos</h5>
-    <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="paginatorForm">
+    <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="searchForm">
       <input class="form-control me-2" type="text" name="buscar"
              placeholder="Buscar por SKU o nombre..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:170px;">
       <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
@@ -170,6 +187,9 @@ input, select { border-radius: 8px !important; }
         <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
         <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
       </select>
+      <!-- Campos ocultos para mantener orden -->
+      <input type="hidden" name="order_by" id="order_by" value="{{ order_by|default:'nombre' }}">
+      <input type="hidden" name="order" id="order" value="{{ order|default:'asc' }}">
       <button type="submit" class="btn btn-outline-primary me-2">
         <i class="bi bi-search"></i> Buscar
       </button>
@@ -182,11 +202,56 @@ input, select { border-radius: 8px !important; }
       <table class="table table-bordered table-hover rounded">
         <thead class="table-light text-center">
           <tr>
-            <th>SKU</th>
-            <th>Nombre</th>
-            <th>Categoría</th>
-            <th>Stock mínimo</th>
-            <th>IVA (%)</th>
+            <th class="sortable-header" data-field="sku">
+              SKU
+              <span class="sort-icon">
+                {% if order_by == 'sku' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="nombre">
+              Nombre
+              <span class="sort-icon">
+                {% if order_by == 'nombre' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="categoria">
+              Categoría
+              <span class="sort-icon">
+                {% if order_by == 'categoria' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="stock_minimo">
+              Stock mínimo
+              <span class="sort-icon">
+                {% if order_by == 'stock_minimo' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="impuesto_iva">
+              IVA (%)
+              <span class="sort-icon">
+                {% if order_by == 'impuesto_iva' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}
+                  ⇅
+                {% endif %}
+              </span>
+            </th>
             {% if can_edit or can_delete %}
               <th>Acciones</th>
             {% endif %}
@@ -267,6 +332,36 @@ document.addEventListener("DOMContentLoaded", function() {
 {% endif %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  // ========== ORDENAMIENTO DE TABLA ==========
+  const sortableHeaders = document.querySelectorAll('.sortable-header');
+  const orderByInput = document.getElementById('order_by');
+  const orderInput = document.getElementById('order');
+  const searchForm = document.getElementById('searchForm');
+
+  sortableHeaders.forEach(header => {
+    header.addEventListener('click', function() {
+      const field = this.getAttribute('data-field');
+      const currentOrderBy = orderByInput.value;
+      const currentOrder = orderInput.value;
+
+      if (currentOrderBy === field) {
+        orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        orderByInput.value = field;
+        orderInput.value = 'asc';
+      }
+
+      searchForm.submit();
+    });
+  });
+
+  if (orderByInput.value) {
+    const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
+    if (activeHeader) {
+      activeHeader.classList.add('active');
+    }
+  }
+
   // Categoría nueva dinámica
   const selectCat = document.getElementById("categoriaSelect");
   const inputDiv = document.getElementById("input-categoria-nueva");
@@ -308,7 +403,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         return false;
       }
-      // Checkboxes backend seguro
       let perishable = document.getElementById("perishableSwitch");
       let controlLote = document.getElementById("controlLoteSwitch");
       if(perishable && !perishable.checked){
@@ -334,7 +428,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const pagSize = document.getElementById("pag_size");
   if(pagSize){
     pagSize.addEventListener("change", function(){
-      document.getElementById("paginatorForm").submit();
+      searchForm.submit();
     });
   }
   // SweetAlert2 eliminar confirmación
@@ -356,7 +450,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // SweetAlert para todos los errores del form
   {% if form.errors %}
     let erroresHTML = "<ul style='text-align:left; margin:0; padding-left:20px;'>";
     {% for field in form %}
