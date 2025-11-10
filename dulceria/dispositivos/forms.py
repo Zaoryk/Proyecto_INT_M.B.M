@@ -47,11 +47,11 @@ class ProductoForm(forms.ModelForm):
 
     class Meta:
         model = Producto
-        fields = '__all__'
+        fields = '__all__'  # Incluye todos los campos actuales y nuevos
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Poblar dinámicamente las categorías desde la BD
+        # Categorías dinámicas
         categorias_db = Producto.objects.values_list('categoria', flat=True).distinct()
         categorias_validas = sorted(set([c.strip() for c in categorias_db if c and c.strip()]))
         choices = [('', 'Seleccione...')] + [(c, c) for c in categorias_validas] + [("Otras", "Otra...")]
@@ -67,6 +67,15 @@ class ProductoForm(forms.ModelForm):
         self.fields['uom_compra'].required = False
         self.fields['uom_venta'].required = False
         self.fields['stock_minimo'].required = False
+
+        for fname in [
+            'ean_upc', 'marca', 'modelo', 'descripcion',
+            'stock_maximo', 'punto_reorden',
+            'costo_estandar', 'costo_promedio', 'precio_venta',
+            'imagen_url', 'ficha_tecnica_url'
+        ]:
+            if fname in self.fields:
+                self.fields[fname].required = False
 
     def clean(self):
         cleaned = super().clean()
@@ -350,19 +359,24 @@ class CategoriaForm(forms.ModelForm):
         qs = Categoria.objects.filter(nombre__iexact=nombre)
         if self.instance and self.instance.pk:
             qs = qs.exclude(pk=self.instance.pk)
-        
         if qs.exists():
-            raise ValidationError(f"Ya existe una categoría con el nombre exacto '{nombre}'.")
+            raise ValidationError(f"Ya existe una categoría con el nombre '{nombre}'.")
         
         return nombre
     
     def clean_descripcion(self):
         descripcion = self.cleaned_data.get('descripcion', '').strip()
         
-        if descripcion and len(descripcion) > 255:
+        if not descripcion:
+            raise ValidationError("La descripción es obligatoria.")
+        if len(descripcion) < 10:
+            raise ValidationError("La descripción debe tener al menos 10 caracteres.")
+        if len(descripcion) > 255:
             raise ValidationError("La descripción no puede superar 255 caracteres.")
+        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$', descripcion):
+            raise ValidationError("La descripcion solo puede contener letras, números, espacios y guiones.")
         
-        return descripcion if descripcion else None
+        return descripcion
 
 
 class BodegaForm(forms.ModelForm):
