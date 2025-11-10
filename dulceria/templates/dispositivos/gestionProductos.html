@@ -53,12 +53,19 @@ input, select { border-radius: 8px !important; }
             2. Stock y control
           </button>
         </li>
+        <li class="nav-item">
+          <button class="nav-link" id="tab-relaciones" data-bs-toggle="tab"
+                  data-bs-target="#relaciones-derivados" type="button" role="tab">
+            3. Relaciones y derivados
+          </button>
+        </li>
       </ul>
       <div class="tab-content" id="productTabContent">
+        <!-- TAB 1: Identificación y precios -->
         <div class="tab-pane fade show active" id="id-precios" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-3">
-              <label class="form-label">Categoría</label>
+              <label class="form-label">Categoría<span class="text-danger">*</span></label>
               <select class="form-select" name="categoria" id="categoriaSelect" required>
                 <option value="">Seleccione...</option>
                 {% for value, text in categorias %}
@@ -81,25 +88,17 @@ input, select { border-radius: 8px !important; }
               </div>
             </div>
             <div class="col-md-3">
-              <label class="form-label">SKU</label>
-              <select class="form-select" name="sku" id="sku" required>
-                <option value="">Seleccione tipo de SKU</option>
-                <option value="SKU-CHOC" {% if form.sku.value == "SKU-CHOC" %}selected{% endif %}>Chocolates</option>
-                <option value="SKU-CAR" {% if form.sku.value == "SKU-CAR" %}selected{% endif %}>Caramelos</option>
-                <option value="SKU-GAL" {% if form.sku.value == "SKU-GAL" %}selected{% endif %}>Galletas</option>
-                <option value="SKU-GOM" {% if form.sku.value == "SKU-GOM" %}selected{% endif %}>Gomitas</option>
-                <option value="SKU-ALF" {% if form.sku.value == "SKU-ALF" %}selected{% endif %}>Alfajores</option>
-              </select>
+              <label class="form-label">SKU<span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="sku" required value="{{ form.sku.value|default_if_none:'' }}">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Nombre</label>
-              <input type="text" class="form-control" name="nombre" required
-                     value="{{ form.nombre.value|default_if_none:'' }}">
+              <label class="form-label">Nombre<span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="nombre" required value="{{ form.nombre.value|default_if_none:'' }}">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-2">
-              <label class="form-label">Unidad compra</label>
+              <label class="form-label">Unidad compra<span class="text-danger">*</span></label>
               <select class="form-select" name="uom_compra" required>
                 <option value="">Seleccione...</option>
                 <option value="KG" {% if form.uom_compra.value == "KG" %}selected{% endif %}>Kilogramo</option>
@@ -111,7 +110,7 @@ input, select { border-radius: 8px !important; }
               </select>
             </div>
             <div class="col-md-2">
-              <label class="form-label">Unidad venta</label>
+              <label class="form-label">Unidad venta<span class="text-danger">*</span></label>
               <select class="form-select" name="uom_venta" required>
                 <option value="">Seleccione...</option>
                 <option value="UN" {% if form.uom_venta.value == "UN" %}selected{% endif %}>Unidad</option>
@@ -124,33 +123,85 @@ input, select { border-radius: 8px !important; }
               </select>
             </div>
             <div class="col-md-2">
-              <label class="form-label">Conversión</label>
-              <input type="number" class="form-control" name="factor_conversion"
-                     value="{{ form.factor_conversion.value|default_if_none:1 }}" min="1" required>
+              <label class="form-label">Conversión<span class="text-danger">*</span></label>
+              <input type="number" class="form-control" name="factor_conversion" value="{{ form.factor_conversion.value|default_if_none:1 }}" min="1" required>
             </div>
             <div class="col-md-2">
               <label class="form-label">IVA (%)</label>
-              <input type="number" class="form-control" name="impuesto_iva"
-                     value="{{ form.impuesto_iva.value|default_if_none:19 }}" readonly>
+              <input type="number" class="form-control" name="impuesto_iva" value="{{ form.impuesto_iva.value|default_if_none:19 }}">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Marca (opcional)</label>
+              <input type="text" class="form-control" name="marca" value="{{ form.marca.value|default_if_none:'' }}">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Modelo (opcional)</label>
+              <input type="text" class="form-control" name="modelo" value="{{ form.modelo.value|default_if_none:'' }}">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción (opcional)</label>
+            <textarea class="form-control" name="descripcion" rows="2">{{ form.descripcion.value|default_if_none:'' }}</textarea>
+          </div>
+        </div>
+
+        <!-- TAB 2: Stock y control -->
+        <div class="tab-pane fade" id="stock-control" role="tabpanel">
+          <div class="row mb-3">
+            <div class="col-md-2">
+              <label class="form-label">Stock mínimo<span class="text-danger">*</span></label>
+              <input type="number" class="form-control" name="stock_minimo" min="0" value="{{ form.stock_minimo.value|default_if_none:0 }}" required>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Stock máximo (opcional)</label>
+              <input type="number" class="form-control" name="stock_maximo" min="0" value="{{ form.stock_maximo.value|default_if_none:'' }}">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Punto reorden (opcional)</label>
+              <input type="number" class="form-control" name="punto_reorden" min="0" value="{{ form.punto_reorden.value|default_if_none:'' }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-center">
+              <input type="checkbox" class="form-check-input me-2" id="perishableCheck" name="perishable" {% if form.perishable.value %}checked{% endif %}>
+              <label class="form-check-label" for="perishableCheck">Perecible</label>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-2 d-flex align-items-center">
+              <input type="checkbox" class="form-check-input me-2" id="loteCheck" name="control_por_lote" {% if form.control_por_lote.value %}checked{% endif %}>
+              <label class="form-check-label" for="loteCheck">Control por lote</label>
+            </div>
+            <div class="col-md-2 d-flex align-items-center">
+              <input type="checkbox" class="form-check-input me-2" id="serieCheck" name="control_por_serie" {% if form.control_por_serie.value %}checked{% endif %}>
+              <label class="form-check-label" for="serieCheck">Control por serie</label>
             </div>
           </div>
         </div>
-        <div class="tab-pane fade" id="stock-control" role="tabpanel">
+
+        <!-- TAB 3: Relaciones y derivados -->
+        <div class="tab-pane fade" id="relaciones-derivados" role="tabpanel">
           <div class="row mb-3">
-            <div class="col-md-3">
-              <label class="form-label">Stock mínimo</label>
-              <input type="number" class="form-control" name="stock_minimo" required
-                     value="{{ form.stock_minimo.value|default_if_none:0 }}" min="0">
+            <div class="col-md-6">
+              <label class="form-label">Imagen URL (opcional)</label>
+              <input type="url" class="form-control" name="imagen_url" placeholder="https://...jpg" value="{{ form.imagen_url.value|default_if_none:'' }}">
             </div>
-            <div class="col-md-3 form-check form-switch mt-4">
-              <input class="form-check-input" type="checkbox" name="perishable"
-                     id="perishableSwitch" {% if form.perishable.value %}checked{% endif %}>
-              <label class="form-check-label" for="perishableSwitch">Perecible</label>
+            <div class="col-md-6">
+              <label class="form-label">Ficha técnica URL (opcional)</label>
+              <input type="url" class="form-control" name="ficha_tecnica_url" placeholder="https://...pdf" value="{{ form.ficha_tecnica_url.value|default_if_none:'' }}">
             </div>
-            <div class="col-md-3 form-check form-switch mt-4">
-              <input class="form-check-input" type="checkbox" name="lote"
-                     id="controlLoteSwitch" {% if form.lote.value %}checked{% endif %}>
-              <label class="form-check-label" for="controlLoteSwitch">Control por lote</label>
+          </div>
+          <h6 class="fw-bold">Derivados (solo lectura)</h6>
+          <div class="row mb-2">
+            <div class="col-md-4">
+              <label class="form-label">Stock actual</label>
+              <input class="form-control" type="text" name="stock_actual" value="{{ form.stock_actual.value|default_if_none:0 }}" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Alerta bajo stock</label>
+              <input class="form-control" type="text" name="alerta_bajo_stock" value="Sí" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Alerta por vencer</label>
+              <input class="form-control" type="text" name="alerta_por_vencer" value="NO" readonly>
             </div>
           </div>
         </div>
@@ -175,6 +226,7 @@ input, select { border-radius: 8px !important; }
 </div>
 {% endif %}
 
+<!-- Tabla de Productos abajo -->
 <div class="card shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold">Productos</h5>
@@ -343,14 +395,12 @@ document.addEventListener("DOMContentLoaded", function() {
       const field = this.getAttribute('data-field');
       const currentOrderBy = orderByInput.value;
       const currentOrder = orderInput.value;
-
       if (currentOrderBy === field) {
         orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
       } else {
         orderByInput.value = field;
         orderInput.value = 'asc';
       }
-
       searchForm.submit();
     });
   });
@@ -403,8 +453,8 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         return false;
       }
-      let perishable = document.getElementById("perishableSwitch");
-      let controlLote = document.getElementById("controlLoteSwitch");
+      let perishable = document.getElementById("perishableCheck");
+      let controlLote = document.getElementById("loteCheck");
       if(perishable && !perishable.checked){
         let input = document.createElement("input");
         input.type = "hidden";
@@ -417,7 +467,7 @@ document.addEventListener("DOMContentLoaded", function() {
       if(controlLote && !controlLote.checked){
         let input = document.createElement("input");
         input.type = "hidden";
-        input.name = "lote";
+        input.name = "control_por_lote";
         input.value = "0";
         this.appendChild(input);
       } else if(controlLote && controlLote.checked) {
