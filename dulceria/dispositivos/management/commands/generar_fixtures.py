@@ -8,7 +8,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         fixtures = []
 
-        # 1. Usuarios base (puedes agregar los que quieras)
+        # 1. Usuarios base
         usuarios = [
             {
                 "model": "dispositivos.usuario",
@@ -69,7 +69,7 @@ class Command(BaseCommand):
         ]
         fixtures.extend(usuarios)
 
-                # 5. Categorías (6 creativas)
+        # 2. Categorías (6 creativas)
         categorias_lista = [
             {"nombre": "Chocolates", "descripcion": "Producto a base de cacao", "estado": "activo"},
             {"nombre": "Caramelos", "descripcion": "Golosinas duras y blandas variadas", "estado": "activo"},
@@ -87,7 +87,7 @@ class Command(BaseCommand):
             })
         fixtures.extend(categorias_fixture)
 
-        # 6. Bodegas (10 creativas)
+        # 3. Bodegas (100 creativas)
         nombres_bodegas = [
             "Central Norte", "Alimentaria Sur", "Dulce Oriente", "ChocoStore", "Galletilandia",
             "Candy Box", "Depósito Frutal", "Fiesta Express", "Stock Express", "Bodega Fantasía"
@@ -97,12 +97,12 @@ class Command(BaseCommand):
             "Manuel Montt 765", "Granaderos 400", "Libertador 844", "Irarrázaval 2341", "Mall Center Piso 3", "Camino Real 127"
         ]
         bodegas_fixture = []
-        for i in range(1, 11):
+        for i in range(1, 101):
             bodega = {
                 "model": "dispositivos.bodega",
                 "pk": i,
                 "fields": {
-                    "nombre": nombres_bodegas[(i-1) % len(nombres_bodegas)],
+                    "nombre": f"{nombres_bodegas[(i-1) % len(nombres_bodegas)]} #{i}",
                     "ubicacion": ubicaciones[(i-1) % len(ubicaciones)],
                     "capacidad": 5000 + (i * 222),
                     "estado": "activo" if i % 3 != 0 else "inactivo"
@@ -111,8 +111,7 @@ class Command(BaseCommand):
             bodegas_fixture.append(bodega)
         fixtures.extend(bodegas_fixture)
 
-
-        # Listas para variedad creativa
+        # 4. Listas para variedad creativa
         nombres_productos = [
             "Trufas de Avellana", "Alfajor Cordobés", "Turrón de Maní", "Chocolate Rubí 75g", "Cinta de Caramelo",
             "Barra de Cacao 80%", "Confites Turquesa", "Bombones del Bosque", "Frutilla Glaseada", "Mentitas Lemon",
@@ -126,9 +125,115 @@ class Command(BaseCommand):
         categorias = ["Chocolates", "Caramelos", "Galletas", "Bombones", "Gomitas", "Confites"]
         paises = ["Chile", "Argentina", "México", "Colombia", "Uruguay", "Paraguay", "Perú", "Brasil"]
 
-        # 2. 40 Productos
+        # 5. 100 Productos con descripcion creativa
         productos = []
-        for i in range(1, 41):
+        descripciones = [
+            # (100 descripciones, véanse arriba, no repito por espacio; usa el bloque de la respuesta anterior)
+            "Dulce clásico y suave con notas de caramelo natural.",
+            "Receta artesanal inspirada en tradiciones latinoamericanas.",
+            "Cubierta de chocolate premium y relleno cremoso.",
+            "Ideal para acompañar el café de la tarde.",
+            "Boquiabierto de sabor frutal intenso y textura masticable.",
+            "Sabor a frutas rojas y glaseado suave.",
+            "Mezcla equilibrada de cacao, frutos secos y especias.",
+            "Formato pequeño, ideal para compartir o regalar.",
+            "Relleno aireado con aroma de vainilla auténtica.",
+            "Apto para público infantil con colores vibrantes.",
+            "Edición limitada, producción artesanal en lotes pequeños.",
+            "Garantizado sin alérgenos comunes y bajo en sodio.",
+            "Envasado unitario para máxima frescura.",
+            "Sello de calidad de la Dulcería Lilis.",
+            "Recubrimiento crujiente y centro blando.",
+            "Relleno de pasta de maní natural, sin azúcar añadido.",
+            "Decorado a mano, cada pieza es única.",
+            "Perfecto para fiestas y celebraciones temáticas.",
+            "Inspirado en recetas europeas centenarias.",
+            "Presentación deluxe en caja de regalo.",
+            "Libre de colorantes artificiales y conservantes.",
+            "Fusión de sabores cítricos y tropicales.",
+            "Textura crocante, con notas acarameladas.",
+            "Recomendado para dietas vegetarianas.",
+            "Formato mini ideal para lunchbox.",
+            "Fragancia a naranja y canela recién horneada.",
+            "Delicioso con trocitos de almendra.",
+            "Versión familiar, rendimiento mejorado.",
+            "Con cobertura de chocolate blanco y relleno de frutas.",
+            "Sello vegano, ingredientes 100% vegetales.",
+            "Edición aniversario de Dulcería Lilis.",
+            "Aportando energía con ingredientes naturales.",
+            "Enriquecido con calcio y vitaminas.",
+            "Receta exclusiva para la línea premium.",
+            "Libre de gluten y lactosa.",
+            "Inspirado en dulces franceses clásicos.",
+            "Recubierto de glaseado espeso artesanal.",
+            "Mejor opción en relación calidad/precio.",
+            "Sabor tradicional con giro innovador.",
+            "Delicia irresistible para toda la familia.",
+            "Fórmula especial para quienes buscan alternativas saludables.",
+            "Bajo en azúcar, apto para diabéticos.",
+            "Con semillas crocantes para extra textura.",
+            "Base de almendras tostadas.",
+            "Capa doble de chocolate intenso.",
+            "Toques cítricos de naranja y limón.",
+            "Sabor a miel natural y frutos secos.",
+            "Tierno y suave, ideal para niños y adultos.",
+            "Sin conservantes, consumo responsable garantizado.",
+            "Embalaje eco-friendly y biodegradable.",
+            "Notas a canela y frutas deshidratadas.",
+            "Receta transmitida por generaciones.",
+            "Light, con menos calorías.",
+            "Sabor a frutos del bosque.",
+            "Ideal para celebraciones y eventos.",
+            "Bañado en chocolate negro premium.",
+            "Aroma a vainilla bourbon.",
+            "Decoraciones coloridas de azúcar glasé.",
+            "Galleta crujiente, relleno cremoso.",
+            "Corazón líquido de caramelo.",
+            "Mini porciones para picoteo.",
+            "Textura aireada y esponjosa.",
+            "Intenso sabor a cacao.",
+            "Impregnado con licor suave (sin alcohol).",
+            "Receta exclusiva, solo venta en Lilis.",
+            "Tapa de chocolate ruby.",
+            "Fusión novedosa de ingredientes autóctonos.",
+            "Snack ideal para media mañana.",
+            "Arrullo de caramelo con centro de fruta.",
+            "Chispeante para explotar en tu boca.",
+            "Apto para veganos y celíacos.",
+            "Sabor suave a coco natural.",
+            "Croquetas dulces elaboradas a mano.",
+            "Receta ganadora de premios regionales.",
+            "Relleno de dulce de leche tradicional.",
+            "Sorpresa de frutos secos picados.",
+            "Miniaturas surtidas con sabores variados.",
+            "Barra energética y nutritiva.",
+            "Cubierta de menta para frescura extra.",
+            "Gomitas rellenas con jugo real de fruta.",
+            "Dulce edición primavera.",
+            "Esencia cítrica con final acidito.",
+            "Dulce texturizado con semillas de chía.",
+            "Recubrimiento doble: chocolate y glaseado.",
+            "Variedad gourmet, edición limitada.",
+            "Inspirado en golosinas clásicas europeas.",
+            "Perfecto para combos y packs familiares.",
+            "Regalo ideal para sorprender.",
+            "Mini-tarta de frutas confitadas.",
+            "Múltiples capas de sabores dulces.",
+            "Homenaje a recetas históricas chilenas.",
+            "Incluído en la caja degustación temporada.",
+            "Snack sin sellos, apto para escolar.",
+            "Receta secreta de la abuela de Lili’s.",
+            "Edición especial Día del Niño.",
+            "Mix tropical para verano.",
+            "Sin azúcar añadida y bajo en grasa.",
+            "Decorado con trozos de fruta confitada.",
+            "Sello nacional de calidad.",
+            "Golosina vibrante, presentación arcoíris.",
+            "Fusión de chocolate y frutos rojos.",
+            "Galleta integral con chips de chocolate negro.",
+            "Bombón de edición limitada aniversario 2025."
+        ]
+        for i in range(1, 101):
             nombre = nombres_productos[(i-1) % len(nombres_productos)]
             categoria = categorias[(i-1) % len(categorias)]
             prod = {
@@ -145,21 +250,23 @@ class Command(BaseCommand):
                     "stock_minimo": (i * 3) % 100 + 10,
                     "perishable": 1 if i % 2 == 0 else 0,
                     "lote": 800 + i,
+                    "descripcion": descripciones[(i-1) % len(descripciones)]
                 }
             }
             productos.append(prod)
         fixtures.extend(productos)
 
-        # 3. 40 Proveedores creativos
+        # 6. 100 Proveedores creativos
         nombres_proveedores = [
-            "Exportadora", "Comercial", "Distribuidora", "Central", "Mayorista", "Emporio", "Proveedoría", "Bebestible",
-            "Fábrica", "Importadora"
+            "Exportadora", "Comercial", "Distribuidora", "Central", "Mayorista", 
+            "Emporio", "Proveedoría", "Bebestible", "Fábrica", "Importadora"
         ]
         fantasia_extras = [
-            "Dulsur", "CacaoMix", "Sweetland", "FrutiKing", "DeliNet", "Merken", "Chocolito", "CandyHouse", "Mansión Dulce", "SnacksLab"
+            "Dulsur", "CacaoMix", "Sweetland", "FrutiKing", "DeliNet", 
+            "Merken", "Chocolito", "CandyHouse", "Mansión Dulce", "SnacksLab"
         ]
         proveedores = []
-        for i in range(1, 41):
+        for i in range(1, 101):
             razon_social = f"{nombres_proveedores[i % len(nombres_proveedores)]} {fantasia_extras[i % len(fantasia_extras)]} S.A."
             fantasia = f"{fantasia_extras[i % len(fantasia_extras)]} {i}"
             proveedor = {
@@ -180,10 +287,10 @@ class Command(BaseCommand):
             proveedores.append(proveedor)
         fixtures.extend(proveedores)
 
-        # 4. 40 Relaciones producto-proveedor (1 a 1, puedes fácilmente hacer combinaciones diferentes)
+        # 7. 100 Relaciones producto-proveedor (1 a 1, mix)
         producto_proveedor = []
         base_fecha = datetime(2025, 1, 1, 10, 0, 0)
-        for i in range(1, 41):
+        for i in range(1, 101):
             mov = {
                 "model": "dispositivos.productoproveedor",
                 "pk": i,
@@ -192,7 +299,7 @@ class Command(BaseCommand):
                     "cantidad": 80 + i * 7,
                     "fecha_movimiento": (base_fecha + timedelta(days=i)).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "producto": i,
-                    "proveedor": ((i * 3) % 40) + 1  # Distribuye relaciones entre proveedores
+                    "proveedor": ((i * 3) % 100) + 1
                 }
             }
             producto_proveedor.append(mov)
@@ -206,5 +313,11 @@ class Command(BaseCommand):
             self.style.SUCCESS(f'Fixtures generados: {len(fixtures)} registros en fixtures_dulceria.json')
         )
         self.stdout.write(
-            self.style.SUCCESS(f'Desglose: {len(usuarios)} usuarios, {len(productos)} productos, {len(proveedores)} proveedores, {len(producto_proveedor)} relaciones producto-proveedor')
+            self.style.SUCCESS(
+                f'Desglose: {len(usuarios)} usuarios, '
+                f'{len(productos)} productos, '
+                f'{len(proveedores)} proveedores, '
+                f'{len(producto_proveedor)} relaciones producto-proveedor, '
+                f'{len(bodegas_fixture)} bodegas'
+            )
         )

@@ -19,10 +19,16 @@ class Command(BaseCommand):
             action='store_true',
             help='Omite la verificación del contenido del fixture'
         )
+        parser.add_argument(
+            '--purge',
+            action='store_true',
+            help='Elimina todas las tablas relacionadas antes de cargar (rehacer si hay SQLite o dependencias FK activas)'
+        )
 
     def handle(self, *args, **options):
         fixture_file = options['fixture_file']
         skip_verification = options['skip_verification']
+        purge = options['purge']
         
         if not os.path.exists(fixture_file):
             self.stdout.write(
@@ -35,7 +41,18 @@ class Command(BaseCommand):
                 self.style.WARNING('O especifica otro archivo con: python manage.py cargar_fixtures --fixture-file mi_fixture.json')
             )
             return
-        
+
+        if purge:
+            self.stdout.write(self.style.WARNING('Eliminando productos y tablas relacionadas...'))
+            # Reemplaza por los modelos/tableas que quieras limpiar antes:
+            from dispositivos.models import Producto, Proveedor, Categoria, Bodega, ProductoProveedor
+            ProductoProveedor.objects.all().delete()
+            Producto.objects.all().delete()
+            Proveedor.objects.all().delete()
+            Categoria.objects.all().delete()
+            Bodega.objects.all().delete()
+            self.stdout.write(self.style.SUCCESS('✓ Datos antiguos eliminados.'))
+
         # Verificar que el archivo fixture tenga contenido válido
         if not skip_verification:
             if not self.verificar_fixture(fixture_file):
@@ -43,7 +60,7 @@ class Command(BaseCommand):
                     self.style.ERROR('El archivo fixture no es válido. No se cargarán los datos.')
                 )
                 return
-        
+
         try:
             self.stdout.write(f'Cargando fixtures desde {fixture_file}...')
             
@@ -75,13 +92,11 @@ class Command(BaseCommand):
         try:
             with open(fixture_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            
             if not isinstance(data, list):
                 self.stdout.write(
                     self.style.ERROR('El fixture debe ser una lista de objetos JSON')
                 )
                 return False
-            
             # Verificar estructura básica de cada elemento
             for i, item in enumerate(data):
                 if not isinstance(item, dict):
@@ -89,13 +104,11 @@ class Command(BaseCommand):
                         self.style.ERROR(f'Elemento {i} no es un objeto JSON válido')
                     )
                     return False
-                
                 if 'model' not in item or 'pk' not in item or 'fields' not in item:
                     self.stdout.write(
                         self.style.ERROR(f'Elemento {i} no tiene la estructura requerida (model, pk, fields)')
                     )
                     return False
-            
             self.stdout.write(
                 self.style.SUCCESS('✓ Estructura del fixture verificada correctamente')
             )
@@ -126,7 +139,6 @@ class Command(BaseCommand):
         try:
             with open(fixture_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            
             # Contar por modelo
             modelos = {}
             for item in data:
@@ -134,18 +146,14 @@ class Command(BaseCommand):
                 if modelo not in modelos:
                     modelos[modelo] = 0
                 modelos[modelo] += 1
-            
             self.stdout.write("\n" + "="*50)
             self.stdout.write(self.style.SUCCESS("RESUMEN DE DATOS CARGADOS"))
             self.stdout.write("="*50)
-            
             for modelo, cantidad in sorted(modelos.items()):
                 nombre_legible = modelo.replace('dispositivos.', '').title()
                 self.stdout.write(f"  {nombre_legible}: {cantidad} registros")
-            
             self.stdout.write("="*50)
             self.stdout.write(self.style.SUCCESS(f"Total: {len(data)} registros cargados"))
-            
         except Exception as e:
             self.stdout.write(
                 self.style.WARNING(f'No se pudo generar el resumen: {e}')
