@@ -41,6 +41,20 @@ input, select { border-radius: 8px !important; }
       {% if edit_mode %}
         <input type="hidden" name="edit_id" value="{{ edit_id }}">
       {% endif %}
+      {% if form.errors %}
+      <div class="alert alert-danger mb-3">
+        <ul style="margin-bottom:0;">
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
       <ul class="nav nav-tabs mb-3" id="productTab" role="tablist">
         <li class="nav-item">
           <button class="nav-link active" id="tab-id-precios" data-bs-toggle="tab"
