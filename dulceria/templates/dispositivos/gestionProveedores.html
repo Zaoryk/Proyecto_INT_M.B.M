@@ -268,10 +268,19 @@ input, select, textarea { border-radius: 8px !important; }
           <td>{{ prov.email }}</td>
           <td>{{ prov.pais }}</td>
           <td>
-            <span class="badge {% if prov.estado == 'activo' %}bg-success{% elif prov.estado == 'inactivo' %}bg-danger{% else %}bg-warning{% endif %}">
+            <span class="badge 
+              {% if prov.estado == 'Activo' %}
+                bg-success
+              {% elif prov.estado == 'Inactivo' %}
+                bg-danger
+              {% elif prov.estado == 'Bloqueado' %}
+                bg-secondary
+              {% else %}
+                bg-warning
+              {% endif %}">
               {{ prov.get_estado_display }}
             </span>
-          </td>
+          </td> 
           {% if can_edit or can_delete %}
           <td class="text-center">
             <a href="?edit_id={{ prov.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
