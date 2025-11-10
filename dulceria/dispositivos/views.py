@@ -314,17 +314,42 @@ def gestionProductos(request):
 
     # Exportar a Excel
     if "export_excel" in request.GET:
-        import openpyxl
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "Productos"
-        headers_excel = ["SKU", "Nombre", "Categoría", "UOM Compra", "UOM Venta", "Conversión", "IVA", "Stock Mín", "Perecible?", "Lote"]
+        headers_excel = [
+            "SKU", "Nombre", "Categoría", "UOM Compra", "UOM Venta", "Conversión",
+            "IVA", "Stock mínimo", "Stock máximo", "Punto reorden",
+            "Perecible?", "Control por lote", "Control por serie",
+            "Lote", "Marca", "Modelo", "Descripción",
+            "Imagen URL", "Ficha técnica URL", "Stock actual",
+            "Alerta bajo stock", "Alerta por vencer"
+        ]
         sheet.append(headers_excel)
         for p in productos:
             sheet.append([
-                p.sku, p.nombre, p.categoria, p.uom_compra, p.uom_venta,
-                p.factor_conversion, p.impuesto_iva, p.stock_minimo,
-                "Sí" if p.perishable else "No", p.lote
+                p.sku,
+                p.nombre,
+                p.categoria,
+                p.uom_compra,
+                p.uom_venta,
+                p.factor_conversion,
+                p.impuesto_iva,
+                p.stock_minimo,
+                getattr(p, "stock_maximo", ""),
+                getattr(p, "punto_reorden", ""),
+                "Sí" if p.perishable else "No",
+                "Sí" if getattr(p, "control_por_lote", False) else "No",
+                "Sí" if getattr(p, "control_por_serie", False) else "No",
+                p.lote,
+                getattr(p, "marca", ""),
+                getattr(p, "modelo", ""),
+                getattr(p, "descripcion", ""),
+                getattr(p, "imagen_url", ""),
+                getattr(p, "ficha_tecnica_url", ""),
+                getattr(p, "stock_actual", ""),
+                getattr(p, "alerta_bajo_stock", ""),
+                getattr(p, "alerta_por_vencer", "")
             ])
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -334,17 +359,18 @@ def gestionProductos(request):
         return response
 
     # ========== ORDENAMIENTO ==========
-    VALID_FIELDS = ['sku', 'nombre', 'categoria', 'uom_compra', 'uom_venta',
-                    'factor_conversion', 'impuesto_iva', 'stock_minimo', 'perishable', 'lote']
+    VALID_FIELDS = [
+        'sku', 'nombre', 'categoria', 'uom_compra', 'uom_venta',
+        'factor_conversion', 'impuesto_iva', 'stock_minimo', 'perishable',
+        'lote'
+    ]
     order = request.GET.get('order', request.session.get('productos_order', 'asc'))
     order_by = request.GET.get('order_by', request.session.get('productos_order_by', 'nombre'))
-    
     if order_by not in VALID_FIELDS:
         order_by = 'nombre'
-    
     request.session['productos_order'] = order
     request.session['productos_order_by'] = order_by
-    
+
     if order == 'desc':
         productos = productos.order_by(f'-{order_by}')
     else:
@@ -355,7 +381,8 @@ def gestionProductos(request):
     if pag_size not in ['5', '15', '30', '100']:
         pag_size = '15'
     request.session['productos_pag_size'] = pag_size
-    
+
+    from django.core.paginator import Paginator
     paginator = Paginator(productos, int(pag_size))
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)

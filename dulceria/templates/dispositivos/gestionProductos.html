@@ -410,4 +410,107 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 </script>
+<script>
+function verMasDescripcion(nombre, descripcion){
+  Swal.fire({
+    icon: 'info',
+    title: `Descripción de ${nombre}`,
+    html: `<div style='text-align:left; max-width: 350px; word-break:break-word;'>${descripcion}</div>`,
+    confirmButtonText: "Cerrar"
+  });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  // ====== ORDENAMIENTO DE TABLA (Order By) ======
+  const sortableHeaders = document.querySelectorAll('.sortable-header');
+  const orderByInput = document.getElementById('order_by');
+  const orderInput = document.getElementById('order');
+  const searchForm = document.getElementById('searchForm');
+
+  sortableHeaders.forEach(header => {
+    header.addEventListener('click', function() {
+      const field = this.getAttribute('data-field');
+      if (orderByInput && orderInput && searchForm) {
+        if (orderByInput.value === field) {
+          orderInput.value = orderInput.value === 'asc' ? 'desc' : 'asc';
+        } else {
+          orderByInput.value = field;
+          orderInput.value = 'asc';
+        }
+        searchForm.submit();
+      }
+    });
+  });
+
+  // Destacar el header activo
+  if (orderByInput && orderByInput.value) {
+    const activeHeader = document.querySelector(`[data-field='${orderByInput.value}']`);
+    if (activeHeader) {
+      activeHeader.classList.add('active');
+    }
+  }
+
+  // VALIDACIÓN Y ENVÍO PRODUCTO FORM
+  const productoForm = document.getElementById("productoForm");
+  if (productoForm) {
+    productoForm.addEventListener("submit", function(e){
+      let errores = [];
+      if (!this.categoria.value.trim()) errores.push("Categoría");
+      if (this.categoria.value === "Otras") {
+        const inputNueva = document.querySelector('input[name="categoria_nueva"]');
+        if (!inputNueva.value || !inputNueva.value.trim()) {
+          errores.push("Debe ingresar el nombre de la nueva categoría.");
+        }
+      }
+      if (!this.sku.value.trim()) errores.push("SKU");
+      if (!this.nombre.value.trim()) errores.push("Nombre");
+      if (!this.uom_compra.value.trim()) errores.push("Unidad de compra");
+      if (!this.uom_venta.value.trim()) errores.push("Unidad de venta");
+      if (!this.factor_conversion.value.trim() || parseInt(this.factor_conversion.value) < 1) errores.push("Conversión (mínimo 1)");
+      if (!this.stock_minimo.value.trim() || parseInt(this.stock_minimo.value) < 0) errores.push("Stock mínimo");
+      if (this.nombre.value && !/^[\wÁÉÍÓÚáéíóúÜüÑñ .,-]+$/.test(this.nombre.value)) {
+        errores.push("Nombre (solo letras/números y .,- )");
+      }
+      if (errores.length) {
+        e.preventDefault();
+        Swal.fire({
+          icon: "warning",
+          title: "Campos obligatorios o inválidos",
+          html: "<ul style='text-align:left;margin:0;'>" + errores.map(f => "<li>" + f + "</li>").join("") + "</ul>",
+          confirmButtonText: "OK"
+        });
+        return false;
+      }
+      let perishable = document.getElementById("perishableCheck");
+      let controlLote = document.getElementById("loteCheck");
+      if(perishable && !perishable.checked){
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "perishable";
+        input.value = "0";
+        this.appendChild(input);
+      } else if(perishable && perishable.checked) {
+        perishable.value = "1";
+      }
+      if(controlLote && !controlLote.checked){
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "control_por_lote";
+        input.value = "0";
+        this.appendChild(input);
+      } else if(controlLote && controlLote.checked) {
+        controlLote.value = "1";
+      }
+    });
+  }
+
+  // ========== AUTO-SUBMIT PAGINADOR ==========
+  const pagSize = document.getElementById("pag_size");
+  if (pagSize && searchForm) {
+    pagSize.addEventListener("change", function() {
+      searchForm.submit();
+    });
+  }
+});
+</script>
 {% endblock %}
