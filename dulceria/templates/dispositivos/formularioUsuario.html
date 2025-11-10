@@ -3,7 +3,6 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   // ==== NO HAY avatar ni preview ====
-
   const toggleBtn = document.getElementById("togglePassword");
   const passwordField = document.getElementById("passwordField");
   if (toggleBtn && passwordField) {
@@ -14,59 +13,63 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
+  // -------- VALIDACIÓN FORMULARIO USUARIO --------
   const form = document.getElementById("formUsuario");
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const username = form.querySelector("[name='username']").value.trim();
-    const email = form.querySelector("[name='email']").value.trim();
-    const password = form.querySelector("[name='password']").value.trim();
-    const nombre = form.querySelector("[name='nombre']").value.trim();
-    const apellido = form.querySelector("[name='apellido']").value.trim();
-    const rol = form.querySelector("[name='rol']").value.trim();
-    const estado = form.querySelector("[name='estado']").value.trim();
-    const mfa = form.querySelector("[name='mfa_habilitado']").value.trim();
-    const faltantes = [];
-    if (!username) faltantes.push("Username");
-    if (!email) faltantes.push("Email");
-    if (!nombre) faltantes.push("Nombres");
-    if (!apellido) faltantes.push("Apellidos");
-    if (!rol) faltantes.push("Rol");
-    if (!estado) faltantes.push("Estado");
-    if (!mfa) faltantes.push("MFA habilitado");
-    const editMode = form.querySelector("input[name='edit_id']") !== null;
-    if (!editMode && !password) faltantes.push("Contraseña");
-    if (faltantes.length > 0) {
-      Swal.fire({
-        icon: "warning",
-        title: "Campos obligatorios faltantes",
-        html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>",
-        confirmButtonText: "Corregir"
-      });
-      return;
-    }
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) {
-      Swal.fire({
-        icon: "error",
-        title: "Correo inválido",
-        text: "Debe tener un formato válido (ejemplo@dominio.com).",
-        confirmButtonText: "Entendido"
-      });
-      return;
-    }
-    const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
-    if ((!editMode && !passRegex.test(password)) || (editMode && password && !passRegex.test(password))) {
-      Swal.fire({
-        icon: "error",
-        title: "Contraseña insegura",
-        html: "Debe tener al menos:<br>• 8 caracteres<br>• 1 mayúscula<br>• 1 número<br>• 1 carácter especial (@$!%*?&.#_-)",
-        confirmButtonText: "Corregir"
-      });
-      return;
-    }
-    form.submit();
-  });
+  if(form){
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const username = form.querySelector("[name='username']").value.trim();
+      const email = form.querySelector("[name='email']").value.trim();
+      const password = form.querySelector("[name='password']").value.trim();
+      const nombre = form.querySelector("[name='nombre']").value.trim();
+      const apellido = form.querySelector("[name='apellido']").value.trim();
+      const rol = form.querySelector("[name='rol']").value.trim();
+      const estado = form.querySelector("[name='estado']").value.trim();
+      const mfa = form.querySelector("[name='mfa_habilitado']").value.trim();
+      const faltantes = [];
+      if (!username) faltantes.push("Username");
+      if (!email) faltantes.push("Email");
+      if (!nombre) faltantes.push("Nombres");
+      if (!apellido) faltantes.push("Apellidos");
+      if (!rol) faltantes.push("Rol");
+      if (!estado) faltantes.push("Estado");
+      if (!mfa) faltantes.push("MFA habilitado");
+      const editMode = form.querySelector("input[name='edit_id']") !== null;
+      if (!editMode && !password) faltantes.push("Contraseña");
+      if (faltantes.length > 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "Campos obligatorios faltantes",
+          html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>",
+          confirmButtonText: "Corregir"
+        });
+        return;
+      }
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(email)) {
+        Swal.fire({
+          icon: "error",
+          title: "Correo inválido",
+          text: "Debe tener un formato válido (ejemplo@dominio.com).",
+          confirmButtonText: "Entendido"
+        });
+        return;
+      }
+      const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
+      if ((!editMode && !passRegex.test(password)) || (editMode && password && !passRegex.test(password))) {
+        Swal.fire({
+          icon: "error",
+          title: "Contraseña insegura",
+          html: "Debe tener al menos:<br>• 8 caracteres<br>• 1 mayúscula<br>• 1 número<br>• 1 carácter especial (@$!%*?&.#_-)",
+          confirmButtonText: "Corregir"
+        });
+        return;
+      }
+      form.submit();
+    });
+  }
 
+  // -------- ELIMINAR USUARIO --------
   document.querySelectorAll(".btn-delete-user").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-id");
@@ -87,35 +90,34 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // ========== ORDENAMIENTO DE TABLA ==========
+  // -------- ORDENAMIENTO DE TABLA USUARIOS --------
   const sortableHeaders = document.querySelectorAll('.sortable-header');
   const orderByInput = document.getElementById('order_by');
   const orderInput = document.getElementById('order');
   const searchForm = document.getElementById('searchForm');
-  sortableHeaders.forEach(header => {
-    header.addEventListener('click', function() {
-      const field = this.getAttribute('data-field');
-      const currentOrderBy = orderByInput.value;
-      const currentOrder = orderInput.value;
-      if (currentOrderBy === field) {
-        orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
-      } else {
-        orderByInput.value = field;
-        orderInput.value = 'asc';
-      }
-      searchForm.submit();
+  if (sortableHeaders && orderByInput && orderInput && searchForm) {
+    sortableHeaders.forEach(header => {
+      header.addEventListener('click', function() {
+        const field = this.getAttribute('data-field');
+        if (orderByInput.value === field) {
+          orderInput.value = orderInput.value === 'asc' ? 'desc' : 'asc';
+        } else {
+          orderByInput.value = field;
+          orderInput.value = 'asc';
+        }
+        searchForm.submit();
+      });
     });
-  });
-  if (orderByInput.value) {
-    const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
-    if (activeHeader) {
-      activeHeader.classList.add('active');
+
+    if (orderByInput.value) {
+      const activeHeader = document.querySelector('.sortable-header[data-field="' + orderByInput.value + '"]');
+      if (activeHeader) activeHeader.classList.add('active');
     }
   }
 
-  // ========== AUTO-SUBMIT PAGINADOR ==========
+  // -------- AUTO-SUBMIT PAGINADOR --------
   const pagSize = document.getElementById("pag_size");
-  if (pagSize) {
+  if (pagSize && searchForm) {
     pagSize.addEventListener("change", function() {
       searchForm.submit();
     });
