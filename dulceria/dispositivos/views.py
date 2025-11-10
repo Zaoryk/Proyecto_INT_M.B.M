@@ -80,15 +80,19 @@ def formularioUsuario(request):
     if estado_filter:
         usuarios = usuarios.filter(estado__iexact=estado_filter)
 
-    # Ordenamiento
+    # ORDENAMIENTO - mECH
     VALID_FIELDS = ['username', 'email', 'nombre', 'apellido', 'rol', 'estado', 'mfa_habilitado']
-    order = request.GET.get('order', request.session.get('usuarios_order', 'asc'))
-    order_by = request.GET.get('order_by', request.session.get('usuarios_order_by', 'username'))
-    if order_by not in VALID_FIELDS:
+    order_by = request.GET.get('order_by')
+    order = request.GET.get('order')
+    if order_by not in VALID_FIELDS or not order_by:
         order_by = 'username'
-    request.session['usuarios_order'] = order
-    request.session['usuarios_order_by'] = order_by
+    if order not in ['asc', 'desc']:
+        order = 'asc'
     usuarios = usuarios.order_by(f'-{order_by}' if order == 'desc' else order_by)
+    if 'order_by' in request.GET:
+        request.session['usuarios_order_by'] = order_by
+    if 'order' in request.GET:
+        request.session['usuarios_order'] = order
 
     # Paginado
     pag_size = request.GET.get('pag_size') or request.session.get('usuarios_pag_size', '15')
@@ -245,6 +249,7 @@ def formularioUsuario(request):
         "order": order,
         "order_by": order_by,
     })
+
 
 
 # -------------------------------------------------------------
