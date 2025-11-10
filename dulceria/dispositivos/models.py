@@ -1,7 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth import update_session_auth_hash
 
 class Usuario(models.Model):
     ROLES = [
@@ -47,7 +48,8 @@ class Usuario(models.Model):
             return False
         return check_password(raw_password, self.password)
 
-    def sync_to_auth_user(self):
+    # traté de corregir el sync porque literalmente no sincroniza
+    def sync_to_auth_user(self, request=None):
         try:
             auth_user = User.objects.filter(username=self.username).first()
             if auth_user:
@@ -60,24 +62,28 @@ class Usuario(models.Model):
                         auth_user.password = self.password
                     else:
                         auth_user.set_password(self.password)
+                # Actualizar username si cambió
+                if auth_user.username != self.username:
+                    auth_user.username = self.username
                 auth_user.save()
+                # Actualiza la sesión si corresponde
+                if request is not None and request.user.id == auth_user.id:
+                    update_session_auth_hash(request, auth_user)
             else:
-                auth_user = User.objects.create(
+                auth_user = User.objects.create_user(
                     username=self.username,
                     email=self.email or '',
                     first_name=self.nombre or '',
                     last_name=self.apellido or '',
-                    is_active=(self.estado == 'activo'),
-                    is_staff=False,
-                    is_superuser=False
+                    is_active=(self.estado == 'activo')
                 )
                 if self.password:
                     if self.password.startswith('pbkdf2_'):
                         auth_user.password = self.password
+                        auth_user.save()
                     else:
                         auth_user.set_password(self.password)
-                    auth_user.save()
-            from django.contrib.auth.models import Group
+                        auth_user.save()
             auth_user.groups.clear()
             try:
                 group = Group.objects.get(name=self.rol)
@@ -89,11 +95,13 @@ class Usuario(models.Model):
             print(f"Error sincronizando usuario {self.username}: {e}")
             return None
 
+    # save admite rqeuest
     def save(self, *args, **kwargs):
+        request = kwargs.pop('request', None)  # Permite pasar request si es necesario
         if self.password and not self.password.startswith('pbkdf2_'):
             self.set_password(self.password)
         super().save(*args, **kwargs)
-        self.sync_to_auth_user()
+        self.sync_to_auth_user(request=request)
 
 
 class Producto(models.Model):

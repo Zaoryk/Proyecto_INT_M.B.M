@@ -80,28 +80,21 @@ def formularioUsuario(request):
     if estado_filter:
         usuarios = usuarios.filter(estado__iexact=estado_filter)
 
-    # ========== ORDENAMIENTO ==========
+    # Ordenamiento
     VALID_FIELDS = ['username', 'email', 'nombre', 'apellido', 'rol', 'estado', 'mfa_habilitado']
     order = request.GET.get('order', request.session.get('usuarios_order', 'asc'))
     order_by = request.GET.get('order_by', request.session.get('usuarios_order_by', 'username'))
-    
     if order_by not in VALID_FIELDS:
         order_by = 'username'
-    
     request.session['usuarios_order'] = order
     request.session['usuarios_order_by'] = order_by
-    
-    if order == 'desc':
-        usuarios = usuarios.order_by(f'-{order_by}')
-    else:
-        usuarios = usuarios.order_by(order_by)
+    usuarios = usuarios.order_by(f'-{order_by}' if order == 'desc' else order_by)
 
-    # PAGINADOR 5/15/30/100
+    # Paginado
     pag_size = request.GET.get('pag_size') or request.session.get('usuarios_pag_size', '15')
     if pag_size not in ['5', '15', '30', '100']:
         pag_size = '15'
     request.session['usuarios_pag_size'] = pag_size
-
     paginator = Paginator(usuarios, int(pag_size))
     page_number = request.GET.get('page')
     usuarios_page = paginator.get_page(page_number)
@@ -125,7 +118,7 @@ def formularioUsuario(request):
         workbook.save(response)
         return response
 
-    # ELIMINAR USUARIO - Solo administrador
+    # Eliminar usuario
     if request.method == "GET" and "delete_id" in request.GET:
         if not is_admin:
             messages.error(request, "No tienes permiso para eliminar usuarios.")
@@ -148,23 +141,23 @@ def formularioUsuario(request):
             messages.error(request, f"Error al eliminar usuario: {str(e)}")
         return redirect("Formulario")
 
-    # ELIMINAR AVATAR - Solo administrador
+    # Eliminar avatar (desde el mismo formulario principal)
     if request.method == "POST" and request.POST.get("delete_avatar"):
-        if not is_admin:
-            messages.error(request, "Solo los administradores pueden eliminar la foto de perfil.")
-            return redirect("Formulario")
         edit_id = request.POST.get("edit_id")
         usuario = get_object_or_404(Usuario, pk=edit_id)
         if usuario.avatar:
             usuario.avatar.delete(save=False)
             usuario.avatar = None
-            usuario.save()
+            usuario.save(update_fields=['avatar'])
+            usuario.sync_to_auth_user(request=request)
         messages.success(request, "Avatar eliminado correctamente.")
         return redirect("Formulario")
 
-    # EDITAR
+    # Editar o Crear usuario
     edit_mode = False
     edit_id = ""
+    form = None
+
     if request.method == "GET" and "edit_id" in request.GET:
         edit_id = request.GET.get("edit_id")
         if not can_edit_own_profile(request.user, edit_id):
@@ -173,15 +166,13 @@ def formularioUsuario(request):
         if not user_can_change_module(request.user, 'usuarios'):
             messages.error(request, "No tienes permiso para editar usuarios.")
             return redirect("Formulario")
-        form = UsuarioForm(instance=get_object_or_404(Usuario, pk=edit_id))
+        instance = get_object_or_404(Usuario, pk=edit_id)
+        form = UsuarioForm(instance=instance)
         edit_mode = True
 
-    # GUARDAR / ACTUALIZAR USUARIO
     elif request.method == "POST" and not request.POST.get("delete_avatar"):
         edit_id = request.POST.get("edit_id")
-        # Verificar permisos
         if edit_id:
-            # Actualización
             if not can_edit_own_profile(request.user, edit_id):
                 messages.error(request, "Solo puedes editar tu propio perfil.")
                 return redirect("Formulario")
@@ -189,36 +180,45 @@ def formularioUsuario(request):
                 messages.error(request, "No tienes permiso para editar usuarios.")
                 return redirect("Formulario")
         else:
-            # Creación - Solo admin
             if not is_admin or not user_can_add_module(request.user, 'usuarios'):
                 messages.error(request, "No tienes permiso para crear usuarios.")
                 return redirect("Formulario")
+
         instance = get_object_or_404(Usuario, pk=edit_id) if edit_id else None
-        # Solo administrador puede editar avatar; para otros roles, excluye 'avatar' del form
+
         if is_admin:
             form = UsuarioForm(request.POST, request.FILES, instance=instance)
         else:
             POST_data = request.POST.copy()
-            FILES_data = None  # Ignorado
             if instance:
-                POST_data['avatar'] = instance.avatar  # Conserva actual
+                POST_data['avatar'] = instance.avatar
             form = UsuarioForm(POST_data, instance=instance)
+
         edit_mode = bool(edit_id)
+
         if not is_admin and instance:
             original_rol = instance.rol
             if form.is_valid():
                 usuario = form.save(commit=False)
                 usuario.rol = original_rol
+                password = form.cleaned_data.get('password')
+                if password:
+                    usuario.set_password(password)
                 usuario.save()
+                usuario.sync_to_auth_user(request=request)
                 messages.success(request, "Usuario actualizado correctamente.")
                 return redirect("Formulario")
         else:
             if form.is_valid():
-                form.save()
+                usuario = form.save(commit=False)
+                password = form.cleaned_data.get('password')
+                if password:
+                    usuario.set_password(password)
+                usuario.save()
+                usuario.sync_to_auth_user(request=request)
                 messages.success(request, "Usuario guardado correctamente.")
                 return redirect("Formulario")
     else:
-        # Nuevo formulario - Solo admin puede crear
         if is_admin and user_can_add_module(request.user, 'usuarios'):
             form = UsuarioForm()
         else:
@@ -226,7 +226,6 @@ def formularioUsuario(request):
         edit_mode = False
         edit_id = ""
 
-    # Determinar si mostrar el formulario
     show_form = is_admin or edit_mode
 
     return render(request, "dispositivos/formularioUsuario.html", {
@@ -246,7 +245,6 @@ def formularioUsuario(request):
         "order": order,
         "order_by": order_by,
     })
-
 
 
 # -------------------------------------------------------------
@@ -687,13 +685,21 @@ def perfilusuario(request):
 
     if request.method == "POST":
         form_type = request.POST.get("form_type")
-        # --- Avatar solo ---
+        # --- Avatar solo (y borrar) ---
         if form_type == "avatar":
+            if "delete_avatar" in request.POST:
+                usuario.avatar.delete(save=False)
+                usuario.avatar = None
+                usuario.save(update_fields=['avatar'])
+                usuario.sync_to_auth_user(request=request)
+                messages.success(request, "Foto de perfil eliminada correctamente.")
+                return redirect("perfil_usuario")
             perfil_form = PerfilUsuarioForm(request.POST, request.FILES, instance=usuario)
             if perfil_form.is_valid():
                 if perfil_form.cleaned_data.get("avatar"):
                     usuario.avatar = perfil_form.cleaned_data["avatar"]
                     usuario.save(update_fields=['avatar'])
+                    usuario.sync_to_auth_user(request=request)
                     messages.success(request, "Foto de perfil actualizada correctamente.")
                 else:
                     messages.error(request, "Debes seleccionar una imagen válida.")
@@ -706,23 +712,30 @@ def perfilusuario(request):
                 usuario.apellido = perfil_form.cleaned_data["apellido"]
                 usuario.email = perfil_form.cleaned_data["email"]
                 usuario.save(update_fields=['nombre', 'apellido', 'email'])
+                usuario.sync_to_auth_user(request=request)
                 messages.success(request, "Perfil actualizado correctamente.")
             else:
                 messages.error(request, "Corrige los errores del formulario.")
             return redirect("perfil_usuario")
-        # --- Cambio de contraseña ---
-        elif "update_password" in request.POST:
+        # --- Cambio de contraseña robusto ---
+        elif form_type == "password":
             pass_form = PasswordChangeForm(request.POST, usuario=usuario)
             if pass_form.is_valid():
                 new_pass = pass_form.cleaned_data["new_password1"]
                 usuario.set_password(new_pass)
-                usuario.save()
+                usuario.save(update_fields=['password'])
                 user.set_password(new_pass)
                 user.save()
                 update_session_auth_hash(request, user)
+                usuario.sync_to_auth_user(request=request)
                 messages.success(request, "Contraseña actualizada correctamente.")
             else:
-                messages.error(request, "Hubo un error al cambiar la contraseña.")
+                # Muestra todos los errores del formulario
+                error_msgs = []
+                for field, errors in pass_form.errors.items():
+                    for error in errors:
+                        error_msgs.append(f"{pass_form.fields[field].label if field in pass_form.fields else field}: {error}")
+                messages.error(request, "Hubo un error al cambiar la contraseña.<br>" + "<br>".join(error_msgs))
             return redirect("perfil_usuario")
 
     return render(request, "dispositivos/perfilusuario.html", {
@@ -731,6 +744,7 @@ def perfilusuario(request):
         "usuario": usuario,
         "user": user,
     })
+
 
 #CRUDS SOLO PARA BACK END ELIMINAR DESPUES
 # -------------------------------------------------------------

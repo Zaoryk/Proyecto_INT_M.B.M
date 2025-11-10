@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-hh$-saop#x9!&w!3!8d$ibww$uws@z9(s-rnw1!4-ru2&+2^z6
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = False  
+DEBUG = False
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
