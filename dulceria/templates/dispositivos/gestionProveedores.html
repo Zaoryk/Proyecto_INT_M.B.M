@@ -146,15 +146,15 @@ input, select, textarea { border-radius: 8px !important; }
             </div>
             <div class="col-md-4">
               <label class="form-label">Costo promedio *</label>
-              <input type="number" class="form-control" name="costo_promedio" step="0.01" min="0"
-                     value="{{ form.instance.costo_promedio|default_if_none:'' }}" required>
+              <input type="number" class="form-control" name="costo_promedio" id="costo_promedio" step="0.01" min="0"
+                    value="{{ form.instance.costo_promedio|default_if_none:'' }}" required>
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-4">
               <label class="form-label">Lead time (días) *</label>
-              <input type="number" class="form-control" name="lead_time_dias" min="0"
-                     value="{{ form.instance.lead_time_dias|default_if_none:'' }}" required>
+              <input type="number" class="form-control" name="lead_time_dias" id="lead_time_dias" min="0"
+                    value="{{ form.instance.lead_time_dias|default_if_none:'' }}" required>
             </div>
           </div>
         </div>
@@ -451,6 +451,7 @@ document.addEventListener("DOMContentLoaded", function(){
       form.submit();
     });
   }
+
   const tabTriggerList = [].slice.call(document.querySelectorAll('#proveedorTab button[data-bs-toggle="tab"]'));
   tabTriggerList.forEach(tabEl => new bootstrap.Tab(tabEl));
   
@@ -461,6 +462,41 @@ document.addEventListener("DOMContentLoaded", function(){
       searchForm.submit();
     });
   }
+
+  // === BLOQUEAR NEGATIVOS Y NOTACIÓN CIENTÍFICA ===
+  function bloqueaNegativosYExponente(input){
+    input.addEventListener('keydown', function(e){
+      const invalid = ['-', '+', 'e', 'E'];
+      if (invalid.includes(e.key)) e.preventDefault();
+    });
+    input.addEventListener('wheel', e => e.preventDefault(), { passive:false });
+    input.addEventListener('input', function(){
+      if (this.value && Number(this.value) < 0) this.value = 0;
+    });
+  }
+  const inpCosto = document.getElementById('costo_promedio');
+  const inpLead  = document.getElementById('lead_time_dias');
+  if (inpCosto) bloqueaNegativosYExponente(inpCosto);
+  if (inpLead)  bloqueaNegativosYExponente(inpLead);
+
+  // === VALIDAR NOMBRE FANTASÍA (sin solo símbolos) ===
+  const nf = document.getElementsByName('nombre_fantasia')[0];
+  if (nf) {
+    nf.addEventListener('input', function(){
+      const val = this.value.trim();
+      const soloSimbolos = /^[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+$/;
+      if (val && soloSimbolos.test(val)) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Nombre inválido',
+          text: 'El nombre de fantasía no puede contener solo símbolos.',
+          confirmButtonText: 'Aceptar'
+        });
+        this.value = '';
+      }
+    });
+  }
+
 });
 </script>
 {% endblock %}
