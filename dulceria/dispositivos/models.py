@@ -107,19 +107,37 @@ class Usuario(models.Model):
 class Producto(models.Model):
     idProducto = models.AutoField(primary_key=True)
     sku = models.CharField(unique=True, max_length=50, blank=True, null=True)
+    ean_upc = models.CharField(max_length=50, blank=True, null=True)  # Nuevo - MECH
     nombre = models.CharField(max_length=255, blank=True, null=True)
+    descripcion = models.TextField(blank=True, null=True)  # Nuevo - MECH
     categoria = models.CharField(max_length=100, blank=True, null=True)
+    marca = models.CharField(max_length=100, blank=True, null=True)  # Nuevo - MECH
+    modelo = models.CharField(max_length=100, blank=True, null=True) # Nuevo - MECH
     uom_compra = models.CharField(max_length=45, blank=True, null=True)
     uom_venta = models.CharField(max_length=45, blank=True, null=True)
     factor_conversion = models.IntegerField(blank=True, null=True)
+    costo_estandar = models.DecimalField(max_digits=18, decimal_places=6, blank=True, null=True)  # Nuevo- MECH
+    costo_promedio = models.DecimalField(max_digits=18, decimal_places=6, blank=True, null=True)  # Nuevo - MECH
+    precio_venta = models.DecimalField(max_digits=18, decimal_places=6, blank=True, null=True)    # Nuevo - MECH
     impuesto_iva = models.IntegerField(blank=True, null=True)
     stock_minimo = models.IntegerField(blank=True, null=True)
+    stock_maximo = models.IntegerField(blank=True, null=True)  # Nuevo - MECH
+    punto_reorden = models.IntegerField(blank=True, null=True) # Nuevo - MECH
     perishable = models.IntegerField(blank=True, null=True)
+    control_por_lote = models.BooleanField(default=False)     # Nuevo - MECH
+    control_por_serie = models.BooleanField(default=False)    # Nuevo - MECH
     lote = models.IntegerField(blank=True, null=True)
+    imagen_url = models.CharField(max_length=255, blank=True, null=True)         # Nuevo - MECH
+    ficha_tecnica_url = models.CharField(max_length=255, blank=True, null=True)  # Nuevo - MECH
+    stock_actual = models.IntegerField(default=0)                # Nuevo - MECH
+    alerta_bajo_stock = models.CharField(max_length=10, default="NO")   # Nuevo - MECH
+    alerta_por_vencer = models.CharField(max_length=10, default="NO")   # Nuevo - MECH
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         managed = False
-        db_table = 'Producto'
+        db_table = 'producto'
 
     def __str__(self):
         return f"{self.sku} - {self.nombre}"

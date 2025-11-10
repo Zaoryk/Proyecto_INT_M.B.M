@@ -26,6 +26,7 @@ input, select { border-radius: 8px !important; }
 }
 </style>
 
+
 {% if can_add or edit_mode %}
 <div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
@@ -144,7 +145,6 @@ input, select { border-radius: 8px !important; }
             <textarea class="form-control" name="descripcion" rows="2">{{ form.descripcion.value|default_if_none:'' }}</textarea>
           </div>
         </div>
-
         <!-- TAB 2: Stock y control -->
         <div class="tab-pane fade" id="stock-control" role="tabpanel">
           <div class="row mb-3">
@@ -176,7 +176,6 @@ input, select { border-radius: 8px !important; }
             </div>
           </div>
         </div>
-
         <!-- TAB 3: Relaciones y derivados -->
         <div class="tab-pane fade" id="relaciones-derivados" role="tabpanel">
           <div class="row mb-3">
@@ -189,23 +188,28 @@ input, select { border-radius: 8px !important; }
               <input type="url" class="form-control" name="ficha_tecnica_url" placeholder="https://...pdf" value="{{ form.ficha_tecnica_url.value|default_if_none:'' }}">
             </div>
           </div>
-          <h6 class="fw-bold">Derivados (solo lectura)</h6>
+          <h6 class="fw-bold">Derivados (editable)</h6>
           <div class="row mb-2">
             <div class="col-md-4">
               <label class="form-label">Stock actual</label>
-              <input class="form-control" type="text" name="stock_actual" value="{{ form.stock_actual.value|default_if_none:0 }}" readonly>
+              <input class="form-control" type="number" name="stock_actual" value="{{ form.stock_actual.value|default_if_none:0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">Alerta bajo stock</label>
-              <input class="form-control" type="text" name="alerta_bajo_stock" value="Sí" readonly>
+              <select class="form-select" name="alerta_bajo_stock">
+                <option value="NO" {% if form.alerta_bajo_stock.value == "NO" %}selected{% endif %}>NO</option>
+                <option value="SI" {% if form.alerta_bajo_stock.value == "SI" %}selected{% endif %}>SI</option>
+              </select>
             </div>
             <div class="col-md-4">
               <label class="form-label">Alerta por vencer</label>
-              <input class="form-control" type="text" name="alerta_por_vencer" value="NO" readonly>
+              <select class="form-select" name="alerta_por_vencer">
+                <option value="NO" {% if form.alerta_por_vencer.value == "NO" %}selected{% endif %}>NO</option>
+                <option value="SI" {% if form.alerta_por_vencer.value == "SI" %}selected{% endif %}>SI</option>
+              </select>
             </div>
           </div>
         </div>
-      </div>
       <div class="d-flex justify-content-end mt-4">
         <button type="submit" class="btn btn-primary me-2">
           {% if edit_mode %}Actualizar{% else %}Guardar{% endif %}
@@ -225,6 +229,7 @@ input, select { border-radius: 8px !important; }
   <strong>No tienes Los Permisos</strong> - Solo visualizar datos.
 </div>
 {% endif %}
+
 
 <!-- Tabla de Productos abajo -->
 <div class="card shadow-sm border-0">
@@ -366,79 +371,26 @@ input, select { border-radius: 8px !important; }
   </div>
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-{% if messages %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  {% for message in messages %}
-    Swal.fire({
-      icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}",
-      title: "{% if message.tags == 'success' %}¡Éxito!{% elif message.tags == 'error' %}Error{% elif message.tags == 'warning' %}Atención{% else %}Aviso{% endif %}",
-      text: "{{ message|escapejs }}",
-      showConfirmButton: true,
-      confirmButtonText: "Aceptar"
-    });
-  {% endfor %}
-});
-</script>
-{% endif %}
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  // ========== ORDENAMIENTO DE TABLA ==========
-  const sortableHeaders = document.querySelectorAll('.sortable-header');
-  const orderByInput = document.getElementById('order_by');
-  const orderInput = document.getElementById('order');
-  const searchForm = document.getElementById('searchForm');
-
-  sortableHeaders.forEach(header => {
-    header.addEventListener('click', function() {
-      const field = this.getAttribute('data-field');
-      const currentOrderBy = orderByInput.value;
-      const currentOrder = orderInput.value;
-      if (currentOrderBy === field) {
-        orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
-      } else {
-        orderByInput.value = field;
-        orderInput.value = 'asc';
-      }
-      searchForm.submit();
-    });
-  });
-
-  if (orderByInput.value) {
-    const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
-    if (activeHeader) {
-      activeHeader.classList.add('active');
-    }
-  }
-
-  // Categoría nueva dinámica
-  const selectCat = document.getElementById("categoriaSelect");
-  const inputDiv = document.getElementById("input-categoria-nueva");
-  const inputNueva = document.querySelector('input[name="categoria_nueva"]');
-  if (selectCat) {
-    selectCat.addEventListener('change', function() {
-      inputDiv.style.display = (this.value === 'Otras') ? 'block' : 'none';
-    });
-    if (selectCat.value === 'Otras') inputDiv.style.display = 'block';
-  }
-  // Validaciones JS y SweetAlert2
   const productoForm = document.getElementById("productoForm");
   if (productoForm) {
     productoForm.addEventListener("submit", function(e){
       let errores = [];
       if (!this.categoria.value.trim()) errores.push("Categoría");
       if (this.categoria.value === "Otras") {
+        const inputNueva = document.querySelector('input[name="categoria_nueva"]');
         if (!inputNueva.value || !inputNueva.value.trim()) {
           errores.push("Debe ingresar el nombre de la nueva categoría.");
         }
       }
       if (!this.sku.value.trim()) errores.push("SKU");
       if (!this.nombre.value.trim()) errores.push("Nombre");
-      if (!this.uom_compra.value.trim()) errores.push("Unidad compra");
-      if (!this.uom_venta.value.trim()) errores.push("Unidad venta");
-      if (!this.factor_conversion.value.trim() || parseInt(this.factor_conversion.value) < 1) errores.push("Conversión (min: 1)");
-      if (!this.impuesto_iva.value.trim() || parseInt(this.impuesto_iva.value) < 0) errores.push("IVA");
+      if (!this.uom_compra.value.trim()) errores.push("Unidad de compra");
+      if (!this.uom_venta.value.trim()) errores.push("Unidad de venta");
+      if (!this.factor_conversion.value.trim() || parseInt(this.factor_conversion.value) < 1) errores.push("Conversión (mínimo 1)");
       if (!this.stock_minimo.value.trim() || parseInt(this.stock_minimo.value) < 0) errores.push("Stock mínimo");
       if (this.nombre.value && !/^[\wÁÉÍÓÚáéíóúÜüÑñ .,-]+$/.test(this.nombre.value)) {
         errores.push("Nombre (solo letras/números y .,- )");
@@ -453,6 +405,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         return false;
       }
+      // Set checkboxes (manejo de 0/1)
       let perishable = document.getElementById("perishableCheck");
       let controlLote = document.getElementById("loteCheck");
       if(perishable && !perishable.checked){
@@ -475,51 +428,6 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
   }
-  const pagSize = document.getElementById("pag_size");
-  if(pagSize){
-    pagSize.addEventListener("change", function(){
-      searchForm.submit();
-    });
-  }
-  // SweetAlert2 eliminar confirmación
-  document.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      Swal.fire({
-        icon: 'warning',
-        title: '¿Seguro de eliminar?',
-        text: '¡Esta acción no se puede deshacer!',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) window.location.href = btn.getAttribute('href');
-      });
-    });
-  });
-
-  {% if form.errors %}
-    let erroresHTML = "<ul style='text-align:left; margin:0; padding-left:20px;'>";
-    {% for field in form %}
-      {% if field.errors %}
-        {% for error in field.errors %}
-          erroresHTML += "<li><strong>{{ field.label }}:</strong> {{ error|escapejs }}</li>";
-        {% endfor %}
-      {% endif %}
-    {% endfor %}
-    {% for error in form.non_field_errors %}
-      erroresHTML += "<li>{{ error|escapejs }}</li>";
-    {% endfor %}
-    erroresHTML += "</ul>";
-    Swal.fire({
-      icon: "error",
-      title: "Error en el formulario",
-      html: erroresHTML,
-      confirmButtonText: "Corregir"
-    });
-  {% endif %}
 });
 </script>
 {% endblock %}
