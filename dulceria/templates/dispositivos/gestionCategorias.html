@@ -25,6 +25,15 @@ input, select, textarea { border-radius: 8px !important; }
 .sortable-header.active .sort-icon {
   opacity: 1;
 }
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+.invalid-feedback {
+  display: block;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
 </style>
 
 <div class="row">
@@ -43,17 +52,29 @@ input, select, textarea { border-radius: 8px !important; }
 
           <div class="mb-3">
             <label class="form-label">Nombre <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" name="nombre" 
+            <input type="text" class="form-control {% if form.nombre.errors %}is-invalid{% endif %}" 
+                   name="nombre" id="id_nombre"
                    value="{{ form.nombre.value|default_if_none:'' }}" 
                    placeholder="Ej: Chocolates, Caramelos..." required>
+            {% if form.nombre.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.nombre.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
             <small class="form-text text-muted">Mínimo 3 caracteres, único (no distingue mayúsculas)</small>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <textarea class="form-control" name="descripcion" rows="3" 
-                      placeholder="Descripción opcional...">{{ form.descripcion.value|default_if_none:'' }}</textarea>
-            <small class="form-text text-muted">Máximo 255 caracteres</small>
+            <label class="form-label">Descripción <span class="text-danger">*</span></label>
+            <textarea class="form-control {% if form.descripcion.errors %}is-invalid{% endif %}" 
+                      name="descripcion" id="id_descripcion" rows="3" 
+                      placeholder="Descripción de la categoría..." required>{{ form.descripcion.value|default_if_none:'' }}</textarea>
+            {% if form.descripcion.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.descripcion.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
+            <small class="form-text text-muted">Mínimo 10 caracteres, máximo 255 caracteres (obligatorio)</small>
           </div>
 
           <div class="mb-3">
@@ -82,7 +103,6 @@ input, select, textarea { border-radius: 8px !important; }
     <div class="alert alert-info">
       <i class="bi bi-info-circle me-2"></i>
       <strong>No tienes Los Permisos</strong> - Solo visualizar datos.
-
     </div>
     {% endif %}
   </div>
@@ -106,7 +126,6 @@ input, select, textarea { border-radius: 8px !important; }
             <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
             <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
           </select>
-          <!-- Campos ocultos para mantener orden -->
           <input type="hidden" name="order_by" id="order_by" value="{{ order_by }}">
           <input type="hidden" name="order" id="order" value="{{ order }}">
           <button type="submit" class="btn btn-outline-primary mb-2">
@@ -161,7 +180,7 @@ input, select, textarea { border-radius: 8px !important; }
               {% for categoria in categorias %}
               <tr>
                 <td>{{ categoria.nombre }}</td>
-                <td>{{ categoria.descripcion|default:"-" }}</td>
+                <td>{{ categoria.descripcion }}</td>
                 <td class="text-center">
                   <span class="badge {% if categoria.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %}">
                     {{ categoria.get_estado_display }}
@@ -236,21 +255,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const currentOrderBy = orderByInput.value;
       const currentOrder = orderInput.value;
 
-      // Si es el mismo campo, invertir orden
       if (currentOrderBy === field) {
         orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
       } else {
-        // Si es otro campo, empezar con orden ascendente
         orderByInput.value = field;
         orderInput.value = 'asc';
       }
 
-      // Enviar formulario
       searchForm.submit();
     });
   });
 
-  // Marcar header activo
   if (orderByInput.value) {
     const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
     if (activeHeader) {
@@ -258,38 +273,56 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ========== VALIDACIÓN FORMULARIO ==========
   const form = document.getElementById("categoriaForm");
   if (form) {
     form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      
       const nombre = form.querySelector("[name='nombre']").value.trim();
       const descripcion = form.querySelector("[name='descripcion']").value.trim();
       const estado = form.querySelector("[name='estado']").value.trim();
-      const faltantes = [];
+      const errores = [];
       
-      if (!nombre) faltantes.push("Nombre");
-      if (nombre && nombre.length < 3) faltantes.push("Nombre (mínimo 3 caracteres)");
-      if (nombre && nombre.length > 100) faltantes.push("Nombre (máximo 100 caracteres)");
-      if (descripcion && descripcion.length > 255) faltantes.push("Descripción (máximo 255 caracteres)");
-      if (!estado) faltantes.push("Estado");
-      
-      if (nombre && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$/.test(nombre)) {
-        faltantes.push("Nombre (solo letras, números, espacios y guiones)");
+      // Validar nombre
+      if (!nombre) {
+        errores.push("El <strong>nombre</strong> es obligatorio");
+      } else if (nombre.length < 3) {
+        errores.push("El <strong>nombre</strong> debe tener al menos 3 caracteres");
+      } else if (nombre.length > 100) {
+        errores.push("El <strong>nombre</strong> no puede superar 100 caracteres");
+      } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$/.test(nombre)) {
+        errores.push("El <strong>nombre</strong> solo puede contener letras, números, espacios y guiones");
       }
       
-      if (faltantes.length > 0) {
-        e.preventDefault();
+      // Validar descripción
+      if (!descripcion) {
+        errores.push("La <strong>descripción</strong> es obligatoria");
+      } else if (descripcion.length < 10) {
+        errores.push("La <strong>descripción</strong> debe tener al menos 10 caracteres");
+      } else if (descripcion.length > 255) {
+        errores.push("La <strong>descripción</strong> no puede superar 255 caracteres");
+      }else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$/.test(descripcion)) {
+        errores.push("La <strong>descripcion</strong> solo puede contener letras, números, espacios y guiones");
+      }
+      
+      if (errores.length > 0) {
         Swal.fire({
           icon: "warning",
-          title: "Campos inválidos",
-          html: "<ul style='text-align:left;margin:0;'>" + faltantes.map(f => "<li>" + f + "</li>").join("") + "</ul>",
+          title: "Campos inválidos o faltantes",
+          html: "<ul style='text-align:left;margin:0;padding-left:20px;'>" + 
+                errores.map(e => "<li>" + e + "</li>").join("") + 
+                "</ul>",
           confirmButtonText: "Corregir"
         });
         return false;
       }
+      
+      // Si todo está OK, enviar formulario
+      form.submit();
     });
   }
 
+  // ========== ELIMINAR CON CONFIRMACIÓN ==========
   document.querySelectorAll(".btn-delete-categoria").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-id");
@@ -310,6 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // ========== AUTO-SUBMIT PAGINADOR ==========
   const pagSize = document.getElementById("pag_size");
   if (pagSize) {
     pagSize.addEventListener("change", function() {
@@ -334,12 +368,15 @@ document.addEventListener("DOMContentLoaded", function() {
     erroresHTML += "<li>{{ error|escapejs }}</li>";
   {% endfor %}
   erroresHTML += "</ul>";
-  Swal.fire({
-    icon: "error",
-    title: "Error en el formulario",
-    html: erroresHTML,
-    confirmButtonText: "Corregir"
-  });
+  
+  if (erroresHTML !== "<ul style='text-align:left; margin:0; padding-left:20px;'></ul>") {
+    Swal.fire({
+      icon: "error",
+      title: "Error en el formulario",
+      html: erroresHTML,
+      confirmButtonText: "Corregir"
+    });
+  }
 });
 </script>
 {% endif %}

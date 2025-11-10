@@ -350,19 +350,24 @@ class CategoriaForm(forms.ModelForm):
         qs = Categoria.objects.filter(nombre__iexact=nombre)
         if self.instance and self.instance.pk:
             qs = qs.exclude(pk=self.instance.pk)
-        
         if qs.exists():
-            raise ValidationError(f"Ya existe una categoría con el nombre exacto '{nombre}'.")
+            raise ValidationError(f"Ya existe una categoría con el nombre '{nombre}'.")
         
         return nombre
     
     def clean_descripcion(self):
         descripcion = self.cleaned_data.get('descripcion', '').strip()
         
-        if descripcion and len(descripcion) > 255:
+        if not descripcion:
+            raise ValidationError("La descripción es obligatoria.")
+        if len(descripcion) < 10:
+            raise ValidationError("La descripción debe tener al menos 10 caracteres.")
+        if len(descripcion) > 255:
             raise ValidationError("La descripción no puede superar 255 caracteres.")
+        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$', descripcion):
+            raise ValidationError("La descripcion solo puede contener letras, números, espacios y guiones.")
         
-        return descripcion if descripcion else None
+        return descripcion
 
 
 class BodegaForm(forms.ModelForm):
