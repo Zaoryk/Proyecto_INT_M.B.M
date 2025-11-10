@@ -5,6 +5,24 @@
 input, select, textarea { border-radius: 8px !important; }
 .table th, .table td { vertical-align: middle; }
 .table-hover tbody tr:hover { background-color: #f8f9fa; }
+
+/* Ordenamiento visual */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px !important;
+}
+.sortable-header:hover { background-color: #e9ecef; }
+.sort-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  font-size: 0.75rem;
+}
+.sortable-header.active .sort-icon { opacity: 1; }
 </style>
 
 <div class="row mb-4">
@@ -20,7 +38,7 @@ input, select, textarea { border-radius: 8px !important; }
     <div class="card text-center shadow-sm">
       <div class="card-body">
         <h6 class="card-title">Total movimientos</h6>
-        <span class="h5">{{ movimientos|length }}</span>
+        <span class="h5">{{ movimientos.paginator.count }}</span>
       </div>
     </div>
   </div>
@@ -49,27 +67,17 @@ input, select, textarea { border-radius: 8px !important; }
 
       <ul class="nav nav-tabs mb-3" id="movimientoTab" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="tab-datos" data-bs-toggle="tab"
-                  data-bs-target="#datos-movimiento" type="button" role="tab">
-            1. Datos del movimiento
-          </button>
+          <button class="nav-link active" id="tab-datos" data-bs-toggle="tab" data-bs-target="#datos-movimiento" type="button" role="tab">1. Datos del movimiento</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-control" data-bs-toggle="tab"
-                  data-bs-target="#control-avanzado" type="button" role="tab">
-            2. Control avanzado
-          </button>
+          <button class="nav-link" id="tab-control" data-bs-toggle="tab" data-bs-target="#control-avanzado" type="button" role="tab">2. Control avanzado</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-ref" data-bs-toggle="tab"
-                  data-bs-target="#referencias" type="button" role="tab">
-            3. Referencias / Observaciones
-          </button>
+          <button class="nav-link" id="tab-ref" data-bs-toggle="tab" data-bs-target="#referencias" type="button" role="tab">3. Referencias / Observaciones</button>
         </li>
       </ul>
 
       <div class="tab-content" id="movimientoTabContent">
-
         <!-- TAB 1 -->
         <div class="tab-pane fade show active" id="datos-movimiento" role="tabpanel">
           <div class="row mb-3">
@@ -130,6 +138,7 @@ input, select, textarea { border-radius: 8px !important; }
           </div>
         </div>
 
+        <!-- TAB 2 -->
         <div class="tab-pane fade" id="control-avanzado" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-4">
@@ -155,15 +164,15 @@ input, select, textarea { border-radius: 8px !important; }
           <div class="row mb-3">
             <div class="col-md-4">
               <label class="form-label">Lote</label>
-              <input type="text" class="form-control" name="lote" id="lote">
+              <input type="text" class="form-control" name="lote" id="lote" disabled>
             </div>
             <div class="col-md-4">
               <label class="form-label">Serie</label>
-              <input type="text" class="form-control" name="serie" id="serie">
+              <input type="text" class="form-control" name="serie" id="serie" disabled>
             </div>
             <div class="col-md-4">
               <label class="form-label">Fecha de vencimiento</label>
-              <input type="date" class="form-control" name="fecha_vencimiento" id="fecha_vencimiento">
+              <input type="date" class="form-control" name="fecha_vencimiento" id="fecha_vencimiento" disabled>
             </div>
           </div>
         </div>
@@ -205,8 +214,10 @@ input, select, textarea { border-radius: 8px !important; }
 <div class="card shadow-sm border-0 mt-4">
   <div class="card-body">
     <h5 class="card-title fw-bold">Movimientos</h5>
-    <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="paginatorForm">
-      <input class="form-control me-2" type="text" name="buscar" placeholder="Buscar por SKU, producto..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:200px;">
+
+    <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="searchForm">
+      <input class="form-control me-2" type="text" name="buscar"
+             placeholder="Buscar por SKU, producto..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:200px;">
       <select class="form-select me-2" name="tipo" style="max-width:130px;">
         <option value="">Tipo: todos</option>
         <option value="entrada" {% if request.GET.tipo == 'entrada' %}selected{% endif %}>Entrada</option>
@@ -219,32 +230,104 @@ input, select, textarea { border-radius: 8px !important; }
         <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
         <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
       </select>
-      <button type="submit" class="btn btn-outline-primary me-2">
-        <i class="bi bi-search"></i> Buscar
-      </button>
+
+      <!-- Orden -->
+      <input type="hidden" name="order_by" id="order_by" value="{{ order_by|default:'fecha_movimiento' }}">
+      <input type="hidden" name="order" id="order" value="{{ order|default:'desc' }}">
+
+      <button type="submit" class="btn btn-outline-primary me-2"><i class="bi bi-search"></i> Buscar</button>
       <button type="submit" class="btn btn-outline-success ms-auto" name="export_excel" value="1">
         <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
       </button>
     </form>
-
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover rounded">
-        <thead class="table-light text-center">
-          <tr>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>SKU</th>
-            <th>Proveedor</th>
-            <th>Bodega</th>
-            <th>Cantidad</th>
-            <th>Lote</th>
-            <th>Serie</th>
-            <th>Vence</th>
-            <th>Doc Ref</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
+      <div class="table-responsive">
+    <table class="table table-bordered table-hover rounded">
+      <thead class="table-light text-center">
+        <tr>
+          <th class="sortable-header" data-field="fecha_movimiento">
+            Fecha
+            <span class="sort-icon">
+              {% if order_by == 'fecha_movimiento' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% else %}⇅{% endif %}
+            </span>
+          </th>
+          <th class="sortable-header" data-field="tipo_movimiento">
+            Tipo
+            <span class="sort-icon">
+              {% if order_by == 'tipo_movimiento' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% else %}⇅{% endif %}
+            </span>
+          </th>
+          <th class="sortable-header" data-field="producto__sku">
+            SKU
+            <span class="sort-icon">
+              {% if order_by == 'producto__sku' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% else %}⇅{% endif %}
+            </span>
+          </th>
+          <th class="sortable-header" data-field="proveedor__razon_social">
+            Proveedor
+            <span class="sort-icon">
+              {% if order_by == 'proveedor__razon_social' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% else %}⇅{% endif %}
+            </span>
+          </th>
+          <th class="sortable-header" data-field="bodega__nombre">
+            Bodega
+            <span class="sort-icon">
+              {% if order_by == 'bodega__nombre' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% else %}⇅{% endif %}
+            </span>
+          </th>
+          <th class="sortable-header" data-field="cantidad">
+            Cantidad
+            <span class="sort-icon">
+              {% if order_by == 'cantidad' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% else %}⇅{% endif %}
+            </span>
+          </th>
+          <th class="sortable-header" data-field="lote">
+            Lote
+            <span class="sort-icon">
+              {% if order_by == 'lote' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% else %}⇅{% endif %}
+            </span>
+          </th>
+          <th class="sortable-header" data-field="serie">
+            Serie
+            <span class="sort-icon">
+              {% if order_by == 'serie' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% else %}⇅{% endif %}
+            </span>
+          </th>
+          <th class="sortable-header" data-field="fecha_vencimiento">
+            Vence
+            <span class="sort-icon">
+              {% if order_by == 'fecha_vencimiento' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% else %}⇅{% endif %}
+            </span>
+          </th>
+          <th class="sortable-header" data-field="doc_referencia">
+            Doc Ref
+            <span class="sort-icon">
+              {% if order_by == 'doc_referencia' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% else %}⇅{% endif %}
+            </span>
+          </th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+        <tbody id="tabla-movimientos-body">
         {% for m in movimientos %}
         <tr>
           <td>{{ m.fecha_movimiento|date:"Y-m-d H:i" }}</td>
@@ -254,7 +337,7 @@ input, select, textarea { border-radius: 8px !important; }
             </span>
           </td>
           <td>{{ m.producto.sku }}</td>
-          <td>{{ m.proveedor.rut_nif }}</td>
+          <td>{{ m.proveedor.razon_social }}</td>
           <td>{{ m.bodega.nombre }}</td>
           <td>{{ m.cantidad }}</td>
           <td>{{ m.lote|default:"—" }}</td>
@@ -272,29 +355,49 @@ input, select, textarea { border-radius: 8px !important; }
         </tbody>
       </table>
     </div>
+
+    {% if movimientos.has_other_pages %}
+    <nav>
+      <ul class="pagination justify-content-end">
+        {% if movimientos.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ movimientos.previous_page_number }}">Anterior</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+        {% for i in movimientos.paginator.page_range %}
+          <li class="page-item {% if movimientos.number == i %}active{% endif %}">
+            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+          </li>
+        {% endfor %}
+        {% if movimientos.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ movimientos.next_page_number }}">Siguiente</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  const pagSize = document.getElementById("pag_size");
-  if (pagSize) pagSize.addEventListener("change", () => document.getElementById("paginatorForm").submit());
-
-  // Confirmar eliminación
-  document.querySelectorAll(".delete-btn").forEach(btn => {
-    btn.addEventListener("click", e => {
-      e.preventDefault();
-      Swal.fire({
-        icon: "warning",
-        title: "¿Seguro de eliminar?",
-        text: "Esta acción no se puede deshacer.",
-        showCancelButton: true,
-        confirmButtonColor: "#dc3545",
-        cancelButtonColor: "#6c757d",
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar"
-      }).then(r => { if (r.isConfirmed) window.location.href = btn.getAttribute("href"); });
+  const orderByInput = document.getElementById("order_by");
+  const orderInput = document.getElementById("order");
+  const searchForm = document.getElementById("searchForm");
+  document.querySelectorAll(".sortable-header").forEach(header => {
+    header.addEventListener("click", function() {
+      const field = this.getAttribute("data-field");
+      const currentOrderBy = orderByInput.value;
+      const currentOrder = orderInput.value;
+      if (currentOrderBy === field) {
+        orderInput.value = currentOrder === "asc" ? "desc" : "asc";
+      } else {
+        orderByInput.value = field;
+        orderInput.value = "asc";
+      }
+      searchForm.submit();
     });
   });
 
@@ -311,12 +414,26 @@ document.addEventListener("DOMContentLoaded", function() {
   toggle(document.getElementById("manejo_series"), document.getElementById("serie"));
   toggle(document.getElementById("perecible"), document.getElementById("fecha_vencimiento"));
 
+  document.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.preventDefault();
+      Swal.fire({
+        icon: "warning",
+        title: "¿Seguro de eliminar?",
+        text: "Esta acción no se puede deshacer.",
+        showCancelButton: true,
+        confirmButtonColor: "#dc3545",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+      }).then(r => { if (r.isConfirmed) window.location.href = btn.getAttribute("href"); });
+    });
+  });
+
   const form = document.getElementById("movimientoForm");
   if (form) {
     form.addEventListener("submit", function(e) {
-      e.preventDefault();
       const errores = [];
-
       const fecha = document.getElementById("fecha_movimiento").value.trim();
       const tipo = document.getElementById("tipo_movimiento").value.trim();
       const producto = document.getElementById("producto").value.trim();
@@ -333,44 +450,23 @@ document.addEventListener("DOMContentLoaded", function() {
       if (!cantidad || isNaN(cantidad) || parseInt(cantidad) <= 0)
         errores.push("La <b>cantidad</b> debe ser mayor a 0.");
 
-      if (fecha) {
-        const hoy = new Date();
-        const fechaMov = new Date(fecha);
-        if (fechaMov < hoy.setHours(0,0,0,0)) {
-          errores.push("La <b>fecha del movimiento</b> no puede ser anterior a hoy.");
-        }
-      }
-
-      const chkLote = document.getElementById("manejo_lotes");
-      const chkSerie = document.getElementById("manejo_series");
       const chkPerecible = document.getElementById("perecible");
-
-      if (chkLote.checked && !document.getElementById("lote").value.trim())
-        errores.push("Debe ingresar un <b>número de lote</b>.");
-      if (chkSerie.checked && !document.getElementById("serie").value.trim())
-        errores.push("Debe ingresar un <b>número de serie</b>.");
-
-      if (chkPerecible.checked) {
-        if (!fechaVenc)
-          errores.push("Debe ingresar la <b>fecha de vencimiento</b>.");
-        else {
-          const fechaHoy = new Date();
-          const fechaVen = new Date(fechaVenc);
-          if (fechaVen < fechaHoy.setHours(0,0,0,0)) {
-            errores.push("La <b>fecha de vencimiento</b> no puede estar vencida.");
-          }
+      if (chkPerecible.checked && fechaVenc) {
+        const fechaHoy = new Date();
+        const fechaVen = new Date(fechaVenc);
+        if (fechaVen < fechaHoy.setHours(0,0,0,0)) {
+          errores.push("La <b>fecha de vencimiento</b> no puede estar vencida.");
         }
       }
 
       if (errores.length > 0) {
+        e.preventDefault();
         Swal.fire({
           icon: "error",
           title: "Corrige los siguientes errores",
           html: "<ul style='text-align:left'>" + errores.map(e => "<li>" + e + "</li>").join("") + "</ul>",
           confirmButtonText: "Aceptar"
         });
-      } else {
-        this.submit();
       }
     });
   }
