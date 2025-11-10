@@ -136,36 +136,65 @@ class ProveedorForm(forms.ModelForm):
 
 
 class ProductoProveedorForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # TODOS los campos requeridos custom
-        self.fields['fecha_movimiento'].required = False
-        self.fields['tipo_movimiento'].required = False
-        self.fields['producto'].required = False
-        self.fields['cantidad'].required = False
-        self.fields['proveedor'].required = False
+    class Meta:
+        model = ProductoProveedor
+        fields = [
+            'fecha_movimiento',
+            'tipo_movimiento',
+            'producto',
+            'proveedor',
+            'bodega',
+            'cantidad',
+            'manejo_lotes',
+            'manejo_series',
+            'perecible',
+            'lote',
+            'serie',
+            'fecha_vencimiento',
+            'doc_referencia',
+            'motivo',
+            'observaciones',
+        ]
+        widgets = {
+            'fecha_movimiento': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'fecha_vencimiento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'tipo_movimiento': forms.Select(attrs={'class': 'form-select'}),
+            'producto': forms.Select(attrs={'class': 'form-select'}),
+            'proveedor': forms.Select(attrs={'class': 'form-select'}),
+            'bodega': forms.Select(attrs={'class': 'form-select'}),
+            'cantidad': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'doc_referencia': forms.TextInput(attrs={'class': 'form-control'}),
+            'motivo': forms.TextInput(attrs={'class': 'form-control'}),
+            'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
 
     def clean(self):
         cleaned = super().clean()
-        required = {
-            'fecha_movimiento': 'Debes ingresar la fecha del movimiento.',
-            'tipo_movimiento': 'Debes seleccionar el tipo de movimiento.',
-            'producto': 'Debes seleccionar un producto.',
-            'cantidad': 'Debes ingresar la cantidad.',
-            'proveedor': 'Debes seleccionar un proveedor.',
-        }
-        for field, msg in required.items():
-            if not self.cleaned_data.get(field):
-                self.add_error(field, msg)
-        # Lógica adicional para cantidad positiva
-        cantidad = self.cleaned_data.get("cantidad")
-        if cantidad is not None and cantidad <= 0:
-            self.add_error("cantidad", "La cantidad debe ser mayor a cero.")
-        return cleaned
+        fecha = cleaned.get("fecha_movimiento")
+        tipo = cleaned.get("tipo_movimiento")
+        producto = cleaned.get("producto")
+        cantidad = cleaned.get("cantidad")
+        proveedor = cleaned.get("proveedor")
+        perecible = cleaned.get("perecible")
+        fecha_vencimiento = cleaned.get("fecha_vencimiento")
 
-    class Meta:
-        model = ProductoProveedor
-        fields = '__all__'
+        if not fecha:
+            self.add_error("fecha_movimiento", "Debes ingresar la fecha del movimiento.")
+        if not tipo:
+            self.add_error("tipo_movimiento", "Debes seleccionar el tipo de movimiento.")
+        if not producto:
+            self.add_error("producto", "Debes seleccionar un producto.")
+        if not cantidad or cantidad <= 0:
+            self.add_error("cantidad", "La cantidad debe ser mayor a cero.")
+        if not proveedor:
+            self.add_error("proveedor", "Debes seleccionar un proveedor.")
+
+        if perecible and fecha_vencimiento:
+            from datetime import date
+            if fecha_vencimiento < date.today():
+                self.add_error("fecha_vencimiento", "La fecha de vencimiento no puede ser anterior a hoy.")
+
+        return cleaned
 
 
 

@@ -620,13 +620,31 @@ def moduloTransaccional(request):
         if not edit_id and not can_add:
             messages.error(request, "No tienes permiso para crear movimientos.")
             return redirect("Transaccional")
+
         instance = get_object_or_404(ProductoProveedor, pk=edit_id) if edit_id else None
         form = ProductoProveedorForm(request.POST, instance=instance)
         edit_mode = bool(edit_id)
+
         if form.is_valid():
-            form.save()
+            movimiento = form.save(commit=False)
+
+            # Control de campos opcionales (evitar null vacíos)
+            if not movimiento.lote:
+                movimiento.lote = None
+            if not movimiento.serie:
+                movimiento.serie = None
+            if not movimiento.doc_referencia:
+                movimiento.doc_referencia = None
+            if not movimiento.motivo:
+                movimiento.motivo = None
+            if not movimiento.observaciones:
+                movimiento.observaciones = None
+
+            movimiento.save()
             messages.success(request, "Movimiento guardado correctamente.")
             return redirect("Transaccional")
+        else:
+            messages.error(request, "Error al guardar el movimiento. Verifica los campos.")
 
     # ELIMINAR
     elif request.method == "GET" and "delete_id" in request.GET:
