@@ -2,34 +2,7 @@
 {% block content %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  const avatarInput = document.getElementById("avatarInput");
-  const avatarPreview = document.getElementById("avatar-preview");
-
-  if (avatarInput) {
-    avatarInput.addEventListener("change", function() {
-      const file = this.files[0];
-      if (file && file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          let imgTag = document.createElement("img");
-          imgTag.className = "rounded-circle shadow";
-          imgTag.id = "avatar-img";
-          imgTag.style = "width:80px;height:80px;object-fit:cover;";
-          imgTag.src = e.target.result;
-          avatarPreview.innerHTML = "";
-          avatarPreview.appendChild(imgTag);
-        }
-        reader.readAsDataURL(file);
-      } else {
-        avatarPreview.innerHTML = `
-          <div id="avatar-placeholder"
-              class="rounded-circle bg-light d-flex align-items-center justify-content-center"
-              style="width:80px;height:80px;">
-            <span class="fw-bold text-primary" style="font-size:2em;">U</span>
-          </div>`;
-      }
-    });
-  }
+  // ==== NO HAY avatar ni preview ====
 
   const toggleBtn = document.getElementById("togglePassword");
   const passwordField = document.getElementById("passwordField");
@@ -71,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function() {
       });
       return;
     }
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
       Swal.fire({
         icon: "error",
@@ -81,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
       });
       return;
     }
-    const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
+    const passRegex = /^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
     if ((!editMode && !passRegex.test(password)) || (editMode && password && !passRegex.test(password))) {
       Swal.fire({
         icon: "error",
@@ -119,24 +92,20 @@ document.addEventListener("DOMContentLoaded", function() {
   const orderByInput = document.getElementById('order_by');
   const orderInput = document.getElementById('order');
   const searchForm = document.getElementById('searchForm');
-
   sortableHeaders.forEach(header => {
     header.addEventListener('click', function() {
       const field = this.getAttribute('data-field');
       const currentOrderBy = orderByInput.value;
       const currentOrder = orderInput.value;
-
       if (currentOrderBy === field) {
         orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
       } else {
         orderByInput.value = field;
         orderInput.value = 'asc';
       }
-
       searchForm.submit();
     });
   });
-
   if (orderByInput.value) {
     const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
     if (activeHeader) {
@@ -199,40 +168,12 @@ input, select {
         <h5 class="card-title mb-3 fw-bold">
           {% if edit_mode %}Editar usuario{% else %}Nuevo usuario{% endif %}
         </h5>
-        <form id="formUsuario" method="post" enctype="multipart/form-data" autocomplete="off" novalidate>
+        <form id="formUsuario" method="post" autocomplete="off" novalidate>
           {% csrf_token %}
           {% if edit_mode %}
             <input type="hidden" name="edit_id" value="{{ edit_id }}">
           {% endif %}
-          <div class="mb-3 text-center">
-            <label class="form-label fw-bold">Foto de perfil</label><br>
-            <div id="avatar-preview">
-              {% if form.instance.avatar %}
-                <img id="avatar-img" src="{{ form.instance.avatar.url }}" alt="Avatar" class="rounded-circle shadow"
-                     style="width:80px;height:80px;object-fit:cover;">
-              {% else %}
-                <div id="avatar-placeholder"
-                     class="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                     style="width:80px;height:80px;">
-                  <span class="fw-bold text-primary" style="font-size:2em;">
-                    {{ form.instance.nombre|default:"U"|slice:":1" }}
-                  </span>
-                </div>
-              {% endif %}
-            </div>
-            <input type="file" class="form-control mt-2" name="avatar" id="avatarInput" accept="image/*">
-            {% if form.avatar.errors %}
-              <div class="text-danger small mt-1">{{ form.avatar.errors.0 }}</div>
-            {% endif %}
-            {% if form.instance.avatar %}
-              <form method="post" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="edit_id" value="{{ edit_id }}">
-                <input type="hidden" name="delete_avatar" value="1">
-                <button type="submit" class="btn btn-outline-danger btn-sm mt-2">Eliminar foto</button>
-              </form>
-            {% endif %}
-          </div>
+          <!-- FOTO DE PERFIL ELIMINADA COMPLETAMENTE -->
           <div class="mb-3">
             <label class="form-label">Username <span class="text-muted small">(requerido, único)</span></label>
             <input type="text" class="form-control" name="username" value="{{ form.username.value|default_if_none:'' }}" required>

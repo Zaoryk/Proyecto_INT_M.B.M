@@ -24,8 +24,8 @@ input, select { border-radius: 8px !important; }
 .sortable-header.active .sort-icon {
   opacity: 1;
 }
+.vermas-btn { padding: 2px 8px; font-size:0.9rem; }
 </style>
-
 
 {% if can_add or edit_mode %}
 <div class="card mb-4 shadow-sm border-0">
@@ -230,7 +230,6 @@ input, select { border-radius: 8px !important; }
 </div>
 {% endif %}
 
-
 <!-- Tabla de Productos abajo -->
 <div class="card shadow-sm border-0">
   <div class="card-body">
@@ -259,59 +258,23 @@ input, select { border-radius: 8px !important; }
       <table class="table table-bordered table-hover rounded">
         <thead class="table-light text-center">
           <tr>
-            <th class="sortable-header" data-field="sku">
-              SKU
-              <span class="sort-icon">
-                {% if order_by == 'sku' %}
-                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                {% else %}
-                  ⇅
-                {% endif %}
-              </span>
+            <th class="sortable-header" data-field="sku">SKU
+              <span class="sort-icon">{% if order_by == 'sku' %}{% if order == 'asc' %}▲{% else %}▼{% endif %}{% else %}⇅{% endif %}</span>
             </th>
-            <th class="sortable-header" data-field="nombre">
-              Nombre
-              <span class="sort-icon">
-                {% if order_by == 'nombre' %}
-                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                {% else %}
-                  ⇅
-                {% endif %}
-              </span>
+            <th class="sortable-header" data-field="nombre">Nombre
+              <span class="sort-icon">{% if order_by == 'nombre' %}{% if order == 'asc' %}▲{% else %}▼{% endif %}{% else %}⇅{% endif %}</span>
             </th>
-            <th class="sortable-header" data-field="categoria">
-              Categoría
-              <span class="sort-icon">
-                {% if order_by == 'categoria' %}
-                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                {% else %}
-                  ⇅
-                {% endif %}
-              </span>
+            <th class="sortable-header" data-field="categoria">Categoría
+              <span class="sort-icon">{% if order_by == 'categoria' %}{% if order == 'asc' %}▲{% else %}▼{% endif %}{% else %}⇅{% endif %}</span>
             </th>
-            <th class="sortable-header" data-field="stock_minimo">
-              Stock mínimo
-              <span class="sort-icon">
-                {% if order_by == 'stock_minimo' %}
-                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                {% else %}
-                  ⇅
-                {% endif %}
-              </span>
+            <th class="sortable-header" data-field="stock_minimo">Stock mínimo
+              <span class="sort-icon">{% if order_by == 'stock_minimo' %}{% if order == 'asc' %}▲{% else %}▼{% endif %}{% else %}⇅{% endif %}</span>
             </th>
-            <th class="sortable-header" data-field="impuesto_iva">
-              IVA (%)
-              <span class="sort-icon">
-                {% if order_by == 'impuesto_iva' %}
-                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                {% else %}
-                  ⇅
-                {% endif %}
-              </span>
+            <th class="sortable-header" data-field="impuesto_iva">IVA (%)
+              <span class="sort-icon">{% if order_by == 'impuesto_iva' %}{% if order == 'asc' %}▲{% else %}▼{% endif %}{% else %}⇅{% endif %}</span>
             </th>
-            {% if can_edit or can_delete %}
-              <th>Acciones</th>
-            {% endif %}
+            <th class="sortable-header" data-field="descripcion">Descripción</th>
+            {% if can_edit or can_delete %}<th>Acciones</th>{% endif %}
           </tr>
         </thead>
         <tbody>
@@ -322,6 +285,15 @@ input, select { border-radius: 8px !important; }
             <td>{{ producto.categoria }}</td>
             <td>{{ producto.stock_minimo }}</td>
             <td>{{ producto.impuesto_iva }}%</td>
+            <td>
+              {% if producto.descripcion and producto.descripcion|length > 40 %}
+                {{ producto.descripcion|slice:":37" }}...
+                <button class="btn btn-outline-info vermas-btn" type="button"
+                  onclick="verMasDescripcion('{{ producto.nombre|escapejs }}', '{{ producto.descripcion|escapejs }}')">Ver más</button>
+              {% else %}
+                {{ producto.descripcion }}
+              {% endif %}
+            </td>
             {% if can_edit or can_delete %}
             <td class="text-center">
               {% if can_edit %}
@@ -339,7 +311,7 @@ input, select { border-radius: 8px !important; }
           </tr>
           {% empty %}
           <tr>
-            <td colspan="{% if can_edit or can_delete %}6{% else %}5{% endif %}" class="text-center text-muted">
+            <td colspan="{% if can_edit or can_delete %}7{% else %}6{% endif %}" class="text-center text-muted">
               Sin productos registrados.
             </td>
           </tr>
@@ -374,6 +346,15 @@ input, select { border-radius: 8px !important; }
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+function verMasDescripcion(nombre, descripcion){
+  Swal.fire({
+    icon: 'info',
+    title: `Descripción de ${nombre}`,
+    html: `<div style='text-align:left; max-width: 350px; word-break:break-word;'>${descripcion}</div>`,
+    confirmButtonText: "Cerrar"
+  });
+}
+
 document.addEventListener("DOMContentLoaded", function() {
   const productoForm = document.getElementById("productoForm");
   if (productoForm) {
@@ -405,7 +386,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         return false;
       }
-      // Set checkboxes (manejo de 0/1)
       let perishable = document.getElementById("perishableCheck");
       let controlLote = document.getElementById("loteCheck");
       if(perishable && !perishable.checked){

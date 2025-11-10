@@ -113,7 +113,7 @@
     "model": "dispositivos.bodega",
     "pk": 1,
     "fields": {
-      "nombre": "Central Norte",
+      "nombre": "Central Norte #1",
       "ubicacion": "Av. Independencia 1001",
       "capacidad": 5222,
       "estado": "activo"
@@ -123,7 +123,7 @@
     "model": "dispositivos.bodega",
     "pk": 2,
     "fields": {
-      "nombre": "Alimentaria Sur",
+      "nombre": "Alimentaria Sur #2",
       "ubicacion": "Calle Dulzura 2020",
       "capacidad": 5444,
       "estado": "activo"
@@ -133,7 +133,7 @@
     "model": "dispositivos.bodega",
     "pk": 3,
     "fields": {
-      "nombre": "Dulce Oriente",
+      "nombre": "Dulce Oriente #3",
       "ubicacion": "Ruta 5 Sur Km 15",
       "capacidad": 5666,
       "estado": "inactivo"
@@ -143,7 +143,7 @@
     "model": "dispositivos.bodega",
     "pk": 4,
     "fields": {
-      "nombre": "ChocoStore",
+      "nombre": "ChocoStore #4",
       "ubicacion": "Costanera 2590",
       "capacidad": 5888,
       "estado": "activo"
@@ -153,7 +153,7 @@
     "model": "dispositivos.bodega",
     "pk": 5,
     "fields": {
-      "nombre": "Galletilandia",
+      "nombre": "Galletilandia #5",
       "ubicacion": "Manuel Montt 765",
       "capacidad": 6110,
       "estado": "activo"
@@ -163,7 +163,7 @@
     "model": "dispositivos.bodega",
     "pk": 6,
     "fields": {
-      "nombre": "Candy Box",
+      "nombre": "Candy Box #6",
       "ubicacion": "Granaderos 400",
       "capacidad": 6332,
       "estado": "inactivo"
@@ -173,7 +173,7 @@
     "model": "dispositivos.bodega",
     "pk": 7,
     "fields": {
-      "nombre": "Depósito Frutal",
+      "nombre": "Depósito Frutal #7",
       "ubicacion": "Libertador 844",
       "capacidad": 6554,
       "estado": "activo"
@@ -183,7 +183,7 @@
     "model": "dispositivos.bodega",
     "pk": 8,
     "fields": {
-      "nombre": "Fiesta Express",
+      "nombre": "Fiesta Express #8",
       "ubicacion": "Irarrázaval 2341",
       "capacidad": 6776,
       "estado": "activo"
@@ -193,7 +193,7 @@
     "model": "dispositivos.bodega",
     "pk": 9,
     "fields": {
-      "nombre": "Stock Express",
+      "nombre": "Stock Express #9",
       "ubicacion": "Mall Center Piso 3",
       "capacidad": 6998,
       "estado": "inactivo"
@@ -203,9 +203,909 @@
     "model": "dispositivos.bodega",
     "pk": 10,
     "fields": {
-      "nombre": "Bodega Fantasía",
+      "nombre": "Bodega Fantasía #10",
       "ubicacion": "Camino Real 127",
       "capacidad": 7220,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 11,
+    "fields": {
+      "nombre": "Central Norte #11",
+      "ubicacion": "Av. Independencia 1001",
+      "capacidad": 7442,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 12,
+    "fields": {
+      "nombre": "Alimentaria Sur #12",
+      "ubicacion": "Calle Dulzura 2020",
+      "capacidad": 7664,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 13,
+    "fields": {
+      "nombre": "Dulce Oriente #13",
+      "ubicacion": "Ruta 5 Sur Km 15",
+      "capacidad": 7886,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 14,
+    "fields": {
+      "nombre": "ChocoStore #14",
+      "ubicacion": "Costanera 2590",
+      "capacidad": 8108,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 15,
+    "fields": {
+      "nombre": "Galletilandia #15",
+      "ubicacion": "Manuel Montt 765",
+      "capacidad": 8330,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 16,
+    "fields": {
+      "nombre": "Candy Box #16",
+      "ubicacion": "Granaderos 400",
+      "capacidad": 8552,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 17,
+    "fields": {
+      "nombre": "Depósito Frutal #17",
+      "ubicacion": "Libertador 844",
+      "capacidad": 8774,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 18,
+    "fields": {
+      "nombre": "Fiesta Express #18",
+      "ubicacion": "Irarrázaval 2341",
+      "capacidad": 8996,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 19,
+    "fields": {
+      "nombre": "Stock Express #19",
+      "ubicacion": "Mall Center Piso 3",
+      "capacidad": 9218,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 20,
+    "fields": {
+      "nombre": "Bodega Fantasía #20",
+      "ubicacion": "Camino Real 127",
+      "capacidad": 9440,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 21,
+    "fields": {
+      "nombre": "Central Norte #21",
+      "ubicacion": "Av. Independencia 1001",
+      "capacidad": 9662,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 22,
+    "fields": {
+      "nombre": "Alimentaria Sur #22",
+      "ubicacion": "Calle Dulzura 2020",
+      "capacidad": 9884,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 23,
+    "fields": {
+      "nombre": "Dulce Oriente #23",
+      "ubicacion": "Ruta 5 Sur Km 15",
+      "capacidad": 10106,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 24,
+    "fields": {
+      "nombre": "ChocoStore #24",
+      "ubicacion": "Costanera 2590",
+      "capacidad": 10328,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 25,
+    "fields": {
+      "nombre": "Galletilandia #25",
+      "ubicacion": "Manuel Montt 765",
+      "capacidad": 10550,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 26,
+    "fields": {
+      "nombre": "Candy Box #26",
+      "ubicacion": "Granaderos 400",
+      "capacidad": 10772,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 27,
+    "fields": {
+      "nombre": "Depósito Frutal #27",
+      "ubicacion": "Libertador 844",
+      "capacidad": 10994,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 28,
+    "fields": {
+      "nombre": "Fiesta Express #28",
+      "ubicacion": "Irarrázaval 2341",
+      "capacidad": 11216,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 29,
+    "fields": {
+      "nombre": "Stock Express #29",
+      "ubicacion": "Mall Center Piso 3",
+      "capacidad": 11438,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 30,
+    "fields": {
+      "nombre": "Bodega Fantasía #30",
+      "ubicacion": "Camino Real 127",
+      "capacidad": 11660,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 31,
+    "fields": {
+      "nombre": "Central Norte #31",
+      "ubicacion": "Av. Independencia 1001",
+      "capacidad": 11882,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 32,
+    "fields": {
+      "nombre": "Alimentaria Sur #32",
+      "ubicacion": "Calle Dulzura 2020",
+      "capacidad": 12104,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 33,
+    "fields": {
+      "nombre": "Dulce Oriente #33",
+      "ubicacion": "Ruta 5 Sur Km 15",
+      "capacidad": 12326,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 34,
+    "fields": {
+      "nombre": "ChocoStore #34",
+      "ubicacion": "Costanera 2590",
+      "capacidad": 12548,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 35,
+    "fields": {
+      "nombre": "Galletilandia #35",
+      "ubicacion": "Manuel Montt 765",
+      "capacidad": 12770,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 36,
+    "fields": {
+      "nombre": "Candy Box #36",
+      "ubicacion": "Granaderos 400",
+      "capacidad": 12992,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 37,
+    "fields": {
+      "nombre": "Depósito Frutal #37",
+      "ubicacion": "Libertador 844",
+      "capacidad": 13214,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 38,
+    "fields": {
+      "nombre": "Fiesta Express #38",
+      "ubicacion": "Irarrázaval 2341",
+      "capacidad": 13436,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 39,
+    "fields": {
+      "nombre": "Stock Express #39",
+      "ubicacion": "Mall Center Piso 3",
+      "capacidad": 13658,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 40,
+    "fields": {
+      "nombre": "Bodega Fantasía #40",
+      "ubicacion": "Camino Real 127",
+      "capacidad": 13880,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 41,
+    "fields": {
+      "nombre": "Central Norte #41",
+      "ubicacion": "Av. Independencia 1001",
+      "capacidad": 14102,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 42,
+    "fields": {
+      "nombre": "Alimentaria Sur #42",
+      "ubicacion": "Calle Dulzura 2020",
+      "capacidad": 14324,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 43,
+    "fields": {
+      "nombre": "Dulce Oriente #43",
+      "ubicacion": "Ruta 5 Sur Km 15",
+      "capacidad": 14546,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 44,
+    "fields": {
+      "nombre": "ChocoStore #44",
+      "ubicacion": "Costanera 2590",
+      "capacidad": 14768,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 45,
+    "fields": {
+      "nombre": "Galletilandia #45",
+      "ubicacion": "Manuel Montt 765",
+      "capacidad": 14990,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 46,
+    "fields": {
+      "nombre": "Candy Box #46",
+      "ubicacion": "Granaderos 400",
+      "capacidad": 15212,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 47,
+    "fields": {
+      "nombre": "Depósito Frutal #47",
+      "ubicacion": "Libertador 844",
+      "capacidad": 15434,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 48,
+    "fields": {
+      "nombre": "Fiesta Express #48",
+      "ubicacion": "Irarrázaval 2341",
+      "capacidad": 15656,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 49,
+    "fields": {
+      "nombre": "Stock Express #49",
+      "ubicacion": "Mall Center Piso 3",
+      "capacidad": 15878,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 50,
+    "fields": {
+      "nombre": "Bodega Fantasía #50",
+      "ubicacion": "Camino Real 127",
+      "capacidad": 16100,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 51,
+    "fields": {
+      "nombre": "Central Norte #51",
+      "ubicacion": "Av. Independencia 1001",
+      "capacidad": 16322,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 52,
+    "fields": {
+      "nombre": "Alimentaria Sur #52",
+      "ubicacion": "Calle Dulzura 2020",
+      "capacidad": 16544,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 53,
+    "fields": {
+      "nombre": "Dulce Oriente #53",
+      "ubicacion": "Ruta 5 Sur Km 15",
+      "capacidad": 16766,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 54,
+    "fields": {
+      "nombre": "ChocoStore #54",
+      "ubicacion": "Costanera 2590",
+      "capacidad": 16988,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 55,
+    "fields": {
+      "nombre": "Galletilandia #55",
+      "ubicacion": "Manuel Montt 765",
+      "capacidad": 17210,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 56,
+    "fields": {
+      "nombre": "Candy Box #56",
+      "ubicacion": "Granaderos 400",
+      "capacidad": 17432,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 57,
+    "fields": {
+      "nombre": "Depósito Frutal #57",
+      "ubicacion": "Libertador 844",
+      "capacidad": 17654,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 58,
+    "fields": {
+      "nombre": "Fiesta Express #58",
+      "ubicacion": "Irarrázaval 2341",
+      "capacidad": 17876,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 59,
+    "fields": {
+      "nombre": "Stock Express #59",
+      "ubicacion": "Mall Center Piso 3",
+      "capacidad": 18098,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 60,
+    "fields": {
+      "nombre": "Bodega Fantasía #60",
+      "ubicacion": "Camino Real 127",
+      "capacidad": 18320,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 61,
+    "fields": {
+      "nombre": "Central Norte #61",
+      "ubicacion": "Av. Independencia 1001",
+      "capacidad": 18542,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 62,
+    "fields": {
+      "nombre": "Alimentaria Sur #62",
+      "ubicacion": "Calle Dulzura 2020",
+      "capacidad": 18764,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 63,
+    "fields": {
+      "nombre": "Dulce Oriente #63",
+      "ubicacion": "Ruta 5 Sur Km 15",
+      "capacidad": 18986,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 64,
+    "fields": {
+      "nombre": "ChocoStore #64",
+      "ubicacion": "Costanera 2590",
+      "capacidad": 19208,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 65,
+    "fields": {
+      "nombre": "Galletilandia #65",
+      "ubicacion": "Manuel Montt 765",
+      "capacidad": 19430,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 66,
+    "fields": {
+      "nombre": "Candy Box #66",
+      "ubicacion": "Granaderos 400",
+      "capacidad": 19652,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 67,
+    "fields": {
+      "nombre": "Depósito Frutal #67",
+      "ubicacion": "Libertador 844",
+      "capacidad": 19874,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 68,
+    "fields": {
+      "nombre": "Fiesta Express #68",
+      "ubicacion": "Irarrázaval 2341",
+      "capacidad": 20096,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 69,
+    "fields": {
+      "nombre": "Stock Express #69",
+      "ubicacion": "Mall Center Piso 3",
+      "capacidad": 20318,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 70,
+    "fields": {
+      "nombre": "Bodega Fantasía #70",
+      "ubicacion": "Camino Real 127",
+      "capacidad": 20540,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 71,
+    "fields": {
+      "nombre": "Central Norte #71",
+      "ubicacion": "Av. Independencia 1001",
+      "capacidad": 20762,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 72,
+    "fields": {
+      "nombre": "Alimentaria Sur #72",
+      "ubicacion": "Calle Dulzura 2020",
+      "capacidad": 20984,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 73,
+    "fields": {
+      "nombre": "Dulce Oriente #73",
+      "ubicacion": "Ruta 5 Sur Km 15",
+      "capacidad": 21206,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 74,
+    "fields": {
+      "nombre": "ChocoStore #74",
+      "ubicacion": "Costanera 2590",
+      "capacidad": 21428,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 75,
+    "fields": {
+      "nombre": "Galletilandia #75",
+      "ubicacion": "Manuel Montt 765",
+      "capacidad": 21650,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 76,
+    "fields": {
+      "nombre": "Candy Box #76",
+      "ubicacion": "Granaderos 400",
+      "capacidad": 21872,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 77,
+    "fields": {
+      "nombre": "Depósito Frutal #77",
+      "ubicacion": "Libertador 844",
+      "capacidad": 22094,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 78,
+    "fields": {
+      "nombre": "Fiesta Express #78",
+      "ubicacion": "Irarrázaval 2341",
+      "capacidad": 22316,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 79,
+    "fields": {
+      "nombre": "Stock Express #79",
+      "ubicacion": "Mall Center Piso 3",
+      "capacidad": 22538,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 80,
+    "fields": {
+      "nombre": "Bodega Fantasía #80",
+      "ubicacion": "Camino Real 127",
+      "capacidad": 22760,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 81,
+    "fields": {
+      "nombre": "Central Norte #81",
+      "ubicacion": "Av. Independencia 1001",
+      "capacidad": 22982,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 82,
+    "fields": {
+      "nombre": "Alimentaria Sur #82",
+      "ubicacion": "Calle Dulzura 2020",
+      "capacidad": 23204,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 83,
+    "fields": {
+      "nombre": "Dulce Oriente #83",
+      "ubicacion": "Ruta 5 Sur Km 15",
+      "capacidad": 23426,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 84,
+    "fields": {
+      "nombre": "ChocoStore #84",
+      "ubicacion": "Costanera 2590",
+      "capacidad": 23648,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 85,
+    "fields": {
+      "nombre": "Galletilandia #85",
+      "ubicacion": "Manuel Montt 765",
+      "capacidad": 23870,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 86,
+    "fields": {
+      "nombre": "Candy Box #86",
+      "ubicacion": "Granaderos 400",
+      "capacidad": 24092,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 87,
+    "fields": {
+      "nombre": "Depósito Frutal #87",
+      "ubicacion": "Libertador 844",
+      "capacidad": 24314,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 88,
+    "fields": {
+      "nombre": "Fiesta Express #88",
+      "ubicacion": "Irarrázaval 2341",
+      "capacidad": 24536,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 89,
+    "fields": {
+      "nombre": "Stock Express #89",
+      "ubicacion": "Mall Center Piso 3",
+      "capacidad": 24758,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 90,
+    "fields": {
+      "nombre": "Bodega Fantasía #90",
+      "ubicacion": "Camino Real 127",
+      "capacidad": 24980,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 91,
+    "fields": {
+      "nombre": "Central Norte #91",
+      "ubicacion": "Av. Independencia 1001",
+      "capacidad": 25202,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 92,
+    "fields": {
+      "nombre": "Alimentaria Sur #92",
+      "ubicacion": "Calle Dulzura 2020",
+      "capacidad": 25424,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 93,
+    "fields": {
+      "nombre": "Dulce Oriente #93",
+      "ubicacion": "Ruta 5 Sur Km 15",
+      "capacidad": 25646,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 94,
+    "fields": {
+      "nombre": "ChocoStore #94",
+      "ubicacion": "Costanera 2590",
+      "capacidad": 25868,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 95,
+    "fields": {
+      "nombre": "Galletilandia #95",
+      "ubicacion": "Manuel Montt 765",
+      "capacidad": 26090,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 96,
+    "fields": {
+      "nombre": "Candy Box #96",
+      "ubicacion": "Granaderos 400",
+      "capacidad": 26312,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 97,
+    "fields": {
+      "nombre": "Depósito Frutal #97",
+      "ubicacion": "Libertador 844",
+      "capacidad": 26534,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 98,
+    "fields": {
+      "nombre": "Fiesta Express #98",
+      "ubicacion": "Irarrázaval 2341",
+      "capacidad": 26756,
+      "estado": "activo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 99,
+    "fields": {
+      "nombre": "Stock Express #99",
+      "ubicacion": "Mall Center Piso 3",
+      "capacidad": 26978,
+      "estado": "inactivo"
+    }
+  },
+  {
+    "model": "dispositivos.bodega",
+    "pk": 100,
+    "fields": {
+      "nombre": "Bodega Fantasía #100",
+      "ubicacion": "Camino Real 127",
+      "capacidad": 27200,
       "estado": "activo"
     }
   },
@@ -222,7 +1122,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 13,
       "perishable": 0,
-      "lote": 801
+      "lote": 801,
+      "descripcion": "Dulce clásico y suave con notas de caramelo natural."
     }
   },
   {
@@ -238,7 +1139,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 16,
       "perishable": 1,
-      "lote": 802
+      "lote": 802,
+      "descripcion": "Receta artesanal inspirada en tradiciones latinoamericanas."
     }
   },
   {
@@ -254,7 +1156,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 19,
       "perishable": 0,
-      "lote": 803
+      "lote": 803,
+      "descripcion": "Cubierta de chocolate premium y relleno cremoso."
     }
   },
   {
@@ -270,7 +1173,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 22,
       "perishable": 1,
-      "lote": 804
+      "lote": 804,
+      "descripcion": "Ideal para acompañar el café de la tarde."
     }
   },
   {
@@ -286,7 +1190,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 25,
       "perishable": 0,
-      "lote": 805
+      "lote": 805,
+      "descripcion": "Boquiabierto de sabor frutal intenso y textura masticable."
     }
   },
   {
@@ -302,7 +1207,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 28,
       "perishable": 1,
-      "lote": 806
+      "lote": 806,
+      "descripcion": "Sabor a frutas rojas y glaseado suave."
     }
   },
   {
@@ -318,7 +1224,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 31,
       "perishable": 0,
-      "lote": 807
+      "lote": 807,
+      "descripcion": "Mezcla equilibrada de cacao, frutos secos y especias."
     }
   },
   {
@@ -334,7 +1241,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 34,
       "perishable": 1,
-      "lote": 808
+      "lote": 808,
+      "descripcion": "Formato pequeño, ideal para compartir o regalar."
     }
   },
   {
@@ -350,7 +1258,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 37,
       "perishable": 0,
-      "lote": 809
+      "lote": 809,
+      "descripcion": "Relleno aireado con aroma de vainilla auténtica."
     }
   },
   {
@@ -366,7 +1275,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 40,
       "perishable": 1,
-      "lote": 810
+      "lote": 810,
+      "descripcion": "Apto para público infantil con colores vibrantes."
     }
   },
   {
@@ -382,7 +1292,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 43,
       "perishable": 0,
-      "lote": 811
+      "lote": 811,
+      "descripcion": "Edición limitada, producción artesanal en lotes pequeños."
     }
   },
   {
@@ -398,7 +1309,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 46,
       "perishable": 1,
-      "lote": 812
+      "lote": 812,
+      "descripcion": "Garantizado sin alérgenos comunes y bajo en sodio."
     }
   },
   {
@@ -414,7 +1326,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 49,
       "perishable": 0,
-      "lote": 813
+      "lote": 813,
+      "descripcion": "Envasado unitario para máxima frescura."
     }
   },
   {
@@ -430,7 +1343,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 52,
       "perishable": 1,
-      "lote": 814
+      "lote": 814,
+      "descripcion": "Sello de calidad de la Dulcería Lilis."
     }
   },
   {
@@ -446,7 +1360,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 55,
       "perishable": 0,
-      "lote": 815
+      "lote": 815,
+      "descripcion": "Recubrimiento crujiente y centro blando."
     }
   },
   {
@@ -462,7 +1377,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 58,
       "perishable": 1,
-      "lote": 816
+      "lote": 816,
+      "descripcion": "Relleno de pasta de maní natural, sin azúcar añadido."
     }
   },
   {
@@ -478,7 +1394,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 61,
       "perishable": 0,
-      "lote": 817
+      "lote": 817,
+      "descripcion": "Decorado a mano, cada pieza es única."
     }
   },
   {
@@ -494,7 +1411,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 64,
       "perishable": 1,
-      "lote": 818
+      "lote": 818,
+      "descripcion": "Perfecto para fiestas y celebraciones temáticas."
     }
   },
   {
@@ -510,7 +1428,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 67,
       "perishable": 0,
-      "lote": 819
+      "lote": 819,
+      "descripcion": "Inspirado en recetas europeas centenarias."
     }
   },
   {
@@ -526,7 +1445,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 70,
       "perishable": 1,
-      "lote": 820
+      "lote": 820,
+      "descripcion": "Presentación deluxe en caja de regalo."
     }
   },
   {
@@ -542,7 +1462,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 73,
       "perishable": 0,
-      "lote": 821
+      "lote": 821,
+      "descripcion": "Libre de colorantes artificiales y conservantes."
     }
   },
   {
@@ -558,7 +1479,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 76,
       "perishable": 1,
-      "lote": 822
+      "lote": 822,
+      "descripcion": "Fusión de sabores cítricos y tropicales."
     }
   },
   {
@@ -574,7 +1496,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 79,
       "perishable": 0,
-      "lote": 823
+      "lote": 823,
+      "descripcion": "Textura crocante, con notas acarameladas."
     }
   },
   {
@@ -590,7 +1513,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 82,
       "perishable": 1,
-      "lote": 824
+      "lote": 824,
+      "descripcion": "Recomendado para dietas vegetarianas."
     }
   },
   {
@@ -606,7 +1530,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 85,
       "perishable": 0,
-      "lote": 825
+      "lote": 825,
+      "descripcion": "Formato mini ideal para lunchbox."
     }
   },
   {
@@ -622,7 +1547,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 88,
       "perishable": 1,
-      "lote": 826
+      "lote": 826,
+      "descripcion": "Fragancia a naranja y canela recién horneada."
     }
   },
   {
@@ -638,7 +1564,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 91,
       "perishable": 0,
-      "lote": 827
+      "lote": 827,
+      "descripcion": "Delicioso con trocitos de almendra."
     }
   },
   {
@@ -654,7 +1581,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 94,
       "perishable": 1,
-      "lote": 828
+      "lote": 828,
+      "descripcion": "Versión familiar, rendimiento mejorado."
     }
   },
   {
@@ -670,7 +1598,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 97,
       "perishable": 0,
-      "lote": 829
+      "lote": 829,
+      "descripcion": "Con cobertura de chocolate blanco y relleno de frutas."
     }
   },
   {
@@ -686,7 +1615,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 100,
       "perishable": 1,
-      "lote": 830
+      "lote": 830,
+      "descripcion": "Sello vegano, ingredientes 100% vegetales."
     }
   },
   {
@@ -702,7 +1632,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 103,
       "perishable": 0,
-      "lote": 831
+      "lote": 831,
+      "descripcion": "Edición aniversario de Dulcería Lilis."
     }
   },
   {
@@ -718,7 +1649,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 106,
       "perishable": 1,
-      "lote": 832
+      "lote": 832,
+      "descripcion": "Aportando energía con ingredientes naturales."
     }
   },
   {
@@ -734,7 +1666,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 109,
       "perishable": 0,
-      "lote": 833
+      "lote": 833,
+      "descripcion": "Enriquecido con calcio y vitaminas."
     }
   },
   {
@@ -750,7 +1683,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 12,
       "perishable": 1,
-      "lote": 834
+      "lote": 834,
+      "descripcion": "Receta exclusiva para la línea premium."
     }
   },
   {
@@ -766,7 +1700,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 15,
       "perishable": 0,
-      "lote": 835
+      "lote": 835,
+      "descripcion": "Libre de gluten y lactosa."
     }
   },
   {
@@ -782,7 +1717,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 18,
       "perishable": 1,
-      "lote": 836
+      "lote": 836,
+      "descripcion": "Inspirado en dulces franceses clásicos."
     }
   },
   {
@@ -798,7 +1734,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 21,
       "perishable": 0,
-      "lote": 837
+      "lote": 837,
+      "descripcion": "Recubierto de glaseado espeso artesanal."
     }
   },
   {
@@ -814,7 +1751,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 24,
       "perishable": 1,
-      "lote": 838
+      "lote": 838,
+      "descripcion": "Mejor opción en relación calidad/precio."
     }
   },
   {
@@ -830,7 +1768,8 @@
       "impuesto_iva": 19,
       "stock_minimo": 27,
       "perishable": 0,
-      "lote": 839
+      "lote": 839,
+      "descripcion": "Sabor tradicional con giro innovador."
     }
   },
   {
@@ -846,7 +1785,1028 @@
       "impuesto_iva": 19,
       "stock_minimo": 30,
       "perishable": 1,
-      "lote": 840
+      "lote": 840,
+      "descripcion": "Delicia irresistible para toda la familia."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 41,
+    "fields": {
+      "sku": "SKU-GOM-041",
+      "nombre": "Trufas de Avellana",
+      "categoria": "Gomitas",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 2,
+      "impuesto_iva": 19,
+      "stock_minimo": 33,
+      "perishable": 0,
+      "lote": 841,
+      "descripcion": "Fórmula especial para quienes buscan alternativas saludables."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 42,
+    "fields": {
+      "sku": "SKU-CON-042",
+      "nombre": "Alfajor Cordobés",
+      "categoria": "Confites",
+      "uom_compra": "kg",
+      "uom_venta": "unidad",
+      "factor_conversion": 3,
+      "impuesto_iva": 19,
+      "stock_minimo": 36,
+      "perishable": 1,
+      "lote": 842,
+      "descripcion": "Bajo en azúcar, apto para diabéticos."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 43,
+    "fields": {
+      "sku": "SKU-CHO-043",
+      "nombre": "Turrón de Maní",
+      "categoria": "Chocolates",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 4,
+      "impuesto_iva": 19,
+      "stock_minimo": 39,
+      "perishable": 0,
+      "lote": 843,
+      "descripcion": "Con semillas crocantes para extra textura."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 44,
+    "fields": {
+      "sku": "SKU-CAR-044",
+      "nombre": "Chocolate Rubí 75g",
+      "categoria": "Caramelos",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 5,
+      "impuesto_iva": 19,
+      "stock_minimo": 42,
+      "perishable": 1,
+      "lote": 844,
+      "descripcion": "Base de almendras tostadas."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 45,
+    "fields": {
+      "sku": "SKU-GAL-045",
+      "nombre": "Cinta de Caramelo",
+      "categoria": "Galletas",
+      "uom_compra": "caja",
+      "uom_venta": "unidad",
+      "factor_conversion": 6,
+      "impuesto_iva": 19,
+      "stock_minimo": 45,
+      "perishable": 0,
+      "lote": 845,
+      "descripcion": "Capa doble de chocolate intenso."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 46,
+    "fields": {
+      "sku": "SKU-BOM-046",
+      "nombre": "Barra de Cacao 80%",
+      "categoria": "Bombones",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 7,
+      "impuesto_iva": 19,
+      "stock_minimo": 48,
+      "perishable": 1,
+      "lote": 846,
+      "descripcion": "Toques cítricos de naranja y limón."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 47,
+    "fields": {
+      "sku": "SKU-GOM-047",
+      "nombre": "Confites Turquesa",
+      "categoria": "Gomitas",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 8,
+      "impuesto_iva": 19,
+      "stock_minimo": 51,
+      "perishable": 0,
+      "lote": 847,
+      "descripcion": "Sabor a miel natural y frutos secos."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 48,
+    "fields": {
+      "sku": "SKU-CON-048",
+      "nombre": "Bombones del Bosque",
+      "categoria": "Confites",
+      "uom_compra": "kg",
+      "uom_venta": "unidad",
+      "factor_conversion": 9,
+      "impuesto_iva": 19,
+      "stock_minimo": 54,
+      "perishable": 1,
+      "lote": 848,
+      "descripcion": "Tierno y suave, ideal para niños y adultos."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 49,
+    "fields": {
+      "sku": "SKU-CHO-049",
+      "nombre": "Frutilla Glaseada",
+      "categoria": "Chocolates",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 10,
+      "impuesto_iva": 19,
+      "stock_minimo": 57,
+      "perishable": 0,
+      "lote": 849,
+      "descripcion": "Sin conservantes, consumo responsable garantizado."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 50,
+    "fields": {
+      "sku": "SKU-CAR-050",
+      "nombre": "Mentitas Lemon",
+      "categoria": "Caramelos",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 1,
+      "impuesto_iva": 19,
+      "stock_minimo": 60,
+      "perishable": 1,
+      "lote": 850,
+      "descripcion": "Embalaje eco-friendly y biodegradable."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 51,
+    "fields": {
+      "sku": "SKU-GAL-051",
+      "nombre": "Gomitas Frutales",
+      "categoria": "Galletas",
+      "uom_compra": "caja",
+      "uom_venta": "unidad",
+      "factor_conversion": 2,
+      "impuesto_iva": 19,
+      "stock_minimo": 63,
+      "perishable": 0,
+      "lote": 851,
+      "descripcion": "Notas a canela y frutas deshidratadas."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 52,
+    "fields": {
+      "sku": "SKU-BOM-052",
+      "nombre": "Galletas de Coco",
+      "categoria": "Bombones",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 3,
+      "impuesto_iva": 19,
+      "stock_minimo": 66,
+      "perishable": 1,
+      "lote": 852,
+      "descripcion": "Receta transmitida por generaciones."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 53,
+    "fields": {
+      "sku": "SKU-GOM-053",
+      "nombre": "Almendrado Gourmet",
+      "categoria": "Gomitas",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 4,
+      "impuesto_iva": 19,
+      "stock_minimo": 69,
+      "perishable": 0,
+      "lote": 853,
+      "descripcion": "Light, con menos calorías."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 54,
+    "fields": {
+      "sku": "SKU-CON-054",
+      "nombre": "Chocoteja Limeña",
+      "categoria": "Confites",
+      "uom_compra": "kg",
+      "uom_venta": "unidad",
+      "factor_conversion": 5,
+      "impuesto_iva": 19,
+      "stock_minimo": 72,
+      "perishable": 1,
+      "lote": 854,
+      "descripcion": "Sabor a frutos del bosque."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 55,
+    "fields": {
+      "sku": "SKU-CHO-055",
+      "nombre": "Bastón de Menta",
+      "categoria": "Chocolates",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 6,
+      "impuesto_iva": 19,
+      "stock_minimo": 75,
+      "perishable": 0,
+      "lote": 855,
+      "descripcion": "Ideal para celebraciones y eventos."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 56,
+    "fields": {
+      "sku": "SKU-CAR-056",
+      "nombre": "Jalea Real Berry",
+      "categoria": "Caramelos",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 7,
+      "impuesto_iva": 19,
+      "stock_minimo": 78,
+      "perishable": 1,
+      "lote": 856,
+      "descripcion": "Bañado en chocolate negro premium."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 57,
+    "fields": {
+      "sku": "SKU-GAL-057",
+      "nombre": "Enrejado de Nuez",
+      "categoria": "Galletas",
+      "uom_compra": "caja",
+      "uom_venta": "unidad",
+      "factor_conversion": 8,
+      "impuesto_iva": 19,
+      "stock_minimo": 81,
+      "perishable": 0,
+      "lote": 857,
+      "descripcion": "Aroma a vainilla bourbon."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 58,
+    "fields": {
+      "sku": "SKU-BOM-058",
+      "nombre": "Crocante de Maní",
+      "categoria": "Bombones",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 9,
+      "impuesto_iva": 19,
+      "stock_minimo": 84,
+      "perishable": 1,
+      "lote": 858,
+      "descripcion": "Decoraciones coloridas de azúcar glasé."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 59,
+    "fields": {
+      "sku": "SKU-GOM-059",
+      "nombre": "Relleno de Avellana",
+      "categoria": "Gomitas",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 10,
+      "impuesto_iva": 19,
+      "stock_minimo": 87,
+      "perishable": 0,
+      "lote": 859,
+      "descripcion": "Galleta crujiente, relleno cremoso."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 60,
+    "fields": {
+      "sku": "SKU-CON-060",
+      "nombre": "Napoleón Frambuesa",
+      "categoria": "Confites",
+      "uom_compra": "kg",
+      "uom_venta": "unidad",
+      "factor_conversion": 1,
+      "impuesto_iva": 19,
+      "stock_minimo": 90,
+      "perishable": 1,
+      "lote": 860,
+      "descripcion": "Corazón líquido de caramelo."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 61,
+    "fields": {
+      "sku": "SKU-CHO-061",
+      "nombre": "Marmoleado de Damasco",
+      "categoria": "Chocolates",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 2,
+      "impuesto_iva": 19,
+      "stock_minimo": 93,
+      "perishable": 0,
+      "lote": 861,
+      "descripcion": "Mini porciones para picoteo."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 62,
+    "fields": {
+      "sku": "SKU-CAR-062",
+      "nombre": "Glaseado de Limón",
+      "categoria": "Caramelos",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 3,
+      "impuesto_iva": 19,
+      "stock_minimo": 96,
+      "perishable": 1,
+      "lote": 862,
+      "descripcion": "Textura aireada y esponjosa."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 63,
+    "fields": {
+      "sku": "SKU-GAL-063",
+      "nombre": "Tarta Chocolate Negro",
+      "categoria": "Galletas",
+      "uom_compra": "caja",
+      "uom_venta": "unidad",
+      "factor_conversion": 4,
+      "impuesto_iva": 19,
+      "stock_minimo": 99,
+      "perishable": 0,
+      "lote": 863,
+      "descripcion": "Intenso sabor a cacao."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 64,
+    "fields": {
+      "sku": "SKU-BOM-064",
+      "nombre": "Galletón Rock",
+      "categoria": "Bombones",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 5,
+      "impuesto_iva": 19,
+      "stock_minimo": 102,
+      "perishable": 1,
+      "lote": 864,
+      "descripcion": "Impregnado con licor suave (sin alcohol)."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 65,
+    "fields": {
+      "sku": "SKU-GOM-065",
+      "nombre": "Flan de Cappuccino",
+      "categoria": "Gomitas",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 6,
+      "impuesto_iva": 19,
+      "stock_minimo": 105,
+      "perishable": 0,
+      "lote": 865,
+      "descripcion": "Receta exclusiva, solo venta en Lilis."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 66,
+    "fields": {
+      "sku": "SKU-CON-066",
+      "nombre": "Mousse de Mango",
+      "categoria": "Confites",
+      "uom_compra": "kg",
+      "uom_venta": "unidad",
+      "factor_conversion": 7,
+      "impuesto_iva": 19,
+      "stock_minimo": 108,
+      "perishable": 1,
+      "lote": 866,
+      "descripcion": "Tapa de chocolate ruby."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 67,
+    "fields": {
+      "sku": "SKU-CHO-067",
+      "nombre": "Brownie Express",
+      "categoria": "Chocolates",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 8,
+      "impuesto_iva": 19,
+      "stock_minimo": 11,
+      "perishable": 0,
+      "lote": 867,
+      "descripcion": "Fusión novedosa de ingredientes autóctonos."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 68,
+    "fields": {
+      "sku": "SKU-CAR-068",
+      "nombre": "Tableta Festival",
+      "categoria": "Caramelos",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 9,
+      "impuesto_iva": 19,
+      "stock_minimo": 14,
+      "perishable": 1,
+      "lote": 868,
+      "descripcion": "Snack ideal para media mañana."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 69,
+    "fields": {
+      "sku": "SKU-GAL-069",
+      "nombre": "Chocobolas Dulzón",
+      "categoria": "Galletas",
+      "uom_compra": "caja",
+      "uom_venta": "unidad",
+      "factor_conversion": 10,
+      "impuesto_iva": 19,
+      "stock_minimo": 17,
+      "perishable": 0,
+      "lote": 869,
+      "descripcion": "Arrullo de caramelo con centro de fruta."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 70,
+    "fields": {
+      "sku": "SKU-BOM-070",
+      "nombre": "Azúcar Avainillado",
+      "categoria": "Bombones",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 1,
+      "impuesto_iva": 19,
+      "stock_minimo": 20,
+      "perishable": 1,
+      "lote": 870,
+      "descripcion": "Chispeante para explotar en tu boca."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 71,
+    "fields": {
+      "sku": "SKU-GOM-071",
+      "nombre": "Bizcocho Sorpresa",
+      "categoria": "Gomitas",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 2,
+      "impuesto_iva": 19,
+      "stock_minimo": 23,
+      "perishable": 0,
+      "lote": 871,
+      "descripcion": "Apto para veganos y celíacos."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 72,
+    "fields": {
+      "sku": "SKU-CON-072",
+      "nombre": "Tarta de Pistacho",
+      "categoria": "Confites",
+      "uom_compra": "kg",
+      "uom_venta": "unidad",
+      "factor_conversion": 3,
+      "impuesto_iva": 19,
+      "stock_minimo": 26,
+      "perishable": 1,
+      "lote": 872,
+      "descripcion": "Sabor suave a coco natural."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 73,
+    "fields": {
+      "sku": "SKU-CHO-073",
+      "nombre": "Alfajor Marplatense",
+      "categoria": "Chocolates",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 4,
+      "impuesto_iva": 19,
+      "stock_minimo": 29,
+      "perishable": 0,
+      "lote": 873,
+      "descripcion": "Croquetas dulces elaboradas a mano."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 74,
+    "fields": {
+      "sku": "SKU-CAR-074",
+      "nombre": "Bombón Cítrico",
+      "categoria": "Caramelos",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 5,
+      "impuesto_iva": 19,
+      "stock_minimo": 32,
+      "perishable": 1,
+      "lote": 874,
+      "descripcion": "Receta ganadora de premios regionales."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 75,
+    "fields": {
+      "sku": "SKU-GAL-075",
+      "nombre": "Pomelo Drops",
+      "categoria": "Galletas",
+      "uom_compra": "caja",
+      "uom_venta": "unidad",
+      "factor_conversion": 6,
+      "impuesto_iva": 19,
+      "stock_minimo": 35,
+      "perishable": 0,
+      "lote": 875,
+      "descripcion": "Relleno de dulce de leche tradicional."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 76,
+    "fields": {
+      "sku": "SKU-BOM-076",
+      "nombre": "Cereza Semiamarga",
+      "categoria": "Bombones",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 7,
+      "impuesto_iva": 19,
+      "stock_minimo": 38,
+      "perishable": 1,
+      "lote": 876,
+      "descripcion": "Sorpresa de frutos secos picados."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 77,
+    "fields": {
+      "sku": "SKU-GOM-077",
+      "nombre": "Caramelo Naranja",
+      "categoria": "Gomitas",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 8,
+      "impuesto_iva": 19,
+      "stock_minimo": 41,
+      "perishable": 0,
+      "lote": 877,
+      "descripcion": "Miniaturas surtidas con sabores variados."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 78,
+    "fields": {
+      "sku": "SKU-CON-078",
+      "nombre": "Trufa de Frutos Rojos",
+      "categoria": "Confites",
+      "uom_compra": "kg",
+      "uom_venta": "unidad",
+      "factor_conversion": 9,
+      "impuesto_iva": 19,
+      "stock_minimo": 44,
+      "perishable": 1,
+      "lote": 878,
+      "descripcion": "Barra energética y nutritiva."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 79,
+    "fields": {
+      "sku": "SKU-CHO-079",
+      "nombre": "Nocciola Tableta",
+      "categoria": "Chocolates",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 10,
+      "impuesto_iva": 19,
+      "stock_minimo": 47,
+      "perishable": 0,
+      "lote": 879,
+      "descripcion": "Cubierta de menta para frescura extra."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 80,
+    "fields": {
+      "sku": "SKU-CAR-080",
+      "nombre": "Brownie de Caramelo",
+      "categoria": "Caramelos",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 1,
+      "impuesto_iva": 19,
+      "stock_minimo": 50,
+      "perishable": 1,
+      "lote": 880,
+      "descripcion": "Gomitas rellenas con jugo real de fruta."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 81,
+    "fields": {
+      "sku": "SKU-GAL-081",
+      "nombre": "Trufas de Avellana",
+      "categoria": "Galletas",
+      "uom_compra": "caja",
+      "uom_venta": "unidad",
+      "factor_conversion": 2,
+      "impuesto_iva": 19,
+      "stock_minimo": 53,
+      "perishable": 0,
+      "lote": 881,
+      "descripcion": "Dulce edición primavera."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 82,
+    "fields": {
+      "sku": "SKU-BOM-082",
+      "nombre": "Alfajor Cordobés",
+      "categoria": "Bombones",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 3,
+      "impuesto_iva": 19,
+      "stock_minimo": 56,
+      "perishable": 1,
+      "lote": 882,
+      "descripcion": "Esencia cítrica con final acidito."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 83,
+    "fields": {
+      "sku": "SKU-GOM-083",
+      "nombre": "Turrón de Maní",
+      "categoria": "Gomitas",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 4,
+      "impuesto_iva": 19,
+      "stock_minimo": 59,
+      "perishable": 0,
+      "lote": 883,
+      "descripcion": "Dulce texturizado con semillas de chía."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 84,
+    "fields": {
+      "sku": "SKU-CON-084",
+      "nombre": "Chocolate Rubí 75g",
+      "categoria": "Confites",
+      "uom_compra": "kg",
+      "uom_venta": "unidad",
+      "factor_conversion": 5,
+      "impuesto_iva": 19,
+      "stock_minimo": 62,
+      "perishable": 1,
+      "lote": 884,
+      "descripcion": "Recubrimiento doble: chocolate y glaseado."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 85,
+    "fields": {
+      "sku": "SKU-CHO-085",
+      "nombre": "Cinta de Caramelo",
+      "categoria": "Chocolates",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 6,
+      "impuesto_iva": 19,
+      "stock_minimo": 65,
+      "perishable": 0,
+      "lote": 885,
+      "descripcion": "Variedad gourmet, edición limitada."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 86,
+    "fields": {
+      "sku": "SKU-CAR-086",
+      "nombre": "Barra de Cacao 80%",
+      "categoria": "Caramelos",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 7,
+      "impuesto_iva": 19,
+      "stock_minimo": 68,
+      "perishable": 1,
+      "lote": 886,
+      "descripcion": "Inspirado en golosinas clásicas europeas."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 87,
+    "fields": {
+      "sku": "SKU-GAL-087",
+      "nombre": "Confites Turquesa",
+      "categoria": "Galletas",
+      "uom_compra": "caja",
+      "uom_venta": "unidad",
+      "factor_conversion": 8,
+      "impuesto_iva": 19,
+      "stock_minimo": 71,
+      "perishable": 0,
+      "lote": 887,
+      "descripcion": "Perfecto para combos y packs familiares."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 88,
+    "fields": {
+      "sku": "SKU-BOM-088",
+      "nombre": "Bombones del Bosque",
+      "categoria": "Bombones",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 9,
+      "impuesto_iva": 19,
+      "stock_minimo": 74,
+      "perishable": 1,
+      "lote": 888,
+      "descripcion": "Regalo ideal para sorprender."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 89,
+    "fields": {
+      "sku": "SKU-GOM-089",
+      "nombre": "Frutilla Glaseada",
+      "categoria": "Gomitas",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 10,
+      "impuesto_iva": 19,
+      "stock_minimo": 77,
+      "perishable": 0,
+      "lote": 889,
+      "descripcion": "Mini-tarta de frutas confitadas."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 90,
+    "fields": {
+      "sku": "SKU-CON-090",
+      "nombre": "Mentitas Lemon",
+      "categoria": "Confites",
+      "uom_compra": "kg",
+      "uom_venta": "unidad",
+      "factor_conversion": 1,
+      "impuesto_iva": 19,
+      "stock_minimo": 80,
+      "perishable": 1,
+      "lote": 890,
+      "descripcion": "Múltiples capas de sabores dulces."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 91,
+    "fields": {
+      "sku": "SKU-CHO-091",
+      "nombre": "Gomitas Frutales",
+      "categoria": "Chocolates",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 2,
+      "impuesto_iva": 19,
+      "stock_minimo": 83,
+      "perishable": 0,
+      "lote": 891,
+      "descripcion": "Homenaje a recetas históricas chilenas."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 92,
+    "fields": {
+      "sku": "SKU-CAR-092",
+      "nombre": "Galletas de Coco",
+      "categoria": "Caramelos",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 3,
+      "impuesto_iva": 19,
+      "stock_minimo": 86,
+      "perishable": 1,
+      "lote": 892,
+      "descripcion": "Incluído en la caja degustación temporada."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 93,
+    "fields": {
+      "sku": "SKU-GAL-093",
+      "nombre": "Almendrado Gourmet",
+      "categoria": "Galletas",
+      "uom_compra": "caja",
+      "uom_venta": "unidad",
+      "factor_conversion": 4,
+      "impuesto_iva": 19,
+      "stock_minimo": 89,
+      "perishable": 0,
+      "lote": 893,
+      "descripcion": "Snack sin sellos, apto para escolar."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 94,
+    "fields": {
+      "sku": "SKU-BOM-094",
+      "nombre": "Chocoteja Limeña",
+      "categoria": "Bombones",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 5,
+      "impuesto_iva": 19,
+      "stock_minimo": 92,
+      "perishable": 1,
+      "lote": 894,
+      "descripcion": "Receta secreta de la abuela de Lili’s."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 95,
+    "fields": {
+      "sku": "SKU-GOM-095",
+      "nombre": "Bastón de Menta",
+      "categoria": "Gomitas",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 6,
+      "impuesto_iva": 19,
+      "stock_minimo": 95,
+      "perishable": 0,
+      "lote": 895,
+      "descripcion": "Edición especial Día del Niño."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 96,
+    "fields": {
+      "sku": "SKU-CON-096",
+      "nombre": "Jalea Real Berry",
+      "categoria": "Confites",
+      "uom_compra": "kg",
+      "uom_venta": "unidad",
+      "factor_conversion": 7,
+      "impuesto_iva": 19,
+      "stock_minimo": 98,
+      "perishable": 1,
+      "lote": 896,
+      "descripcion": "Mix tropical para verano."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 97,
+    "fields": {
+      "sku": "SKU-CHO-097",
+      "nombre": "Enrejado de Nuez",
+      "categoria": "Chocolates",
+      "uom_compra": "caja",
+      "uom_venta": "bolsa",
+      "factor_conversion": 8,
+      "impuesto_iva": 19,
+      "stock_minimo": 101,
+      "perishable": 0,
+      "lote": 897,
+      "descripcion": "Sin azúcar añadida y bajo en grasa."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 98,
+    "fields": {
+      "sku": "SKU-CAR-098",
+      "nombre": "Crocante de Maní",
+      "categoria": "Caramelos",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 9,
+      "impuesto_iva": 19,
+      "stock_minimo": 104,
+      "perishable": 1,
+      "lote": 898,
+      "descripcion": "Decorado con trozos de fruta confitada."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 99,
+    "fields": {
+      "sku": "SKU-GAL-099",
+      "nombre": "Relleno de Avellana",
+      "categoria": "Galletas",
+      "uom_compra": "caja",
+      "uom_venta": "unidad",
+      "factor_conversion": 10,
+      "impuesto_iva": 19,
+      "stock_minimo": 107,
+      "perishable": 0,
+      "lote": 899,
+      "descripcion": "Sello nacional de calidad."
+    }
+  },
+  {
+    "model": "dispositivos.producto",
+    "pk": 100,
+    "fields": {
+      "sku": "SKU-BOM-100",
+      "nombre": "Napoleón Frambuesa",
+      "categoria": "Bombones",
+      "uom_compra": "kg",
+      "uom_venta": "bolsa",
+      "factor_conversion": 1,
+      "impuesto_iva": 19,
+      "stock_minimo": 10,
+      "perishable": 1,
+      "lote": 900,
+      "descripcion": "Golosina vibrante, presentación arcoíris."
     }
   },
   {
@@ -1450,6 +3410,906 @@
     }
   },
   {
+    "model": "dispositivos.proveedor",
+    "pk": 41,
+    "fields": {
+      "rut_nif": "76.041.141-1",
+      "razon_social": "Comercial CacaoMix S.A.",
+      "nombre_fantasia": "CacaoMix 41",
+      "email": "contacto41@CacaoMix.cl",
+      "pais": "Argentina",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 42,
+    "fields": {
+      "rut_nif": "76.042.142-2",
+      "razon_social": "Distribuidora Sweetland S.A.",
+      "nombre_fantasia": "Sweetland 42",
+      "email": "contacto42@Sweetland.cl",
+      "pais": "México",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 43,
+    "fields": {
+      "rut_nif": "76.043.143-3",
+      "razon_social": "Central FrutiKing S.A.",
+      "nombre_fantasia": "FrutiKing 43",
+      "email": "contacto43@FrutiKing.cl",
+      "pais": "Colombia",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 44,
+    "fields": {
+      "rut_nif": "76.044.144-4",
+      "razon_social": "Mayorista DeliNet S.A.",
+      "nombre_fantasia": "DeliNet 44",
+      "email": "contacto44@DeliNet.cl",
+      "pais": "Uruguay",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 45,
+    "fields": {
+      "rut_nif": "76.045.145-5",
+      "razon_social": "Emporio Merken S.A.",
+      "nombre_fantasia": "Merken 45",
+      "email": "contacto45@Merken.cl",
+      "pais": "Paraguay",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 46,
+    "fields": {
+      "rut_nif": "76.046.146-6",
+      "razon_social": "Proveedoría Chocolito S.A.",
+      "nombre_fantasia": "Chocolito 46",
+      "email": "contacto46@Chocolito.cl",
+      "pais": "Perú",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 47,
+    "fields": {
+      "rut_nif": "76.047.147-7",
+      "razon_social": "Bebestible CandyHouse S.A.",
+      "nombre_fantasia": "CandyHouse 47",
+      "email": "contacto47@CandyHouse.cl",
+      "pais": "Brasil",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 48,
+    "fields": {
+      "rut_nif": "76.048.148-8",
+      "razon_social": "Fábrica Mansión Dulce S.A.",
+      "nombre_fantasia": "Mansión Dulce 48",
+      "email": "contacto48@Mansión Dulce.cl",
+      "pais": "Chile",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 49,
+    "fields": {
+      "rut_nif": "76.049.149-9",
+      "razon_social": "Importadora SnacksLab S.A.",
+      "nombre_fantasia": "SnacksLab 49",
+      "email": "contacto49@SnacksLab.cl",
+      "pais": "Argentina",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 50,
+    "fields": {
+      "rut_nif": "76.050.150-0",
+      "razon_social": "Exportadora Dulsur S.A.",
+      "nombre_fantasia": "Dulsur 50",
+      "email": "contacto50@Dulsur.cl",
+      "pais": "México",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 51,
+    "fields": {
+      "rut_nif": "76.051.151-1",
+      "razon_social": "Comercial CacaoMix S.A.",
+      "nombre_fantasia": "CacaoMix 51",
+      "email": "contacto51@CacaoMix.cl",
+      "pais": "Colombia",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 52,
+    "fields": {
+      "rut_nif": "76.052.152-2",
+      "razon_social": "Distribuidora Sweetland S.A.",
+      "nombre_fantasia": "Sweetland 52",
+      "email": "contacto52@Sweetland.cl",
+      "pais": "Uruguay",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 53,
+    "fields": {
+      "rut_nif": "76.053.153-3",
+      "razon_social": "Central FrutiKing S.A.",
+      "nombre_fantasia": "FrutiKing 53",
+      "email": "contacto53@FrutiKing.cl",
+      "pais": "Paraguay",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 54,
+    "fields": {
+      "rut_nif": "76.054.154-4",
+      "razon_social": "Mayorista DeliNet S.A.",
+      "nombre_fantasia": "DeliNet 54",
+      "email": "contacto54@DeliNet.cl",
+      "pais": "Perú",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 55,
+    "fields": {
+      "rut_nif": "76.055.155-5",
+      "razon_social": "Emporio Merken S.A.",
+      "nombre_fantasia": "Merken 55",
+      "email": "contacto55@Merken.cl",
+      "pais": "Brasil",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 56,
+    "fields": {
+      "rut_nif": "76.056.156-6",
+      "razon_social": "Proveedoría Chocolito S.A.",
+      "nombre_fantasia": "Chocolito 56",
+      "email": "contacto56@Chocolito.cl",
+      "pais": "Chile",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 57,
+    "fields": {
+      "rut_nif": "76.057.157-7",
+      "razon_social": "Bebestible CandyHouse S.A.",
+      "nombre_fantasia": "CandyHouse 57",
+      "email": "contacto57@CandyHouse.cl",
+      "pais": "Argentina",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 58,
+    "fields": {
+      "rut_nif": "76.058.158-8",
+      "razon_social": "Fábrica Mansión Dulce S.A.",
+      "nombre_fantasia": "Mansión Dulce 58",
+      "email": "contacto58@Mansión Dulce.cl",
+      "pais": "México",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 59,
+    "fields": {
+      "rut_nif": "76.059.159-9",
+      "razon_social": "Importadora SnacksLab S.A.",
+      "nombre_fantasia": "SnacksLab 59",
+      "email": "contacto59@SnacksLab.cl",
+      "pais": "Colombia",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 60,
+    "fields": {
+      "rut_nif": "76.060.160-0",
+      "razon_social": "Exportadora Dulsur S.A.",
+      "nombre_fantasia": "Dulsur 60",
+      "email": "contacto60@Dulsur.cl",
+      "pais": "Uruguay",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 61,
+    "fields": {
+      "rut_nif": "76.061.161-1",
+      "razon_social": "Comercial CacaoMix S.A.",
+      "nombre_fantasia": "CacaoMix 61",
+      "email": "contacto61@CacaoMix.cl",
+      "pais": "Paraguay",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 62,
+    "fields": {
+      "rut_nif": "76.062.162-2",
+      "razon_social": "Distribuidora Sweetland S.A.",
+      "nombre_fantasia": "Sweetland 62",
+      "email": "contacto62@Sweetland.cl",
+      "pais": "Perú",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 63,
+    "fields": {
+      "rut_nif": "76.063.163-3",
+      "razon_social": "Central FrutiKing S.A.",
+      "nombre_fantasia": "FrutiKing 63",
+      "email": "contacto63@FrutiKing.cl",
+      "pais": "Brasil",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 64,
+    "fields": {
+      "rut_nif": "76.064.164-4",
+      "razon_social": "Mayorista DeliNet S.A.",
+      "nombre_fantasia": "DeliNet 64",
+      "email": "contacto64@DeliNet.cl",
+      "pais": "Chile",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 65,
+    "fields": {
+      "rut_nif": "76.065.165-5",
+      "razon_social": "Emporio Merken S.A.",
+      "nombre_fantasia": "Merken 65",
+      "email": "contacto65@Merken.cl",
+      "pais": "Argentina",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 66,
+    "fields": {
+      "rut_nif": "76.066.166-6",
+      "razon_social": "Proveedoría Chocolito S.A.",
+      "nombre_fantasia": "Chocolito 66",
+      "email": "contacto66@Chocolito.cl",
+      "pais": "México",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 67,
+    "fields": {
+      "rut_nif": "76.067.167-7",
+      "razon_social": "Bebestible CandyHouse S.A.",
+      "nombre_fantasia": "CandyHouse 67",
+      "email": "contacto67@CandyHouse.cl",
+      "pais": "Colombia",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 68,
+    "fields": {
+      "rut_nif": "76.068.168-8",
+      "razon_social": "Fábrica Mansión Dulce S.A.",
+      "nombre_fantasia": "Mansión Dulce 68",
+      "email": "contacto68@Mansión Dulce.cl",
+      "pais": "Uruguay",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 69,
+    "fields": {
+      "rut_nif": "76.069.169-9",
+      "razon_social": "Importadora SnacksLab S.A.",
+      "nombre_fantasia": "SnacksLab 69",
+      "email": "contacto69@SnacksLab.cl",
+      "pais": "Paraguay",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 70,
+    "fields": {
+      "rut_nif": "76.070.170-0",
+      "razon_social": "Exportadora Dulsur S.A.",
+      "nombre_fantasia": "Dulsur 70",
+      "email": "contacto70@Dulsur.cl",
+      "pais": "Perú",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 71,
+    "fields": {
+      "rut_nif": "76.071.171-1",
+      "razon_social": "Comercial CacaoMix S.A.",
+      "nombre_fantasia": "CacaoMix 71",
+      "email": "contacto71@CacaoMix.cl",
+      "pais": "Brasil",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 72,
+    "fields": {
+      "rut_nif": "76.072.172-2",
+      "razon_social": "Distribuidora Sweetland S.A.",
+      "nombre_fantasia": "Sweetland 72",
+      "email": "contacto72@Sweetland.cl",
+      "pais": "Chile",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 73,
+    "fields": {
+      "rut_nif": "76.073.173-3",
+      "razon_social": "Central FrutiKing S.A.",
+      "nombre_fantasia": "FrutiKing 73",
+      "email": "contacto73@FrutiKing.cl",
+      "pais": "Argentina",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 74,
+    "fields": {
+      "rut_nif": "76.074.174-4",
+      "razon_social": "Mayorista DeliNet S.A.",
+      "nombre_fantasia": "DeliNet 74",
+      "email": "contacto74@DeliNet.cl",
+      "pais": "México",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 75,
+    "fields": {
+      "rut_nif": "76.075.175-5",
+      "razon_social": "Emporio Merken S.A.",
+      "nombre_fantasia": "Merken 75",
+      "email": "contacto75@Merken.cl",
+      "pais": "Colombia",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 76,
+    "fields": {
+      "rut_nif": "76.076.176-6",
+      "razon_social": "Proveedoría Chocolito S.A.",
+      "nombre_fantasia": "Chocolito 76",
+      "email": "contacto76@Chocolito.cl",
+      "pais": "Uruguay",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 77,
+    "fields": {
+      "rut_nif": "76.077.177-7",
+      "razon_social": "Bebestible CandyHouse S.A.",
+      "nombre_fantasia": "CandyHouse 77",
+      "email": "contacto77@CandyHouse.cl",
+      "pais": "Paraguay",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 78,
+    "fields": {
+      "rut_nif": "76.078.178-8",
+      "razon_social": "Fábrica Mansión Dulce S.A.",
+      "nombre_fantasia": "Mansión Dulce 78",
+      "email": "contacto78@Mansión Dulce.cl",
+      "pais": "Perú",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 79,
+    "fields": {
+      "rut_nif": "76.079.179-9",
+      "razon_social": "Importadora SnacksLab S.A.",
+      "nombre_fantasia": "SnacksLab 79",
+      "email": "contacto79@SnacksLab.cl",
+      "pais": "Brasil",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 80,
+    "fields": {
+      "rut_nif": "76.080.180-0",
+      "razon_social": "Exportadora Dulsur S.A.",
+      "nombre_fantasia": "Dulsur 80",
+      "email": "contacto80@Dulsur.cl",
+      "pais": "Chile",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 81,
+    "fields": {
+      "rut_nif": "76.081.181-1",
+      "razon_social": "Comercial CacaoMix S.A.",
+      "nombre_fantasia": "CacaoMix 81",
+      "email": "contacto81@CacaoMix.cl",
+      "pais": "Argentina",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 82,
+    "fields": {
+      "rut_nif": "76.082.182-2",
+      "razon_social": "Distribuidora Sweetland S.A.",
+      "nombre_fantasia": "Sweetland 82",
+      "email": "contacto82@Sweetland.cl",
+      "pais": "México",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 83,
+    "fields": {
+      "rut_nif": "76.083.183-3",
+      "razon_social": "Central FrutiKing S.A.",
+      "nombre_fantasia": "FrutiKing 83",
+      "email": "contacto83@FrutiKing.cl",
+      "pais": "Colombia",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 84,
+    "fields": {
+      "rut_nif": "76.084.184-4",
+      "razon_social": "Mayorista DeliNet S.A.",
+      "nombre_fantasia": "DeliNet 84",
+      "email": "contacto84@DeliNet.cl",
+      "pais": "Uruguay",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 85,
+    "fields": {
+      "rut_nif": "76.085.185-5",
+      "razon_social": "Emporio Merken S.A.",
+      "nombre_fantasia": "Merken 85",
+      "email": "contacto85@Merken.cl",
+      "pais": "Paraguay",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 86,
+    "fields": {
+      "rut_nif": "76.086.186-6",
+      "razon_social": "Proveedoría Chocolito S.A.",
+      "nombre_fantasia": "Chocolito 86",
+      "email": "contacto86@Chocolito.cl",
+      "pais": "Perú",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 87,
+    "fields": {
+      "rut_nif": "76.087.187-7",
+      "razon_social": "Bebestible CandyHouse S.A.",
+      "nombre_fantasia": "CandyHouse 87",
+      "email": "contacto87@CandyHouse.cl",
+      "pais": "Brasil",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 88,
+    "fields": {
+      "rut_nif": "76.088.188-8",
+      "razon_social": "Fábrica Mansión Dulce S.A.",
+      "nombre_fantasia": "Mansión Dulce 88",
+      "email": "contacto88@Mansión Dulce.cl",
+      "pais": "Chile",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 89,
+    "fields": {
+      "rut_nif": "76.089.189-9",
+      "razon_social": "Importadora SnacksLab S.A.",
+      "nombre_fantasia": "SnacksLab 89",
+      "email": "contacto89@SnacksLab.cl",
+      "pais": "Argentina",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 90,
+    "fields": {
+      "rut_nif": "76.090.190-0",
+      "razon_social": "Exportadora Dulsur S.A.",
+      "nombre_fantasia": "Dulsur 90",
+      "email": "contacto90@Dulsur.cl",
+      "pais": "México",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 91,
+    "fields": {
+      "rut_nif": "76.091.191-1",
+      "razon_social": "Comercial CacaoMix S.A.",
+      "nombre_fantasia": "CacaoMix 91",
+      "email": "contacto91@CacaoMix.cl",
+      "pais": "Colombia",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 92,
+    "fields": {
+      "rut_nif": "76.092.192-2",
+      "razon_social": "Distribuidora Sweetland S.A.",
+      "nombre_fantasia": "Sweetland 92",
+      "email": "contacto92@Sweetland.cl",
+      "pais": "Uruguay",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 93,
+    "fields": {
+      "rut_nif": "76.093.193-3",
+      "razon_social": "Central FrutiKing S.A.",
+      "nombre_fantasia": "FrutiKing 93",
+      "email": "contacto93@FrutiKing.cl",
+      "pais": "Paraguay",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 94,
+    "fields": {
+      "rut_nif": "76.094.194-4",
+      "razon_social": "Mayorista DeliNet S.A.",
+      "nombre_fantasia": "DeliNet 94",
+      "email": "contacto94@DeliNet.cl",
+      "pais": "Perú",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 95,
+    "fields": {
+      "rut_nif": "76.095.195-5",
+      "razon_social": "Emporio Merken S.A.",
+      "nombre_fantasia": "Merken 95",
+      "email": "contacto95@Merken.cl",
+      "pais": "Brasil",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 96,
+    "fields": {
+      "rut_nif": "76.096.196-6",
+      "razon_social": "Proveedoría Chocolito S.A.",
+      "nombre_fantasia": "Chocolito 96",
+      "email": "contacto96@Chocolito.cl",
+      "pais": "Chile",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 97,
+    "fields": {
+      "rut_nif": "76.097.197-7",
+      "razon_social": "Bebestible CandyHouse S.A.",
+      "nombre_fantasia": "CandyHouse 97",
+      "email": "contacto97@CandyHouse.cl",
+      "pais": "Argentina",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 98,
+    "fields": {
+      "rut_nif": "76.098.198-8",
+      "razon_social": "Fábrica Mansión Dulce S.A.",
+      "nombre_fantasia": "Mansión Dulce 98",
+      "email": "contacto98@Mansión Dulce.cl",
+      "pais": "México",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 99,
+    "fields": {
+      "rut_nif": "76.099.199-9",
+      "razon_social": "Importadora SnacksLab S.A.",
+      "nombre_fantasia": "SnacksLab 99",
+      "email": "contacto99@SnacksLab.cl",
+      "pais": "Colombia",
+      "condiciones_pago": "15 días",
+      "moneda": "CLP",
+      "estado": "inactivo",
+      "usuario": 4
+    }
+  },
+  {
+    "model": "dispositivos.proveedor",
+    "pk": 100,
+    "fields": {
+      "rut_nif": "76.100.200-0",
+      "razon_social": "Exportadora Dulsur S.A.",
+      "nombre_fantasia": "Dulsur 100",
+      "email": "contacto100@Dulsur.cl",
+      "pais": "Uruguay",
+      "condiciones_pago": "30 días",
+      "moneda": "CLP",
+      "estado": "activo",
+      "usuario": 4
+    }
+  },
+  {
     "model": "dispositivos.productoproveedor",
     "pk": 1,
     "fields": {
@@ -1600,7 +4460,7 @@
       "cantidad": 178,
       "fecha_movimiento": "2025-01-15T10:00:00Z",
       "producto": 14,
-      "proveedor": 3
+      "proveedor": 43
     }
   },
   {
@@ -1611,7 +4471,7 @@
       "cantidad": 185,
       "fecha_movimiento": "2025-01-16T10:00:00Z",
       "producto": 15,
-      "proveedor": 6
+      "proveedor": 46
     }
   },
   {
@@ -1622,7 +4482,7 @@
       "cantidad": 192,
       "fecha_movimiento": "2025-01-17T10:00:00Z",
       "producto": 16,
-      "proveedor": 9
+      "proveedor": 49
     }
   },
   {
@@ -1633,7 +4493,7 @@
       "cantidad": 199,
       "fecha_movimiento": "2025-01-18T10:00:00Z",
       "producto": 17,
-      "proveedor": 12
+      "proveedor": 52
     }
   },
   {
@@ -1644,7 +4504,7 @@
       "cantidad": 206,
       "fecha_movimiento": "2025-01-19T10:00:00Z",
       "producto": 18,
-      "proveedor": 15
+      "proveedor": 55
     }
   },
   {
@@ -1655,7 +4515,7 @@
       "cantidad": 213,
       "fecha_movimiento": "2025-01-20T10:00:00Z",
       "producto": 19,
-      "proveedor": 18
+      "proveedor": 58
     }
   },
   {
@@ -1666,7 +4526,7 @@
       "cantidad": 220,
       "fecha_movimiento": "2025-01-21T10:00:00Z",
       "producto": 20,
-      "proveedor": 21
+      "proveedor": 61
     }
   },
   {
@@ -1677,7 +4537,7 @@
       "cantidad": 227,
       "fecha_movimiento": "2025-01-22T10:00:00Z",
       "producto": 21,
-      "proveedor": 24
+      "proveedor": 64
     }
   },
   {
@@ -1688,7 +4548,7 @@
       "cantidad": 234,
       "fecha_movimiento": "2025-01-23T10:00:00Z",
       "producto": 22,
-      "proveedor": 27
+      "proveedor": 67
     }
   },
   {
@@ -1699,7 +4559,7 @@
       "cantidad": 241,
       "fecha_movimiento": "2025-01-24T10:00:00Z",
       "producto": 23,
-      "proveedor": 30
+      "proveedor": 70
     }
   },
   {
@@ -1710,7 +4570,7 @@
       "cantidad": 248,
       "fecha_movimiento": "2025-01-25T10:00:00Z",
       "producto": 24,
-      "proveedor": 33
+      "proveedor": 73
     }
   },
   {
@@ -1721,7 +4581,7 @@
       "cantidad": 255,
       "fecha_movimiento": "2025-01-26T10:00:00Z",
       "producto": 25,
-      "proveedor": 36
+      "proveedor": 76
     }
   },
   {
@@ -1732,7 +4592,7 @@
       "cantidad": 262,
       "fecha_movimiento": "2025-01-27T10:00:00Z",
       "producto": 26,
-      "proveedor": 39
+      "proveedor": 79
     }
   },
   {
@@ -1743,7 +4603,7 @@
       "cantidad": 269,
       "fecha_movimiento": "2025-01-28T10:00:00Z",
       "producto": 27,
-      "proveedor": 2
+      "proveedor": 82
     }
   },
   {
@@ -1754,7 +4614,7 @@
       "cantidad": 276,
       "fecha_movimiento": "2025-01-29T10:00:00Z",
       "producto": 28,
-      "proveedor": 5
+      "proveedor": 85
     }
   },
   {
@@ -1765,7 +4625,7 @@
       "cantidad": 283,
       "fecha_movimiento": "2025-01-30T10:00:00Z",
       "producto": 29,
-      "proveedor": 8
+      "proveedor": 88
     }
   },
   {
@@ -1776,7 +4636,7 @@
       "cantidad": 290,
       "fecha_movimiento": "2025-01-31T10:00:00Z",
       "producto": 30,
-      "proveedor": 11
+      "proveedor": 91
     }
   },
   {
@@ -1787,7 +4647,7 @@
       "cantidad": 297,
       "fecha_movimiento": "2025-02-01T10:00:00Z",
       "producto": 31,
-      "proveedor": 14
+      "proveedor": 94
     }
   },
   {
@@ -1798,7 +4658,7 @@
       "cantidad": 304,
       "fecha_movimiento": "2025-02-02T10:00:00Z",
       "producto": 32,
-      "proveedor": 17
+      "proveedor": 97
     }
   },
   {
@@ -1809,7 +4669,7 @@
       "cantidad": 311,
       "fecha_movimiento": "2025-02-03T10:00:00Z",
       "producto": 33,
-      "proveedor": 20
+      "proveedor": 100
     }
   },
   {
@@ -1820,7 +4680,7 @@
       "cantidad": 318,
       "fecha_movimiento": "2025-02-04T10:00:00Z",
       "producto": 34,
-      "proveedor": 23
+      "proveedor": 3
     }
   },
   {
@@ -1831,7 +4691,7 @@
       "cantidad": 325,
       "fecha_movimiento": "2025-02-05T10:00:00Z",
       "producto": 35,
-      "proveedor": 26
+      "proveedor": 6
     }
   },
   {
@@ -1842,7 +4702,7 @@
       "cantidad": 332,
       "fecha_movimiento": "2025-02-06T10:00:00Z",
       "producto": 36,
-      "proveedor": 29
+      "proveedor": 9
     }
   },
   {
@@ -1853,7 +4713,7 @@
       "cantidad": 339,
       "fecha_movimiento": "2025-02-07T10:00:00Z",
       "producto": 37,
-      "proveedor": 32
+      "proveedor": 12
     }
   },
   {
@@ -1864,7 +4724,7 @@
       "cantidad": 346,
       "fecha_movimiento": "2025-02-08T10:00:00Z",
       "producto": 38,
-      "proveedor": 35
+      "proveedor": 15
     }
   },
   {
@@ -1875,7 +4735,7 @@
       "cantidad": 353,
       "fecha_movimiento": "2025-02-09T10:00:00Z",
       "producto": 39,
-      "proveedor": 38
+      "proveedor": 18
     }
   },
   {
@@ -1886,6 +4746,666 @@
       "cantidad": 360,
       "fecha_movimiento": "2025-02-10T10:00:00Z",
       "producto": 40,
+      "proveedor": 21
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 41,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 367,
+      "fecha_movimiento": "2025-02-11T10:00:00Z",
+      "producto": 41,
+      "proveedor": 24
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 42,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 374,
+      "fecha_movimiento": "2025-02-12T10:00:00Z",
+      "producto": 42,
+      "proveedor": 27
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 43,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 381,
+      "fecha_movimiento": "2025-02-13T10:00:00Z",
+      "producto": 43,
+      "proveedor": 30
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 44,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 388,
+      "fecha_movimiento": "2025-02-14T10:00:00Z",
+      "producto": 44,
+      "proveedor": 33
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 45,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 395,
+      "fecha_movimiento": "2025-02-15T10:00:00Z",
+      "producto": 45,
+      "proveedor": 36
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 46,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 402,
+      "fecha_movimiento": "2025-02-16T10:00:00Z",
+      "producto": 46,
+      "proveedor": 39
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 47,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 409,
+      "fecha_movimiento": "2025-02-17T10:00:00Z",
+      "producto": 47,
+      "proveedor": 42
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 48,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 416,
+      "fecha_movimiento": "2025-02-18T10:00:00Z",
+      "producto": 48,
+      "proveedor": 45
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 49,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 423,
+      "fecha_movimiento": "2025-02-19T10:00:00Z",
+      "producto": 49,
+      "proveedor": 48
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 50,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 430,
+      "fecha_movimiento": "2025-02-20T10:00:00Z",
+      "producto": 50,
+      "proveedor": 51
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 51,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 437,
+      "fecha_movimiento": "2025-02-21T10:00:00Z",
+      "producto": 51,
+      "proveedor": 54
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 52,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 444,
+      "fecha_movimiento": "2025-02-22T10:00:00Z",
+      "producto": 52,
+      "proveedor": 57
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 53,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 451,
+      "fecha_movimiento": "2025-02-23T10:00:00Z",
+      "producto": 53,
+      "proveedor": 60
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 54,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 458,
+      "fecha_movimiento": "2025-02-24T10:00:00Z",
+      "producto": 54,
+      "proveedor": 63
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 55,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 465,
+      "fecha_movimiento": "2025-02-25T10:00:00Z",
+      "producto": 55,
+      "proveedor": 66
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 56,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 472,
+      "fecha_movimiento": "2025-02-26T10:00:00Z",
+      "producto": 56,
+      "proveedor": 69
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 57,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 479,
+      "fecha_movimiento": "2025-02-27T10:00:00Z",
+      "producto": 57,
+      "proveedor": 72
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 58,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 486,
+      "fecha_movimiento": "2025-02-28T10:00:00Z",
+      "producto": 58,
+      "proveedor": 75
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 59,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 493,
+      "fecha_movimiento": "2025-03-01T10:00:00Z",
+      "producto": 59,
+      "proveedor": 78
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 60,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 500,
+      "fecha_movimiento": "2025-03-02T10:00:00Z",
+      "producto": 60,
+      "proveedor": 81
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 61,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 507,
+      "fecha_movimiento": "2025-03-03T10:00:00Z",
+      "producto": 61,
+      "proveedor": 84
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 62,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 514,
+      "fecha_movimiento": "2025-03-04T10:00:00Z",
+      "producto": 62,
+      "proveedor": 87
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 63,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 521,
+      "fecha_movimiento": "2025-03-05T10:00:00Z",
+      "producto": 63,
+      "proveedor": 90
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 64,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 528,
+      "fecha_movimiento": "2025-03-06T10:00:00Z",
+      "producto": 64,
+      "proveedor": 93
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 65,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 535,
+      "fecha_movimiento": "2025-03-07T10:00:00Z",
+      "producto": 65,
+      "proveedor": 96
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 66,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 542,
+      "fecha_movimiento": "2025-03-08T10:00:00Z",
+      "producto": 66,
+      "proveedor": 99
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 67,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 549,
+      "fecha_movimiento": "2025-03-09T10:00:00Z",
+      "producto": 67,
+      "proveedor": 2
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 68,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 556,
+      "fecha_movimiento": "2025-03-10T10:00:00Z",
+      "producto": 68,
+      "proveedor": 5
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 69,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 563,
+      "fecha_movimiento": "2025-03-11T10:00:00Z",
+      "producto": 69,
+      "proveedor": 8
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 70,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 570,
+      "fecha_movimiento": "2025-03-12T10:00:00Z",
+      "producto": 70,
+      "proveedor": 11
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 71,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 577,
+      "fecha_movimiento": "2025-03-13T10:00:00Z",
+      "producto": 71,
+      "proveedor": 14
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 72,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 584,
+      "fecha_movimiento": "2025-03-14T10:00:00Z",
+      "producto": 72,
+      "proveedor": 17
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 73,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 591,
+      "fecha_movimiento": "2025-03-15T10:00:00Z",
+      "producto": 73,
+      "proveedor": 20
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 74,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 598,
+      "fecha_movimiento": "2025-03-16T10:00:00Z",
+      "producto": 74,
+      "proveedor": 23
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 75,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 605,
+      "fecha_movimiento": "2025-03-17T10:00:00Z",
+      "producto": 75,
+      "proveedor": 26
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 76,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 612,
+      "fecha_movimiento": "2025-03-18T10:00:00Z",
+      "producto": 76,
+      "proveedor": 29
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 77,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 619,
+      "fecha_movimiento": "2025-03-19T10:00:00Z",
+      "producto": 77,
+      "proveedor": 32
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 78,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 626,
+      "fecha_movimiento": "2025-03-20T10:00:00Z",
+      "producto": 78,
+      "proveedor": 35
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 79,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 633,
+      "fecha_movimiento": "2025-03-21T10:00:00Z",
+      "producto": 79,
+      "proveedor": 38
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 80,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 640,
+      "fecha_movimiento": "2025-03-22T10:00:00Z",
+      "producto": 80,
+      "proveedor": 41
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 81,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 647,
+      "fecha_movimiento": "2025-03-23T10:00:00Z",
+      "producto": 81,
+      "proveedor": 44
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 82,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 654,
+      "fecha_movimiento": "2025-03-24T10:00:00Z",
+      "producto": 82,
+      "proveedor": 47
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 83,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 661,
+      "fecha_movimiento": "2025-03-25T10:00:00Z",
+      "producto": 83,
+      "proveedor": 50
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 84,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 668,
+      "fecha_movimiento": "2025-03-26T10:00:00Z",
+      "producto": 84,
+      "proveedor": 53
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 85,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 675,
+      "fecha_movimiento": "2025-03-27T10:00:00Z",
+      "producto": 85,
+      "proveedor": 56
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 86,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 682,
+      "fecha_movimiento": "2025-03-28T10:00:00Z",
+      "producto": 86,
+      "proveedor": 59
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 87,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 689,
+      "fecha_movimiento": "2025-03-29T10:00:00Z",
+      "producto": 87,
+      "proveedor": 62
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 88,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 696,
+      "fecha_movimiento": "2025-03-30T10:00:00Z",
+      "producto": 88,
+      "proveedor": 65
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 89,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 703,
+      "fecha_movimiento": "2025-03-31T10:00:00Z",
+      "producto": 89,
+      "proveedor": 68
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 90,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 710,
+      "fecha_movimiento": "2025-04-01T10:00:00Z",
+      "producto": 90,
+      "proveedor": 71
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 91,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 717,
+      "fecha_movimiento": "2025-04-02T10:00:00Z",
+      "producto": 91,
+      "proveedor": 74
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 92,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 724,
+      "fecha_movimiento": "2025-04-03T10:00:00Z",
+      "producto": 92,
+      "proveedor": 77
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 93,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 731,
+      "fecha_movimiento": "2025-04-04T10:00:00Z",
+      "producto": 93,
+      "proveedor": 80
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 94,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 738,
+      "fecha_movimiento": "2025-04-05T10:00:00Z",
+      "producto": 94,
+      "proveedor": 83
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 95,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 745,
+      "fecha_movimiento": "2025-04-06T10:00:00Z",
+      "producto": 95,
+      "proveedor": 86
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 96,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 752,
+      "fecha_movimiento": "2025-04-07T10:00:00Z",
+      "producto": 96,
+      "proveedor": 89
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 97,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 759,
+      "fecha_movimiento": "2025-04-08T10:00:00Z",
+      "producto": 97,
+      "proveedor": 92
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 98,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 766,
+      "fecha_movimiento": "2025-04-09T10:00:00Z",
+      "producto": 98,
+      "proveedor": 95
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 99,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 773,
+      "fecha_movimiento": "2025-04-10T10:00:00Z",
+      "producto": 99,
+      "proveedor": 98
+    }
+  },
+  {
+    "model": "dispositivos.productoproveedor",
+    "pk": 100,
+    "fields": {
+      "tipo_movimiento": "entrada",
+      "cantidad": 780,
+      "fecha_movimiento": "2025-04-11T10:00:00Z",
+      "producto": 100,
       "proveedor": 1
     }
   }
