@@ -159,16 +159,31 @@ class ProductoProveedor(models.Model):
         ("salida", "Salida"),
         ("ajuste", "Ajuste"),
     ]
+
     idProducto_Proveedor = models.AutoField(primary_key=True)
     tipo_movimiento = models.CharField(max_length=100, choices=TIPOS_MOVIMIENTO, blank=True, null=True)
     cantidad = models.IntegerField(blank=True, null=True)
     fecha_movimiento = models.DateTimeField(blank=True, null=True)
-    producto = models.ForeignKey(Producto, models.DO_NOTHING, db_column='Producto_idProducto')
-    proveedor = models.ForeignKey(Proveedor, models.DO_NOTHING, db_column='Proveedor_idProveedor')
+    producto = models.ForeignKey('Producto', models.DO_NOTHING, db_column='Producto_idProducto')
+    proveedor = models.ForeignKey('Proveedor', models.DO_NOTHING, db_column='Proveedor_idProveedor')
+    bodega = models.ForeignKey('Bodega', models.DO_NOTHING, db_column='Bodega_idBodega', blank=True, null=True)
+    manejo_lotes = models.BooleanField(default=False)
+    manejo_series = models.BooleanField(default=False)
+    perecible = models.BooleanField(default=False)
+    lote = models.CharField(max_length=50, blank=True, null=True)
+    serie = models.CharField(max_length=50, blank=True, null=True)
+    fecha_vencimiento = models.DateField(blank=True, null=True)
+    doc_referencia = models.CharField(max_length=100, blank=True, null=True)
+    motivo = models.CharField(max_length=255, blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'Producto_Proveedor'
+
+    def __str__(self):
+        return f"{self.tipo_movimiento or 'Movimiento'} - {self.producto.sku if self.producto else 'N/A'}"
+
 
 
 class Bodega(models.Model):
