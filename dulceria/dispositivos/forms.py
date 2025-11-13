@@ -3,7 +3,7 @@ import re
 from django.core.exceptions import ValidationError
 from dispositivos.models import (
     Usuario, Producto, Proveedor, ProductoProveedor, 
-    MovimientoInventario, OrdenDeCompra, Costo, ListarPrecios, Pedido, Categoria, Bodega
+    MovimientoInventario, OrdenDeCompra, Costo, ListarPrecios, Pedido
 )
 
 
@@ -363,108 +363,3 @@ class PasswordChangeForm(forms.Form):
         if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", p1 or ""):
             raise ValidationError("Debe contener al menos un carácter especial.")
         return cleaned
-
-# PARA CRUDS PARA BACK END BORRAR DESPUES
-class CategoriaForm(forms.ModelForm):
-    class Meta:
-        model = Categoria
-        fields = '__all__'
-    
-    def clean_nombre(self):
-        nombre = self.cleaned_data.get('nombre', '').strip()
-        
-        if not nombre:
-            raise ValidationError("El nombre es obligatorio.")
-        
-        if len(nombre) < 3:
-            raise ValidationError("El nombre debe tener al menos 3 caracteres.")
-        
-        if len(nombre) > 100:
-            raise ValidationError("El nombre no puede superar 100 caracteres.")
-        
-        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$', nombre):
-            raise ValidationError("El nombre solo puede contener letras, números, espacios y guiones.")
-        
-        qs = Categoria.objects.filter(nombre__iexact=nombre)
-        if self.instance and self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-        if qs.exists():
-            raise ValidationError(f"Ya existe una categoría con el nombre '{nombre}'.")
-        
-        return nombre
-    
-    def clean_descripcion(self):
-        descripcion = self.cleaned_data.get('descripcion', '').strip()
-        
-        if not descripcion:
-            raise ValidationError("La descripción es obligatoria.")
-        if len(descripcion) < 10:
-            raise ValidationError("La descripción debe tener al menos 10 caracteres.")
-        if len(descripcion) > 255:
-            raise ValidationError("La descripción no puede superar 255 caracteres.")
-        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$', descripcion):
-            raise ValidationError("La descripcion solo puede contener letras, números, espacios y guiones.")
-        
-        return descripcion
-
-
-class BodegaForm(forms.ModelForm):
-    class Meta:
-        model = Bodega
-        fields = '__all__'
-    
-    def clean_nombre(self):
-        nombre = self.cleaned_data.get('nombre', '').strip()
-        
-        if not nombre:
-            raise ValidationError("El nombre es obligatorio.")
-        
-        if len(nombre) < 3:
-            raise ValidationError("El nombre debe tener al menos 3 caracteres.")
-        
-        if len(nombre) > 120:
-            raise ValidationError("El nombre no puede superar 120 caracteres.")
-        
-        if not re.match(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-]+$', nombre):
-            raise ValidationError("El nombre solo puede contener letras, números, espacios y guiones.")
-        
-        qs = Bodega.objects.filter(nombre__iexact=nombre)
-        if self.instance and self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-        
-        if qs.exists():
-            raise ValidationError(f"Ya existe una bodega con el nombre exacto '{nombre}'.")
-        
-        return nombre
-    
-    def clean_ubicacion(self):
-        ubicacion = self.cleaned_data.get('ubicacion', '').strip()
-        
-        # NUEVO: Campo obligatorio
-        if not ubicacion:
-            raise ValidationError("La ubicación es obligatoria.")
-        
-        if len(ubicacion) > 255:
-            raise ValidationError("La ubicación no puede superar 255 caracteres.")
-        
-        return ubicacion
-    
-    def clean_capacidad(self):
-        capacidad = self.cleaned_data.get('capacidad')
-        
-        # NUEVO: Campo obligatorio y validación mejorada
-        if capacidad is None or capacidad == '':
-            raise ValidationError("La capacidad es obligatoria.")
-        
-        try:
-            capacidad = int(capacidad)
-        except (ValueError, TypeError):
-            raise ValidationError("La capacidad debe ser un número válido.")
-        
-        if capacidad <= 0:
-            raise ValidationError("La capacidad debe ser mayor a 0.")
-        
-        if capacidad > 999999:
-            raise ValidationError("La capacidad máxima es 999,999 unidades.")
-        
-        return capacidad
