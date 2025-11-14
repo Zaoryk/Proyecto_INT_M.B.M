@@ -27,41 +27,14 @@
       .btn-lilis:hover { background-color: #333 !important; }
       main { padding: 20px; }
 
-      /* Hover universal para TODOS los items de menú navbar */
-      .navbar-nav .nav-link:not(.active):hover,
-      .navbar-nav .nav-link:not(.active):focus {
+      /* Hover universal
+      .navbar-nav .nav-link:not(.active):not(.no-hover):hover,
+      .navbar-nav .nav-link:not(.active):not(.no-hover):focus {
         text-decoration: underline !important;
         background: #fff2f2 !important;
         color: #C40000 !important;
         box-shadow: 0 2px 12px #9001;
         cursor: pointer;
-      }
-      /* USUARIO EN NAVBAR (avatar + nombre) */
-      .navbar-user-link {
-        transition: background 0.2s, box-shadow 0.2s;
-        border-radius: 18px;
-        padding: 2px 10px 2px 2px;
-        text-decoration: none;
-        color: inherit;
-        display: flex;
-        align-items: center;
-      }
-      .navbar-user-link:hover,
-      .navbar-user-link:focus {
-        text-decoration: underline !important;
-        background: #fff2f2 !important;
-        box-shadow: 0 2px 12px #9001;
-        color: #C40000 !important;
-        cursor: pointer;
-      }
-      .navbar-user-avatar, .navbar-user-text {
-        transition: filter 0.2s, color 0.2s;
-      }
-      .navbar-user-link:hover .navbar-user-avatar,
-      .navbar-user-link:hover .navbar-user-text {
-        filter: brightness(1.15) contrast(1.3);
-        color: #C40000;
-        text-decoration: underline !important;
       }
     </style>
     {% block extra_head %}{% endblock %}
@@ -86,20 +59,8 @@
               <li class="nav-item"><a class="nav-link" href="{% url 'Proveedores' %}">Proveedores</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'Transaccional' %}">Inventario</a></li>
               <li class="nav-item d-flex align-items-center">
-                <a href="{% url 'perfil_usuario' %}" class="navbar-user-link d-flex align-items-center">
-                  {% if usuario_actual and usuario_actual.avatar %}
-                    <img src="{{ usuario_actual.avatar.url }}" alt="Avatar"
-                      class="rounded-circle me-2 navbar-user-avatar"
-                      style="width:34px;height:34px;object-fit:cover;border:2px solid #fff;">
-                  {% else %}
-                    <div class="rounded-circle bg-white d-flex align-items-center justify-content-center me-2 navbar-user-avatar"
-                        style="width:34px;height:34px;border:2px solid #fff;">
-                      <span class="fw-bold text-danger" style="font-size:1.2em;">
-                        {{ usuario_actual.nombre|default:user.username|slice:":1"|upper }}
-                      </span>
-                    </div>
-                  {% endif %}
-                  <span class="nav-link p-0 navbar-user-text">Hola, {{ usuario_actual.nombre|default:user.username }}</span>
+                <a href="{% url 'perfil_usuario' %}" class="nav-link p-0 no-hover" style="background:none; box-shadow:none; cursor:default;">
+                  Hola, {{ usuario_actual.nombre|default:user.username }}
                 </a>
               </li>
               <li class="nav-item">
@@ -113,7 +74,6 @@
         </div>
       </div>
     </nav>
-
     {% if messages %}
       <script>
         document.addEventListener("DOMContentLoaded", function() {
