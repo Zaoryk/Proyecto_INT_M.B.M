@@ -59,7 +59,7 @@
               <li class="nav-item"><a class="nav-link" href="{% url 'Proveedores' %}">Proveedores</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'Transaccional' %}">Inventario</a></li>
               <li class="nav-item d-flex align-items-center">
-                <a href="{% url 'perfil_usuario' %}" class="nav-link p-0 no-hover" style="background:none; box-shadow:none; cursor:default;">
+                <a class="nav-link p-0 no-hover" style="background:none; box-shadow:none; cursor:default;">
                   Hola, {{ usuario_actual.nombre|default:user.username }}
                 </a>
               </li>
