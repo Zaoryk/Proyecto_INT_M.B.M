@@ -17,6 +17,7 @@ urlpatterns = [
     path("gestionproveedores/", gestionProveedores, name="Proveedores"),
     path("modulotransaccional/", moduloTransaccional, name="Transaccional"),
     path("perfilusuario/", perfilusuario, name="perfil_usuario"),
+    path('api/', include("api.urls")),
 ]
 
 if settings.DEBUG:
