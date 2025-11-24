@@ -205,34 +205,13 @@ class ProductoProveedor(models.Model):
 
 
 class Bodega(models.Model):
-    ESTADOS = [
-        ("activo", "Activo"),
-        ("inactivo", "Inactivo"),
-    ]
     idbodega = models.AutoField(db_column='idBodega', primary_key=True)
-    nombre = models.CharField(max_length=120, unique=True)
+    nombre = models.CharField(max_length=120, blank=True, null=True)
     ubicacion = models.CharField(max_length=100, blank=True, null=True)
-    capacidad = models.IntegerField(default=0)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
 
     class Meta:
         managed = False
         db_table = 'bodega'
-
-
-class Categoria(models.Model):
-    ESTADOS = [
-        ("activo", "Activo"),
-        ("inactivo", "Inactivo"),
-    ]
-    idCategoria = models.AutoField(db_column='idCategoria', primary_key=True)
-    nombre = models.CharField(max_length=100, unique=True)
-    descripcion = models.CharField(max_length=255, blank=False, null=False)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default="activo")
-
-    class Meta:
-        managed = False
-        db_table = 'categoria'
 
 
 class Cliente(models.Model):

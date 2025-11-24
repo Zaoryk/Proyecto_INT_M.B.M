@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from dispositivos.views import dashboard, formularioUsuario, gestionProductos, gestionProveedores, moduloTransaccional, perfilusuario, gestionCategorias, gestionBodegas
+from dispositivos.views import dashboard, formularioUsuario, gestionProductos, gestionProveedores, moduloTransaccional, perfilusuario
 from django.conf import settings
 from django.conf.urls import handler404, handler500
 from django.shortcuts import render
@@ -17,8 +17,7 @@ urlpatterns = [
     path("gestionproveedores/", gestionProveedores, name="Proveedores"),
     path("modulotransaccional/", moduloTransaccional, name="Transaccional"),
     path("perfilusuario/", perfilusuario, name="perfil_usuario"),
-    path("gestioncategorias/", gestionCategorias, name="Categorias"),
-    path("gestionbodegas/", gestionBodegas, name="Bodegas"),
+    path('api/', include("api.urls")),
 ]
 
 if settings.DEBUG:

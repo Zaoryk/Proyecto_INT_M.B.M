@@ -5,7 +5,7 @@ from django.core.management import call_command
 from django.db import transaction
 
 class Command(BaseCommand):
-    help = 'Carga los fixtures en la base de datos'
+    help = 'Carga los fixtures en la base de datos, eliminando cualquier registro de dispositivos.categoria y dispositivos.bodega antes de cargar'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -29,7 +29,7 @@ class Command(BaseCommand):
         fixture_file = options['fixture_file']
         skip_verification = options['skip_verification']
         purge = options['purge']
-        
+
         if not os.path.exists(fixture_file):
             self.stdout.write(
                 self.style.ERROR(f'No se encuentra el archivo {fixture_file}')
@@ -44,7 +44,6 @@ class Command(BaseCommand):
 
         if purge:
             self.stdout.write(self.style.WARNING('Eliminando productos y tablas relacionadas...'))
-            # Reemplaza por los modelos/tableas que quieras limpiar antes:
             from dispositivos.models import Producto, Proveedor, Categoria, Bodega, ProductoProveedor
             ProductoProveedor.objects.all().delete()
             Producto.objects.all().delete()
@@ -53,42 +52,52 @@ class Command(BaseCommand):
             Bodega.objects.all().delete()
             self.stdout.write(self.style.SUCCESS('✓ Datos antiguos eliminados.'))
 
-        # Verificar que el archivo fixture tenga contenido válido
+        # FILTRAR dispositivos.categoria y dispositivos.bodega del fixture original y guardar copia temporal
+        tmp_fixture_file = fixture_file.replace('.json', '_nofk.json')
+        try:
+            with open(fixture_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            data_filtrada = [
+                item for item in data
+                if item["model"] not in ("dispositivos.categoria", "dispositivos.bodega")
+            ]
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f'✓ Se filtraron {len(data) - len(data_filtrada)} registros de "dispositivos.categoria" o "dispositivos.bodega"'
+                )
+            )
+            with open(tmp_fixture_file, 'w', encoding='utf-8') as f:
+                json.dump(data_filtrada, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error filtrando el fixture: {e}'))
+            return
+
         if not skip_verification:
-            if not self.verificar_fixture(fixture_file):
+            if not self.verificar_fixture(tmp_fixture_file):
                 self.stdout.write(
                     self.style.ERROR('El archivo fixture no es válido. No se cargarán los datos.')
                 )
                 return
 
         try:
-            self.stdout.write(f'Cargando fixtures desde {fixture_file}...')
-            
-            # Contar registros antes de cargar
-            total_registros = self.contar_registros_fixture(fixture_file)
+            self.stdout.write(f'Cargando fixtures desde {tmp_fixture_file}...')
+            total_registros = self.contar_registros_fixture(tmp_fixture_file)
             self.stdout.write(f'Se cargarán {total_registros} registros...')
-            
-            # Cargar fixtures dentro de una transacción
             with transaction.atomic():
-                call_command('loaddata', fixture_file)
-            
-            self.stdout.write(
-                self.style.SUCCESS('✓ Fixtures cargados exitosamente!')
-            )
-            
-            # Mostrar resumen de lo cargado
-            self.mostrar_resumen(fixture_file)
-            
+                call_command('loaddata', tmp_fixture_file)
+            self.stdout.write(self.style.SUCCESS('✓ Fixtures cargados exitosamente!'))
+            self.mostrar_resumen(tmp_fixture_file)
+
         except Exception as e:
-            self.stdout.write(
-                self.style.ERROR(f'✗ Error al cargar fixtures: {str(e)}')
-            )
+            self.stdout.write(self.style.ERROR(f'✗ Error al cargar fixtures: {str(e)}'))
             self.stdout.write(
                 self.style.WARNING('La transacción fue revertida. No se cargó ningún dato.')
             )
+        finally:
+            if os.path.exists(tmp_fixture_file):
+                os.remove(tmp_fixture_file)
 
     def verificar_fixture(self, fixture_file):
-        """Verifica que el archivo fixture tenga un formato válido"""
         try:
             with open(fixture_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -97,7 +106,6 @@ class Command(BaseCommand):
                     self.style.ERROR('El fixture debe ser una lista de objetos JSON')
                 )
                 return False
-            # Verificar estructura básica de cada elemento
             for i, item in enumerate(data):
                 if not isinstance(item, dict):
                     self.stdout.write(
@@ -113,7 +121,7 @@ class Command(BaseCommand):
                 self.style.SUCCESS('✓ Estructura del fixture verificada correctamente')
             )
             return True
-            
+
         except json.JSONDecodeError as e:
             self.stdout.write(
                 self.style.ERROR(f'El archivo fixture no es un JSON válido: {e}')
@@ -126,7 +134,6 @@ class Command(BaseCommand):
             return False
 
     def contar_registros_fixture(self, fixture_file):
-        """Cuenta el número total de registros en el fixture"""
         try:
             with open(fixture_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -135,11 +142,9 @@ class Command(BaseCommand):
             return 0
 
     def mostrar_resumen(self, fixture_file):
-        """Muestra un resumen de los datos cargados"""
         try:
             with open(fixture_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            # Contar por modelo
             modelos = {}
             for item in data:
                 modelo = item['model']
