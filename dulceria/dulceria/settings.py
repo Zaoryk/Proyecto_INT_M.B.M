@@ -70,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'accounts.middleware_force_password_change.ForcePasswordChangeMiddleware',
 ]
 REST_FRAMEWORK = {
      'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -186,10 +187,10 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = '@gmail.com'  # AGREGAR CORREO PARA QUE FUNCIONE
+EMAIL_HOST_USER = 'benjamindiazcastillo@gmail.com'  # AGREGAR CORREO PARA QUE FUNCIONE
 EMAIL_HOST_PASSWORD = 'pufeuguygtdrmwqe'  # Contraseña de aplicación ESTA CAMBIA SEGUN CUENTA
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
+SITE_LOGIN_URL = "http://localhost:8000/login/"
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_URL = '/static/'

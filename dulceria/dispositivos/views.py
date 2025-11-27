@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.contrib import messages
 from django.http import HttpResponse
 import openpyxl
-
+from accounts.utils_temp_password import create_user_with_temp_password
 # ------------
 # Categorias para editar
 # -------------
@@ -48,7 +48,7 @@ def dashboard(request):
         'productos_count': Producto.objects.count(),
         'proveedores_count': Proveedor.objects.count(),
         'movimientos_count': ProductoProveedor.objects.count(),
-        'ultimos_usuarios': Usuario.objects.order_by('-idUsuario')[:3],
+        'ultimos_usuarios': Usuario.objects.order_by('-idusuario')[:3],
         'role_name': get_user_role_name(request.user),
     }
     return render(request, "dispositivos/dashboard.html", context)
@@ -67,7 +67,6 @@ def formularioUsuario(request):
     is_admin = role_name == 'administrador'
     is_analyst = role_name == 'analista_financiero'
 
-    # Búsqueda y filtros
     search = request.GET.get("buscar", "")
     rol_filter = request.GET.get("rol", "")
     estado_filter = request.GET.get("estado", "")
@@ -80,7 +79,6 @@ def formularioUsuario(request):
     if estado_filter:
         usuarios = usuarios.filter(estado__iexact=estado_filter)
 
-    # ORDENAMIENTO - mECH
     VALID_FIELDS = ['username', 'email', 'nombre', 'apellido', 'rol', 'estado', 'mfa_habilitado']
     order_by = request.GET.get('order_by')
     order = request.GET.get('order')
@@ -94,7 +92,6 @@ def formularioUsuario(request):
     if 'order' in request.GET:
         request.session['usuarios_order'] = order
 
-    # Paginado
     pag_size = request.GET.get('pag_size') or request.session.get('usuarios_pag_size', '15')
     if pag_size not in ['5', '15', '30', '100']:
         pag_size = '15'
@@ -103,7 +100,6 @@ def formularioUsuario(request):
     page_number = request.GET.get('page')
     usuarios_page = paginator.get_page(page_number)
 
-    # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -112,8 +108,13 @@ def formularioUsuario(request):
         sheet.append(headers)
         for u in usuarios:
             sheet.append([
-                u.username, u.email, u.nombre, u.apellido,
-                u.get_rol_display(), u.get_estado_display(), u.get_mfa_habilitado_display()
+                u.username,
+                u.email,
+                u.nombre,
+                u.apellido,
+                u.rol or "",
+                u.estado or "",
+                u.mfa_habilitado or "",
             ])
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -122,7 +123,7 @@ def formularioUsuario(request):
         workbook.save(response)
         return response
 
-    # Eliminar usuario
+
     if request.method == "GET" and "delete_id" in request.GET:
         if not is_admin:
             messages.error(request, "No tienes permiso para eliminar usuarios.")
@@ -145,7 +146,6 @@ def formularioUsuario(request):
             messages.error(request, f"Error al eliminar usuario: {str(e)}")
         return redirect("Formulario")
 
-    # Eliminar avatar (desde el mismo formulario principal)
     if request.method == "POST" and request.POST.get("delete_avatar"):
         edit_id = request.POST.get("edit_id")
         usuario = get_object_or_404(Usuario, pk=edit_id)
@@ -157,7 +157,6 @@ def formularioUsuario(request):
         messages.success(request, "Avatar eliminado correctamente.")
         return redirect("Formulario")
 
-    # Editar o Crear usuario
     edit_mode = False
     edit_id = ""
     form = None
@@ -176,6 +175,7 @@ def formularioUsuario(request):
 
     elif request.method == "POST" and not request.POST.get("delete_avatar"):
         edit_id = request.POST.get("edit_id")
+
         if edit_id:
             if not can_edit_own_profile(request.user, edit_id):
                 messages.error(request, "Solo puedes editar tu propio perfil.")
@@ -183,45 +183,78 @@ def formularioUsuario(request):
             if not user_can_change_module(request.user, 'usuarios'):
                 messages.error(request, "No tienes permiso para editar usuarios.")
                 return redirect("Formulario")
+            instance = get_object_or_404(Usuario, pk=edit_id)
+
+            if is_admin:
+                form = UsuarioForm(request.POST, request.FILES, instance=instance)
+            else:
+                POST_data = request.POST.copy()
+                POST_data['avatar'] = instance.avatar
+                form = UsuarioForm(POST_data, instance=instance)
+
+            edit_mode = True
+
+            if not is_admin and instance:
+                original_rol = instance.rol
+                if form.is_valid():
+                    usuario = form.save(commit=False)
+                    usuario.rol = original_rol
+                    password = form.cleaned_data.get('password')
+                    if password:
+                        usuario.set_password(password)
+                        usuario.password_temporal = False
+                    usuario.save()
+                    usuario.sync_to_auth_user(request=request)
+                    messages.success(request, "Usuario actualizado correctamente.")
+                    return redirect("Formulario")
+            else:
+                if form.is_valid():
+                    usuario = form.save(commit=False)
+                    password = form.cleaned_data.get('password')
+                    if password:
+                        usuario.set_password(password)
+                        usuario.password_temporal = False
+                    usuario.save()
+                    usuario.sync_to_auth_user(request=request)
+                    messages.success(request, "Usuario actualizado correctamente.")
+                    return redirect("Formulario")
         else:
             if not is_admin or not user_can_add_module(request.user, 'usuarios'):
                 messages.error(request, "No tienes permiso para crear usuarios.")
                 return redirect("Formulario")
 
-        instance = get_object_or_404(Usuario, pk=edit_id) if edit_id else None
+            form = UsuarioForm(request.POST, request.FILES)
+            edit_mode = False
 
-        if is_admin:
-            form = UsuarioForm(request.POST, request.FILES, instance=instance)
-        else:
-            POST_data = request.POST.copy()
-            if instance:
-                POST_data['avatar'] = instance.avatar
-            form = UsuarioForm(POST_data, instance=instance)
-
-        edit_mode = bool(edit_id)
-
-        if not is_admin and instance:
-            original_rol = instance.rol
             if form.is_valid():
-                usuario = form.save(commit=False)
-                usuario.rol = original_rol
-                password = form.cleaned_data.get('password')
-                if password:
-                    usuario.set_password(password)
-                usuario.save()
+                data = form.cleaned_data
+                username = data["username"]
+                email = data["email"]
+                first_name = data["nombre"]
+                last_name = data["apellido"]
+                rol = data["rol"]
+                estado = data.get("estado") or "ACTIVO"
+                mfa_habilitado = data.get("mfa_habilitado") or "deshabilitado"
+
+                django_user, usuario, _ = create_user_with_temp_password(
+                    username=username,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    rol=rol,
+                    estado=estado,
+                    mfa_habilitado=mfa_habilitado,
+                )
+
+                avatar = data.get("avatar")
+                if avatar:
+                    usuario.avatar = avatar
+                    usuario.save(update_fields=['avatar'])
+
                 usuario.sync_to_auth_user(request=request)
-                messages.success(request, "Usuario actualizado correctamente.")
+                messages.success(request, "Usuario creado y clave provisoria enviada por correo.")
                 return redirect("Formulario")
-        else:
-            if form.is_valid():
-                usuario = form.save(commit=False)
-                password = form.cleaned_data.get('password')
-                if password:
-                    usuario.set_password(password)
-                usuario.save()
-                usuario.sync_to_auth_user(request=request)
-                messages.success(request, "Usuario guardado correctamente.")
-                return redirect("Formulario")
+
     else:
         if is_admin and user_can_add_module(request.user, 'usuarios'):
             form = UsuarioForm()
@@ -249,6 +282,7 @@ def formularioUsuario(request):
         "order": order,
         "order_by": order_by,
     })
+
 
 
 
