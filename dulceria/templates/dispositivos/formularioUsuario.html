@@ -229,7 +229,7 @@ input, select { border-radius: 8px !important; }
             <select class="form-select" name="rol" required>
               <option value="">Seleccione rol...</option>
               <option value="administrador"{% if current_rol == 'administrador' %} selected{% endif %}>Administrador</option>
-              <option value="operador_ventas"{% if current_rol == 'operador_ventas' %} selected{% endif %}>Operador Ventas</option>
+              <option value="operador_inventario" {% if request.GET.rol == 'operador_inventario' %}selected{% endif %}>Operador Inventario</option>
               <option value="analista_financiero"{% if current_rol == 'analista_financiero' %} selected{% endif %}>Analista Financiero</option>
             </select>
             {% endwith %}
