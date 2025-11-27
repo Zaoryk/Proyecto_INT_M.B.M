@@ -3,10 +3,10 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from dispositivos.views import dashboard, formularioUsuario, gestionProductos, gestionProveedores, moduloTransaccional, perfilusuario
-from django.conf import settings
 from django.conf.urls import handler404, handler500
 from django.shortcuts import render
 from django.views.static import serve
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -18,6 +18,7 @@ urlpatterns = [
     path("modulotransaccional/", moduloTransaccional, name="Transaccional"),
     path("perfilusuario/", perfilusuario, name="perfil_usuario"),
     path('api/', include("api.urls")),
+    path('api/login/', obtain_auth_token, name='api_login'),
 ]
 
 if settings.DEBUG:
@@ -35,5 +36,3 @@ def error_500_view(request):
 
 handler404 = error_404_view
 handler500 = error_500_view
-
-
