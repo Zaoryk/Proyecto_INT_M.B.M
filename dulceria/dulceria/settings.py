@@ -190,7 +190,7 @@ EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'benjamindiazcastillo@gmail.com'  # AGREGAR CORREO PARA QUE FUNCIONE
 EMAIL_HOST_PASSWORD = 'pufeuguygtdrmwqe'  # Contraseña de aplicación ESTA CAMBIA SEGUN CUENTA
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-SITE_LOGIN_URL = "http://127.0.0.1:8000/accounts/login/"
+SITE_LOGIN_URL = "http://localhost:8000/login/"
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_URL = '/static/'
