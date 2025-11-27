@@ -105,9 +105,9 @@ input, select, textarea { border-radius: 8px !important; }
               <label class="form-label">Bodega</label>
               <select class="form-select" name="bodega" id="bodega">
                 <option value="">Seleccione...</option>
-                {% for b in form.bodega.field.queryset %}
-                  <option value="{{ b.pk }}"{% if form.bodega.value == b.pk %} selected{% endif %}>{{ b.nombre }}</option>
-                {% endfor %}
+                <option value="1">Bodega 1</option>
+                <option value="2">Bodega 2</option>
+                <option value="3">Bodega 3</option>
               </select>
             </div>
           </div>
@@ -386,6 +386,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const orderByInput = document.getElementById("order_by");
   const orderInput = document.getElementById("order");
   const searchForm = document.getElementById("searchForm");
+
   document.querySelectorAll(".sortable-header").forEach(header => {
     header.addEventListener("click", function() {
       const field = this.getAttribute("data-field");
@@ -410,6 +411,7 @@ document.addEventListener("DOMContentLoaded", function() {
       if (!chk.checked) input.value = "";
     });
   };
+
   toggle(document.getElementById("manejo_lotes"), document.getElementById("lote"));
   toggle(document.getElementById("manejo_series"), document.getElementById("serie"));
   toggle(document.getElementById("perecible"), document.getElementById("fecha_vencimiento"));
@@ -441,23 +443,54 @@ document.addEventListener("DOMContentLoaded", function() {
       const bodega = document.getElementById("bodega").value.trim();
       const cantidad = document.getElementById("cantidadInput").value.trim();
       const fechaVenc = document.getElementById("fecha_vencimiento").value.trim();
+      const lote = document.getElementById("lote").value.trim();
+      const serie = document.getElementById("serie").value.trim();
+      const chkLotes = document.getElementById("manejo_lotes");
+      const chkSeries = document.getElementById("manejo_series");
+      const chkPerecible = document.getElementById("perecible");
+      const docRefInput = document.querySelector('input[name="doc_referencia"]');
+      const motivoInput = document.querySelector('input[name="motivo"]');
+      const obsInput = document.querySelector('textarea[name="observaciones"]');
+      const docRef = docRefInput ? docRefInput.value.trim() : "";
+      const motivo = motivoInput ? motivoInput.value.trim() : "";
+      const observaciones = obsInput ? obsInput.value.trim() : "";
 
       if (!fecha) errores.push("Debe ingresar la <b>fecha del movimiento</b>.");
       if (!tipo) errores.push("Debe seleccionar el <b>tipo de movimiento</b>.");
       if (!producto) errores.push("Debe seleccionar un <b>producto</b>.");
       if (!proveedor) errores.push("Debe seleccionar un <b>proveedor</b>.");
       if (!bodega) errores.push("Debe seleccionar una <b>bodega</b>.");
-      if (!cantidad || isNaN(cantidad) || parseInt(cantidad) <= 0)
+      if (!cantidad || isNaN(cantidad) || parseInt(cantidad, 10) <= 0)
         errores.push("La <b>cantidad</b> debe ser mayor a 0.");
 
-      const chkPerecible = document.getElementById("perecible");
-      if (chkPerecible.checked && fechaVenc) {
-        const fechaHoy = new Date();
-        const fechaVen = new Date(fechaVenc);
-        if (fechaVen < fechaHoy.setHours(0,0,0,0)) {
-          errores.push("La <b>fecha de vencimiento</b> no puede estar vencida.");
+      if (chkLotes && chkLotes.checked && !lote)
+        errores.push("Debe ingresar el <b>lote</b> cuando se habilita manejo por lotes.");
+      if (chkSeries && chkSeries.checked && !serie)
+        errores.push("Debe ingresar la <b>serie</b> cuando se habilita manejo por series.");
+
+      if (chkPerecible && chkPerecible.checked) {
+        if (!fechaVenc) {
+          errores.push("Debe ingresar la <b>fecha de vencimiento</b> para productos perecibles.");
+        } else {
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+          const ven = new Date(fechaVenc);
+          if (ven < hoy) {
+            errores.push("La <b>fecha de vencimiento</b> no puede estar vencida.");
+          }
         }
       }
+
+      if (tipo === "ajuste" && !motivo) {
+        errores.push("Debe ingresar el <b>motivo</b> cuando el movimiento es un ajuste.");
+      }
+
+      if (docRef && docRef.length > 50)
+        errores.push("El <b>documento de referencia</b> no debe superar los 50 caracteres.");
+      if (motivo && motivo.length > 255)
+        errores.push("El <b>motivo</b> no debe superar los 255 caracteres.");
+      if (observaciones && observaciones.length > 500)
+        errores.push("Las <b>observaciones</b> no deben superar los 500 caracteres.");
 
       if (errores.length > 0) {
         e.preventDefault();
@@ -472,4 +505,5 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 </script>
+
 {% endblock %}

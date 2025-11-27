@@ -189,7 +189,6 @@ input, select, textarea { border-radius: 8px !important; }
         <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
         <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
       </select>
-      <!-- Campos ocultos para mantener orden -->
       <input type="hidden" name="order_by" id="order_by" value="{{ order_by|default:'razon_social' }}">
       <input type="hidden" name="order" id="order" value="{{ order|default:'asc' }}">
       <button type="submit" class="btn btn-outline-primary me-2">
@@ -323,180 +322,256 @@ input, select, textarea { border-radius: 8px !important; }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 {% if messages %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   {% for message in messages %}
-    Swal.fire({
-      icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}",
-      title: "{% if message.tags == 'success' %}¡Éxito!{% elif message.tags == 'error' %}Error{% elif message.tags == 'warning' %}Atención{% else %}Aviso{% endif %}",
-      text: "{{ message|escapejs }}",
-      showConfirmButton: true,
-      confirmButtonText: "Aceptar"
-    });
+  Swal.fire({
+    icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}",
+    title: "{% if message.tags == 'success' %}¡Éxito!{% elif message.tags == 'error' %}Error{% elif message.tags == 'warning' %}Atención{% else %}Aviso{% endif %}",
+    text: "{{ message|escapejs }}",
+    showConfirmButton: true,
+    confirmButtonText: "Aceptar"
+  });
   {% endfor %}
 });
 </script>
 {% endif %}
+
 <script>
 document.addEventListener("DOMContentLoaded", function(){
-  // ========== ORDENAMIENTO DE TABLA ==========
-  const sortableHeaders = document.querySelectorAll('.sortable-header');
-  const orderByInput = document.getElementById('order_by');
-  const orderInput = document.getElementById('order');
-  const searchForm = document.getElementById('searchForm');
+  const sortableHeaders = document.querySelectorAll(".sortable-header");
+  const orderByInput = document.getElementById("order_by");
+  const orderInput = document.getElementById("order");
+  const searchForm = document.getElementById("searchForm");
 
   sortableHeaders.forEach(header => {
-    header.addEventListener('click', function() {
-      const field = this.getAttribute('data-field');
+    header.addEventListener("click", function() {
+      const field = this.getAttribute("data-field");
       const currentOrderBy = orderByInput.value;
       const currentOrder = orderInput.value;
 
       if (currentOrderBy === field) {
-        orderInput.value = currentOrder === 'asc' ? 'desc' : 'asc';
+        orderInput.value = currentOrder === "asc" ? "desc" : "asc";
       } else {
         orderByInput.value = field;
-        orderInput.value = 'asc';
+        orderInput.value = "asc";
       }
 
       searchForm.submit();
     });
   });
 
-  if (orderByInput.value) {
-    const activeHeader = document.querySelector(`[data-field="${orderByInput.value}"]`);
-    if (activeHeader) {
-      activeHeader.classList.add('active');
-    }
+  if (orderByInput && orderByInput.value) {
+    const activeHeader = document.querySelector('[data-field="' + orderByInput.value + '"]');
+    if (activeHeader) activeHeader.classList.add("active");
   }
 
-  // SweetAlert2 eliminar proveedor
-  document.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const id = btn.getAttribute('data-id');
+  document.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const id = btn.getAttribute("data-id");
       Swal.fire({
-        icon: 'warning',
-        title: '¿Seguro de eliminar?',
-        text: '¡Esta acción no se puede deshacer!',
+        icon: "warning",
+        title: "¿Seguro de eliminar?",
+        text: "¡Esta acción no se puede deshacer!",
         showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
+        confirmButtonColor: "#dc3545",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+      }).then(result => {
         if (result.isConfirmed) {
-          window.location.href = '?delete_id=' + id;
+          window.location.href = "?delete_id=" + id;
         }
       });
     });
   });
 
-  // Validaciones form proveedor
   const form = document.getElementById("proveedorForm");
-  if(form){
-    const rutField = document.getElementById("rutField");
-    const btnGuardar = form.querySelector('button.btn-primary[type="submit"]');
-    form.setAttribute("novalidate", "true");
-    rutField.addEventListener("input", function() {
-      let value = this.value.replace(/[^0-9kK]/g, "").toUpperCase();
-      if (value.length > 9 && !value.includes("K")) value = value.slice(0, 9);
-      if (value.includes("K") && value.indexOf("K") !== value.length - 1) value = value.replace(/K/g, "");
-      let cuerpo = value, dv = "";
-      if (value.length > 1) { cuerpo = value.slice(0, -1); dv = value.slice(-1); }
-      cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-      this.value = dv ? cuerpo + "-" + dv : cuerpo;
-    });
-    btnGuardar.addEventListener("click", function(e){
-      e.preventDefault();
-      const rut = rutField.value.replace(/\./g, "").toUpperCase();
-      const rutRegex = /^[0-9]{7,8}-[0-9K]$/;
-      if(!rutRegex.test(rut)){
-        Swal.fire({ icon: "error", title: "RUT inválido", text: "Debe tener entre 8 y 9 dígitos antes del guion (formato: xx.xxx.xxx-x).", confirmButtonText: "Aceptar" });
-        return;
-      }
-      const cuerpo = rut.split("-")[0];
-      if(/^([0-9])\1+$/.test(cuerpo)){
-        Swal.fire({ icon: "warning", title: "RUT no válido", text: "No se permiten RUT con todos los dígitos iguales (ej: 11111111-1).", confirmButtonText: "Aceptar" });
-        return;
-      }
-      const requiredFields = {
-        "rut_nif": "RUT/NIF", "razon_social": "Razón social", "email": "Email",
-        "pais": "País", "condiciones_pago": "Condiciones de pago",
-        "moneda": "Moneda", "estado": "Estado", "producto": "Producto",
-        "costo_promedio": "Costo promedio", "lead_time_dias": "Lead time (días)"
-      };
-      const missing = [];
-      Object.keys(requiredFields).forEach(f=>{
-        const el = form.querySelector(`[name="${f}"]`);
-        if(!el || !el.value.trim()) missing.push(requiredFields[f]);
-      });
-      if(missing.length){
-        Swal.fire({
-          icon:"warning", title:"Campos obligatorios faltantes",
-          html:"<ul style='text-align:left'>" + missing.map(f=>"<li>"+f+"</li>").join("") + "</ul>",
-          confirmButtonText:"Aceptar"
-        });
-        return;
-      }
-      const email = form.querySelector('[name="email"]').value.trim();
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if(!emailRegex.test(email)){
-        Swal.fire({
-          icon:"error", title:"Correo inválido",
-          text:"Debe tener un formato válido (ejemplo@correo.com)",
-          confirmButtonText:"Aceptar"
-        });
-        return;
-      }
-      form.submit();
-    });
-  }
+  if (!form) return;
 
-  const tabTriggerList = [].slice.call(document.querySelectorAll('#proveedorTab button[data-bs-toggle="tab"]'));
-  tabTriggerList.forEach(tabEl => new bootstrap.Tab(tabEl));
-  
-  // Paginador autosubmit
   const pagSize = document.getElementById("pag_size");
-  if(pagSize){
-    pagSize.addEventListener("change", function(){
+  if (pagSize && searchForm) {
+    pagSize.addEventListener("change", function() {
       searchForm.submit();
     });
   }
 
-  // === BLOQUEAR NEGATIVOS Y NOTACIÓN CIENTÍFICA ===
+  const tabTriggerList = [].slice.call(document.querySelectorAll("#proveedorTab button[data-bs-toggle='tab']"));
+  tabTriggerList.forEach(tabEl => new bootstrap.Tab(tabEl));
+
+  const rutField = document.getElementById("rutField");
+  if (rutField) {
+    rutField.addEventListener("input", function() {
+      let value = this.value.replace(/[^0-9kK]/g, "").toUpperCase();
+      let cuerpo = value;
+      let dv = "";
+      if (value.length > 1) {
+        cuerpo = value.slice(0, -1);
+        dv = value.slice(-1);
+      }
+      cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      this.value = dv ? cuerpo + "-" + dv : cuerpo;
+    });
+  }
+
   function bloqueaNegativosYExponente(input){
-    input.addEventListener('keydown', function(e){
-      const invalid = ['-', '+', 'e', 'E'];
+    input.addEventListener("keydown", function(e){
+      const invalid = ["-", "+", "e", "E"];
       if (invalid.includes(e.key)) e.preventDefault();
     });
-    input.addEventListener('wheel', e => e.preventDefault(), { passive:false });
-    input.addEventListener('input', function(){
+    input.addEventListener("wheel", function(e){ e.preventDefault(); }, { passive:false });
+    input.addEventListener("input", function(){
       if (this.value && Number(this.value) < 0) this.value = 0;
     });
   }
-  const inpCosto = document.getElementById('costo_promedio');
-  const inpLead  = document.getElementById('lead_time_dias');
+
+  const inpCosto = document.getElementById("costo_promedio");
+  const inpLead  = document.getElementById("lead_time_dias");
   if (inpCosto) bloqueaNegativosYExponente(inpCosto);
   if (inpLead)  bloqueaNegativosYExponente(inpLead);
 
-  // === VALIDAR NOMBRE FANTASÍA (sin solo símbolos) ===
-  const nf = document.getElementsByName('nombre_fantasia')[0];
+  const nf = form.querySelector('[name="nombre_fantasia"]');
   if (nf) {
-    nf.addEventListener('input', function(){
+    nf.addEventListener("input", function(){
       const val = this.value.trim();
       const soloSimbolos = /^[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+$/;
       if (val && soloSimbolos.test(val)) {
         Swal.fire({
-          icon: 'warning',
-          title: 'Nombre inválido',
-          text: 'El nombre de fantasía no puede contener solo símbolos.',
-          confirmButtonText: 'Aceptar'
+          icon: "warning",
+          title: "Nombre inválido",
+          text: "El nombre de fantasía no puede contener solo símbolos.",
+          confirmButtonText: "Aceptar"
         });
-        this.value = '';
+        this.value = "";
       }
     });
   }
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function validarRut(rut){
+    let r = rut.replace(/\./g, "").replace(/-/g, "").toUpperCase();
+    if (!/^[0-9]+[0-9K]$/.test(r)) return false;
+    let cuerpo = r.slice(0, -1);
+    let dv = r.slice(-1);
+    let suma = 0;
+    let multiplo = 2;
+    for (let i = cuerpo.length - 1; i >= 0; i--) {
+      suma += parseInt(cuerpo[i], 10) * multiplo;
+      multiplo = multiplo === 7 ? 2 : multiplo + 1;
+    }
+    let resto = 11 - (suma % 11);
+    let dvCalc = resto === 11 ? "0" : resto === 10 ? "K" : String(resto);
+    return dv === dvCalc;
+  }
+
+  form.setAttribute("novalidate", "true");
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    const errores = [];
+
+    const rutInput = rutField;
+    const razonInput = form.querySelector('[name="razon_social"]');
+    const nombreFantasiaInput = form.querySelector('[name="nombre_fantasia"]');
+    const emailInput = form.querySelector('[name="email"]');
+    const paisInput = form.querySelector('[name="pais"]');
+    const condPagoInput = form.querySelector('[name="condiciones_pago"]');
+    const monedaInput = form.querySelector('[name="moneda"]');
+    const estadoInput = form.querySelector('[name="estado"]');
+    const productoInput = form.querySelector('[name="producto"]');
+    const costoInput = document.getElementById("costo_promedio");
+    const leadInput = document.getElementById("lead_time_dias");
+
+    const rut = rutInput ? rutInput.value.trim() : "";
+    const razon = razonInput ? razonInput.value.trim() : "";
+    const nombreFantasia = nombreFantasiaInput ? nombreFantasiaInput.value.trim() : "";
+    const email = emailInput ? emailInput.value.trim() : "";
+    const pais = paisInput ? paisInput.value.trim() : "";
+    const condicionesPago = condPagoInput ? condPagoInput.value.trim() : "";
+    const moneda = monedaInput ? monedaInput.value.trim() : "";
+    const estado = estadoInput ? estadoInput.value.trim() : "";
+    const producto = productoInput ? productoInput.value.trim() : "";
+    const costo = costoInput ? costoInput.value.trim() : "";
+    const lead = leadInput ? leadInput.value.trim() : "";
+
+    if (!rut) {
+      errores.push("Debe ingresar el <b>RUT/NIF del proveedor</b>.");
+    } else {
+      const rutPlano = rut.replace(/\./g, "").replace(/-/g, "").toUpperCase();
+      if (rutPlano.length > 20) errores.push("El <b>RUT/NIF</b> no debe superar los 20 caracteres.");
+      if (!validarRut(rut)) errores.push("El <b>RUT</b> ingresado no es válido.");
+    }
+
+    if (!razon) {
+      errores.push("Debe ingresar la <b>razón social</b> del proveedor.");
+    } else if (razon.length > 255) {
+      errores.push("La <b>razón social</b> no debe superar los 255 caracteres.");
+    }
+
+    if (nombreFantasia && nombreFantasia.length > 255) {
+      errores.push("El <b>nombre de fantasía</b> no debe superar los 255 caracteres.");
+    }
+
+    if (!email) {
+      errores.push("Debe ingresar el <b>correo electrónico</b> del proveedor.");
+    } else {
+      if (email.length > 254) errores.push("El <b>correo electrónico</b> no debe superar los 254 caracteres.");
+      if (!emailRegex.test(email)) errores.push("El <b>correo electrónico</b> no tiene un formato válido.");
+    }
+
+    if (!pais) {
+      errores.push("Debe seleccionar el <b>país</b> del proveedor.");
+    } else if (pais.length > 64) {
+      errores.push("El <b>país</b> no debe superar los 64 caracteres.");
+    }
+
+    if (!condicionesPago) {
+      errores.push("Debe ingresar las <b>condiciones de pago</b>.");
+    } else if (condicionesPago.length > 45) {
+      errores.push("Las <b>condiciones de pago</b> no deben superar los 45 caracteres.");
+    }
+
+    if (!moneda) {
+      errores.push("Debe seleccionar la <b>moneda</b> del proveedor.");
+    } else if (moneda.length > 8) {
+      errores.push("La <b>moneda</b> no debe superar los 8 caracteres.");
+    }
+
+    if (!estado) {
+      errores.push("Debe seleccionar el <b>estado</b> del proveedor.");
+    } else {
+      const estadosValidos = ["Activo", "Inactivo", "Bloqueado"];
+      if (!estadosValidos.includes(estado)) {
+        errores.push("El <b>estado</b> seleccionado no es válido.");
+      }
+    }
+
+    if (!producto) {
+      errores.push("Debe seleccionar un <b>producto</b> asociado.");
+    }
+
+    if (!costo || isNaN(costo) || Number(costo) < 0) {
+      errores.push("El <b>costo promedio</b> debe ser un número mayor o igual a 0.");
+    }
+
+    if (!lead || isNaN(lead) || parseInt(lead, 10) < 0) {
+      errores.push("El <b>lead time (días)</b> debe ser un número mayor o igual a 0.");
+    }
+
+    if (errores.length > 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Corrige los siguientes errores",
+        html: "<ul style='text-align:left'>" + errores.map(x => "<li>" + x + "</li>").join("") + "</ul>",
+        confirmButtonText: "Aceptar"
+      });
+      return;
+    }
+
+    form.submit();
+  });
 });
 </script>
 {% endblock %}
