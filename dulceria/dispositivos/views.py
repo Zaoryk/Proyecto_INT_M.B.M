@@ -108,8 +108,13 @@ def formularioUsuario(request):
         sheet.append(headers)
         for u in usuarios:
             sheet.append([
-                u.username, u.email, u.nombre, u.apellido,
-                u.get_rol_display(), u.get_estado_display(), u.get_mfa_habilitado_display()
+                u.username,
+                u.email,
+                u.nombre,
+                u.apellido,
+                u.rol or "",
+                u.estado or "",
+                u.mfa_habilitado or "",
             ])
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -117,6 +122,7 @@ def formularioUsuario(request):
         response['Content-Disposition'] = 'attachment; filename="usuarios.xlsx"'
         workbook.save(response)
         return response
+
 
     if request.method == "GET" and "delete_id" in request.GET:
         if not is_admin:
