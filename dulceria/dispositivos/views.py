@@ -574,35 +574,25 @@ def moduloTransaccional(request):
     role_name = get_user_role_name(request.user)
     search = request.GET.get("buscar", "")
     tipo = request.GET.get("tipo", "")
+    movimientos = ProductoProveedor.objects.select_related('producto', 'proveedor').all()
 
-    movimientos = (
-        ProductoProveedor.objects
-        .select_related('producto', 'proveedor', 'bodega')
-        .all()
-    )
-
-    # --- Filtros de búsqueda ---
     if search:
-        movimientos = movimientos.filter(
-            Q(producto__sku__icontains=search) | Q(producto__nombre__icontains=search)
-        )
+        movimientos = movimientos.filter(Q(producto__sku__icontains=search) | Q(producto__nombre__icontains=search))
     if tipo:
         movimientos = movimientos.filter(tipo_movimiento__iexact=tipo)
 
-    # --- Ordenamiento ---
-    VALID_FIELDS = [
-        'fecha_movimiento', 'tipo_movimiento', 'producto__sku',
-        'producto__nombre', 'proveedor__razon_social', 'bodega__nombre', 'cantidad'
-    ]
+    # ========== ORDENAMIENTO ==========
+    VALID_FIELDS = ['fecha_movimiento', 'tipo_movimiento', 'producto__sku', 
+                    'producto__nombre', 'proveedor__razon_social', 'cantidad']
     order = request.GET.get('order', request.session.get('inventario_order', 'desc'))
     order_by = request.GET.get('order_by', request.session.get('inventario_order_by', 'fecha_movimiento'))
-
+    
     if order_by not in VALID_FIELDS:
         order_by = 'fecha_movimiento'
-
+    
     request.session['inventario_order'] = order
     request.session['inventario_order_by'] = order_by
-
+    
     if order == 'desc':
         movimientos = movimientos.order_by(f'-{order_by}')
     else:
@@ -618,12 +608,12 @@ def moduloTransaccional(request):
     page_number = request.GET.get('page')
     movimientos_page = paginator.get_page(page_number)
 
-    # --- Exportar a Excel ---
+    # Exportar a Excel (siempre exporta TODO el queryset filtrado, no solo la página)
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "Movimientos"
-        headers = ["Fecha", "Tipo", "Producto", "Proveedor", "Bodega", "Cantidad"]
+        headers = ["Fecha", "Tipo", "Producto", "Proveedor", "Cantidad"]
         sheet.append(headers)
         for m in movimientos:
             sheet.append([
@@ -631,7 +621,6 @@ def moduloTransaccional(request):
                 m.get_tipo_movimiento_display(),
                 m.producto.nombre,
                 m.proveedor.razon_social,
-                m.bodega.nombre if m.bodega else "",
                 m.cantidad,
             ])
         response = HttpResponse(
@@ -641,22 +630,20 @@ def moduloTransaccional(request):
         workbook.save(response)
         return response
 
-    # --- Permisos CRUD ---
+    # Verificar permisos CRUD
     can_add = user_can_add_module(request.user, 'producto_proveedor')
     can_change = user_can_change_module(request.user, 'producto_proveedor')
     can_delete = user_can_delete_module(request.user, 'producto_proveedor')
 
-    # --- EDITAR ---
+    # EDITAR
     if request.method == "GET" and "edit_id" in request.GET:
         if not can_change:
             messages.error(request, "No tienes permiso para editar movimientos.")
             return redirect("Transaccional")
-        form = ProductoProveedorForm(
-            instance=get_object_or_404(ProductoProveedor, pk=request.GET.get("edit_id"))
-        )
+        form = ProductoProveedorForm(instance=get_object_or_404(ProductoProveedor, pk=request.GET.get("edit_id")))
         edit_mode = True
 
-    # --- GUARDAR / ACTUALIZAR ---
+    # GUARDAR / ACTUALIZAR
     elif request.method == "POST":
         edit_id = request.POST.get("edit_id")
         if edit_id and not can_change:
@@ -673,7 +660,7 @@ def moduloTransaccional(request):
         if form.is_valid():
             movimiento = form.save(commit=False)
 
-            # --- Limpieza de campos opcionales ---
+            # Control de campos opcionales (evitar null vacíos)
             if not movimiento.lote:
                 movimiento.lote = None
             if not movimiento.serie:
@@ -691,7 +678,7 @@ def moduloTransaccional(request):
         else:
             messages.error(request, "Error al guardar el movimiento. Verifica los campos.")
 
-    # --- ELIMINAR ---
+    # ELIMINAR
     elif request.method == "GET" and "delete_id" in request.GET:
         if not can_delete:
             messages.error(request, "No tienes permiso para eliminar movimientos.")
@@ -704,12 +691,10 @@ def moduloTransaccional(request):
         form = ProductoProveedorForm() if can_add else None
         edit_mode = False
 
-    # --- Contador de movimientos del día ---
     movimientos_hoy = ProductoProveedor.objects.filter(
         fecha_movimiento__date=timezone.now().date()
     ).count()
 
-    # --- Render final ---
     return render(request, "dispositivos/moduloTransaccional.html", {
         "visitas": visitas,
         "form": form,

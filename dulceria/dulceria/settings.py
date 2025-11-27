@@ -50,6 +50,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'dispositivos',
     'accounts',
+    'rest_framework',
+    'api',
+    'rest_framework.authtoken'
 ]
 
 MEDIA_URL = '/media/'
@@ -68,7 +71,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+REST_FRAMEWORK = {
+     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication'
+    ],
+}
 ROOT_URLCONF = 'dulceria.urls'
 
 TEMPLATES = [
@@ -193,3 +200,4 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
