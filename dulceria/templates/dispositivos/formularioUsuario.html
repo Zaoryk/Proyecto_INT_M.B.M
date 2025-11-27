@@ -292,10 +292,7 @@ input, select { border-radius: 8px !important; }
           <select class="form-select me-2 mb-2" name="rol" style="max-width:130px;">
             <option value="">Rol: todos</option>
             <option value="administrador" {% if request.GET.rol == 'administrador' %}selected{% endif %}>Administrador</option>
-            <option value="operador_compras" {% if request.GET.rol == 'operador_compras' %}selected{% endif %}>Operador Compras</option>
             <option value="operador_inventario" {% if request.GET.rol == 'operador_inventario' %}selected{% endif %}>Operador Inventario</option>
-            <option value="operador_produccion" {% if request.GET.rol == 'operador_produccion' %}selected{% endif %}>Operador Producción</option>
-            <option value="operador_ventas" {% if request.GET.rol == 'operador_ventas' %}selected{% endif %}>Operador Ventas</option>
             <option value="analista_financiero" {% if request.GET.rol == 'analista_financiero' %}selected{% endif %}>Analista Financiero</option>
           </select>
 
