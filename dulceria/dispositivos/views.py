@@ -396,12 +396,6 @@ def gestionProductos(request):
     can_change = user_can_change_module(request.user, 'productos')
     can_delete = user_can_delete_module(request.user, 'productos')
 
-    # Categorías dinámicas
-    categorias_db = Producto.objects.values_list('categoria', flat=True).distinct()
-    categorias_validas = sorted(set([c.strip() for c in categorias_db if c and c.strip()]))
-    categorias = [(c, c) for c in categorias_validas]
-    categorias.append(("Otras", "Otra..."))
-
     return render(request, "dispositivos/gestionProductos.html", {
         "visitas": visitas,
         "productos": page_obj,
@@ -413,10 +407,10 @@ def gestionProductos(request):
         "order": order,
         "order_by": order_by,
         "pag_size": pag_size,
-        "categorias": categorias,
         "form": form,
         "edit_mode": edit_mode,
         "edit_id": edit_id,
+        "categorias": CATEGORIAS,
     })
 
 # -------------------------------------------------------------

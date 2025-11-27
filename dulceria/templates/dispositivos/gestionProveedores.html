@@ -27,6 +27,7 @@ input, select, textarea { border-radius: 8px !important; }
 }
 </style>
 
+
 {% if can_add or edit_mode %}
 <div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
@@ -76,7 +77,7 @@ input, select, textarea { border-radius: 8px !important; }
             </div>
             <div class="col-md-6">
               <label class="form-label">Email *</label>
-              <input type="email" class="form-control" name="email" id="emailField" value="{{ form.email.value|default_if_none:'' }}" required>
+              <input type="email" class="form-control" name="email" id="emailField" value="{{ form.email.value|default_if_none:'' }}" required maxlength="255">
             </div>
           </div>
         </div>
@@ -146,15 +147,15 @@ input, select, textarea { border-radius: 8px !important; }
             </div>
             <div class="col-md-4">
               <label class="form-label">Costo promedio *</label>
-              <input type="number" class="form-control" name="costo_promedio" id="costo_promedio" step="0.01" min="0"
-                    value="{{ form.instance.costo_promedio|default_if_none:'' }}" required>
+              <input type="number" class="form-control" name="costo_promedio" id="costo_promedio"
+                     min="0" required>
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-4">
               <label class="form-label">Lead time (días) *</label>
-              <input type="number" class="form-control" name="lead_time_dias" id="lead_time_dias" min="0"
-                    value="{{ form.instance.lead_time_dias|default_if_none:'' }}" required>
+              <input type="number" class="form-control" name="lead_time_dias" id="lead_time_dias"
+                     min="0" required>
             </div>
           </div>
         </div>
@@ -176,6 +177,7 @@ input, select, textarea { border-radius: 8px !important; }
   <strong>No tienes Los Permisos</strong> - Solo visualizar datos.
 </div>
 {% endif %}
+
 
 <div class="card shadow-sm border-0 mt-4">
   <div class="card-body">
@@ -199,6 +201,7 @@ input, select, textarea { border-radius: 8px !important; }
         <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
       </button>
     </form>
+
 
     <div class="table-responsive">
       <table class="table table-bordered table-hover rounded">
@@ -321,7 +324,9 @@ input, select, textarea { border-radius: 8px !important; }
   </div>
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 {% if messages %}
 <script>
@@ -338,6 +343,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endif %}
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function(){
@@ -427,10 +433,44 @@ document.addEventListener("DOMContentLoaded", function(){
     });
   }
 
-  const inpCosto = document.getElementById("costo_promedio");
-  const inpLead  = document.getElementById("lead_time_dias");
-  if (inpCosto) bloqueaNegativosYExponente(inpCosto);
-  if (inpLead)  bloqueaNegativosYExponente(inpLead);
+  function limitarDigitos(input, maxLen) {
+    input.addEventListener("keydown", function(e) {
+      const allowedKeys = ["Backspace","Delete","ArrowLeft","ArrowRight","Tab","Home","End"];
+      if (allowedKeys.includes(e.key)) return;
+
+      if (!/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        return;
+      }
+
+      const value = this.value || "";
+      const selectionStart = this.selectionStart;
+      const selectionEnd = this.selectionEnd;
+      const length = value.length;
+
+      const reemplazandoTodo = selectionStart === 0 && selectionEnd === length;
+
+      if (length >= maxLen && !reemplazandoTodo) {
+        e.preventDefault();
+      }
+    });
+
+    input.addEventListener("input", function() {
+      this.value = this.value.replace(/\D/g, "").slice(0, maxLen);
+    });
+  }
+
+  const inpCosto = document.getElementById("costo_promedio"); // 10 dígitos
+  const inpLead  = document.getElementById("lead_time_dias"); // 4 dígitos
+  if (inpCosto) {
+    bloqueaNegativosYExponente(inpCosto);
+    limitarDigitos(inpCosto, 10);
+  }
+  if (inpLead)  {
+    bloqueaNegativosYExponente(inpLead);
+    limitarDigitos(inpLead, 4);
+  }
+
 
   const nf = form.querySelector('[name="nombre_fantasia"]');
   if (nf) {
@@ -542,8 +582,8 @@ document.addEventListener("DOMContentLoaded", function(){
     if (!estado) {
       errores.push("Debe seleccionar el <b>estado</b> del proveedor.");
     } else {
-      const estadosValidos = ["Activo", "Inactivo", "Bloqueado"];
-      if (!estadosValidos.includes(estado)) {
+      const estadosValidos = ["activo", "inactivo", "bloqueado"];
+      if (!estadosValidos.includes(estado.toLowerCase())) {
         errores.push("El <b>estado</b> seleccionado no es válido.");
       }
     }

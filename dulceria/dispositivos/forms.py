@@ -47,22 +47,13 @@ class ProductoForm(forms.ModelForm):
 
     class Meta:
         model = Producto
-        fields = '__all__'  # Incluye todos los campos actuales y nuevos
+        fields = '__all__'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Categorías dinámicas
-        categorias_db = Producto.objects.values_list('categoria', flat=True).distinct()
-        categorias_validas = sorted(set([c.strip() for c in categorias_db if c and c.strip()]))
-        choices = [('', 'Seleccione...')] + [(c, c) for c in categorias_validas] + [("Otras", "Otra...")]
-        self.fields['categoria'] = forms.ChoiceField(
-            choices=choices,
-            required=False,
-            widget=forms.Select(attrs={
-                'class': 'form-select',
-                'id': 'categoriaSelect'
-            })
-        )
+        # NO redefinir self.fields['categoria'] como ChoiceField aquí
+
+        # tus reglas de required que ya tenías
         self.fields['nombre'].required = False
         self.fields['uom_compra'].required = False
         self.fields['uom_venta'].required = False
@@ -81,21 +72,26 @@ class ProductoForm(forms.ModelForm):
         cleaned = super().clean()
         categoria = cleaned.get("categoria")
         categoria_nueva = cleaned.get("categoria_nueva")
-        custom_msgs = {
-            "nombre": "Debes ingresar un nombre.",
-            "categoria": "Debes seleccionar o ingresar una categoría.",
-            "uom_compra": "Debes seleccionar unidad de compra.",
-            "uom_venta": "Debes seleccionar unidad de venta.",
-            "stock_minimo": "Debes ingresar el stock mínimo."
-        }
+
+        # si eligió "Otras" en el select, en el POST vendrá categoria = "Otras"
         if categoria == "Otras":
             if not categoria_nueva or not categoria_nueva.strip():
                 self.add_error("categoria_nueva", "Debe ingresar un nombre para la nueva categoría.")
             else:
                 cleaned["categoria"] = categoria_nueva.strip()
-        for field, msg in custom_msgs.items():
-            if not cleaned.get(field):
-                self.add_error(field, msg)
+
+        # validaciones mínimas
+        if not cleaned.get("categoria"):
+            self.add_error("categoria", "Debes seleccionar o ingresar una categoría.")
+        if not cleaned.get("nombre"):
+            self.add_error("nombre", "Debes ingresar un nombre.")
+        if not cleaned.get("uom_compra"):
+            self.add_error("uom_compra", "Debes seleccionar unidad de compra.")
+        if not cleaned.get("uom_venta"):
+            self.add_error("uom_venta", "Debes seleccionar unidad de venta.")
+        if not cleaned.get("stock_minimo"):
+            self.add_error("stock_minimo", "Debes ingresar el stock mínimo.")
+
         return cleaned
 
 class ProveedorForm(forms.ModelForm):
@@ -112,15 +108,50 @@ class ProveedorForm(forms.ModelForm):
             'estado',
         ]
         widgets = {
-            'rut_nif': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
-            'razon_social': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
-            'nombre_fantasia': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'required': True}),
-            'pais': forms.Select(attrs={'class': 'form-select', 'required': True}),
-            'condiciones_pago': forms.Select(attrs={'class': 'form-select', 'required': True}),
-            'moneda': forms.Select(attrs={'class': 'form-select', 'required': True}),
-            'estado': forms.Select(attrs={'class': 'form-select', 'required': True}),
+            'rut_nif': forms.TextInput(attrs={
+                'class': 'form-control',
+                'required': True,
+                'maxlength': 20,
+            }),
+            'razon_social': forms.TextInput(attrs={
+                'class': 'form-control',
+                'required': True,
+                'maxlength': 255,
+            }),
+            'nombre_fantasia': forms.TextInput(attrs={
+                'class': 'form-control',
+                'maxlength': 255,
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'required': True,
+                'maxlength': 255,   # input HTML
+            }),
+            'pais': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True,
+            }),
+            'condiciones_pago': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True,
+            }),
+            'moneda': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True,
+            }),
+            'estado': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True,
+            }),
         }
+
+    def clean_estado(self):
+        estado = (self.cleaned_data.get("estado") or "").lower()
+        # Normaliza y valida contra las choices del modelo
+        valid_values = [choice[0] for choice in Proveedor.ESTADOS]
+        if estado not in valid_values:
+            raise forms.ValidationError("El estado seleccionado no es válido.")
+        return estado
 
     def clean(self):
         cleaned_data = super().clean()
@@ -132,8 +163,10 @@ class ProveedorForm(forms.ModelForm):
         if not email:
             self.add_error("email", "El correo electrónico es obligatorio.")
 
-        return cleaned_data
+        if email and len(email) > 254:
+            self.add_error("email", "El correo electrónico no debe superar los 254 caracteres.")
 
+        return cleaned_data
 
 class ProductoProveedorForm(forms.ModelForm):
     class Meta:

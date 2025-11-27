@@ -123,7 +123,7 @@ class Producto(models.Model):
     stock_minimo = models.IntegerField(blank=True, null=True)
     stock_maximo = models.IntegerField(blank=True, null=True)  # Nuevo - MECH
     punto_reorden = models.IntegerField(blank=True, null=True) # Nuevo - MECH
-    perishable = models.IntegerField(blank=True, null=True)
+    perishable = models.BooleanField(default=False)
     control_por_lote = models.BooleanField(default=False)     # Nuevo - MECH
     control_por_serie = models.BooleanField(default=False)    # Nuevo - MECH
     lote = models.IntegerField(blank=True, null=True)
