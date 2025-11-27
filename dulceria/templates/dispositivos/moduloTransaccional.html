@@ -386,7 +386,6 @@ document.addEventListener("DOMContentLoaded", function() {
   const orderByInput = document.getElementById("order_by");
   const orderInput = document.getElementById("order");
   const searchForm = document.getElementById("searchForm");
-
   document.querySelectorAll(".sortable-header").forEach(header => {
     header.addEventListener("click", function() {
       const field = this.getAttribute("data-field");
@@ -401,13 +400,6 @@ document.addEventListener("DOMContentLoaded", function() {
       searchForm.submit();
     });
   });
-
-  /* === NUEVO: resaltar la columna activa (incluye Bodega) === */
-  if (orderByInput && orderByInput.value) {
-    const activeHeader = document.querySelector(`.sortable-header[data-field="${orderByInput.value}"]`);
-    if (activeHeader) activeHeader.classList.add('active');
-  }
-  /* === FIN NUEVO === */
 
   const toggle = (chk, input) => {
     if (!chk || !input) return;
