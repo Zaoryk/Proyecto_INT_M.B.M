@@ -4,8 +4,9 @@ from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.db import transaction
 
+
 class Command(BaseCommand):
-    help = 'Carga los fixtures en la base de datos, eliminando cualquier registro de dispositivos.categoria y dispositivos.bodega antes de cargar'
+    help = 'Carga fixtures en la base, con opción de purgar datos y filtrar modelos que ya no existen'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -22,7 +23,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--purge',
             action='store_true',
-            help='Elimina todas las tablas relacionadas antes de cargar (rehacer si hay SQLite o dependencias FK activas)'
+            help='Elimina datos de modelos principales antes de cargar'
         )
 
     def handle(self, *args, **options):
@@ -42,28 +43,30 @@ class Command(BaseCommand):
             )
             return
 
+        # PURGE: borrar datos antiguos solo de modelos que sí existen
         if purge:
             self.stdout.write(self.style.WARNING('Eliminando productos y tablas relacionadas...'))
-            from dispositivos.models import Producto, Proveedor, Categoria, Bodega, ProductoProveedor
+            from dispositivos.models import Producto, Proveedor, ProductoProveedor
             ProductoProveedor.objects.all().delete()
             Producto.objects.all().delete()
             Proveedor.objects.all().delete()
-            Categoria.objects.all().delete()
-            Bodega.objects.all().delete()
             self.stdout.write(self.style.SUCCESS('✓ Datos antiguos eliminados.'))
 
-        # FILTRAR dispositivos.categoria y dispositivos.bodega del fixture original y guardar copia temporal
+        # Filtrar modelos que ya no existen (Categoria, Bodega) del fixture original
         tmp_fixture_file = fixture_file.replace('.json', '_nofk.json')
         try:
             with open(fixture_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+
             data_filtrada = [
                 item for item in data
                 if item["model"] not in ("dispositivos.categoria", "dispositivos.bodega")
             ]
+
             self.stdout.write(
                 self.style.SUCCESS(
-                    f'✓ Se filtraron {len(data) - len(data_filtrada)} registros de "dispositivos.categoria" o "dispositivos.bodega"'
+                    f'✓ Se filtraron {len(data) - len(data_filtrada)} registros de '
+                    f'"dispositivos.categoria" o "dispositivos.bodega"'
                 )
             )
             with open(tmp_fixture_file, 'w', encoding='utf-8') as f:
@@ -72,6 +75,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f'Error filtrando el fixture: {e}'))
             return
 
+        # Verificación estructural opcional
         if not skip_verification:
             if not self.verificar_fixture(tmp_fixture_file):
                 self.stdout.write(
@@ -79,6 +83,7 @@ class Command(BaseCommand):
                 )
                 return
 
+        # Carga real con loaddata
         try:
             self.stdout.write(f'Cargando fixtures desde {tmp_fixture_file}...')
             total_registros = self.contar_registros_fixture(tmp_fixture_file)
@@ -138,7 +143,7 @@ class Command(BaseCommand):
             with open(fixture_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             return len(data)
-        except:
+        except Exception:
             return 0
 
     def mostrar_resumen(self, fixture_file):
@@ -151,13 +156,13 @@ class Command(BaseCommand):
                 if modelo not in modelos:
                     modelos[modelo] = 0
                 modelos[modelo] += 1
-            self.stdout.write("\n" + "="*50)
+            self.stdout.write("\n" + "=" * 50)
             self.stdout.write(self.style.SUCCESS("RESUMEN DE DATOS CARGADOS"))
-            self.stdout.write("="*50)
+            self.stdout.write("=" * 50)
             for modelo, cantidad in sorted(modelos.items()):
                 nombre_legible = modelo.replace('dispositivos.', '').title()
                 self.stdout.write(f"  {nombre_legible}: {cantidad} registros")
-            self.stdout.write("="*50)
+            self.stdout.write("=" * 50)
             self.stdout.write(self.style.SUCCESS(f"Total: {len(data)} registros cargados"))
         except Exception as e:
             self.stdout.write(
