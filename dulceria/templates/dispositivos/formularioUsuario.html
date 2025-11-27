@@ -2,7 +2,6 @@
 {% block content %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  // ==== NO HAY avatar ni preview ====
   const toggleBtn = document.getElementById("togglePassword");
   const passwordField = document.getElementById("passwordField");
   if (toggleBtn && passwordField) {
@@ -13,19 +12,22 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // -------- VALIDACIÓN FORMULARIO USUARIO --------
   const form = document.getElementById("formUsuario");
-  if(form){
+  if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+
       const username = form.querySelector("[name='username']").value.trim();
       const email = form.querySelector("[name='email']").value.trim();
-      const password = form.querySelector("[name='password']").value.trim();
       const nombre = form.querySelector("[name='nombre']").value.trim();
       const apellido = form.querySelector("[name='apellido']").value.trim();
       const rol = form.querySelector("[name='rol']").value.trim();
       const estado = form.querySelector("[name='estado']").value.trim();
       const mfa = form.querySelector("[name='mfa_habilitado']").value.trim();
+
+      const passwordInput = form.querySelector("[name='password']");
+      const password = passwordInput ? passwordInput.value.trim() : "";
+
       const faltantes = [];
       if (!username) faltantes.push("Username");
       if (!email) faltantes.push("Email");
@@ -34,8 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
       if (!rol) faltantes.push("Rol");
       if (!estado) faltantes.push("Estado");
       if (!mfa) faltantes.push("MFA habilitado");
-      const editMode = form.querySelector("input[name='edit_id']") !== null;
-      if (!editMode && !password) faltantes.push("Contraseña");
+
       if (faltantes.length > 0) {
         Swal.fire({
           icon: "warning",
@@ -45,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         return;
       }
+
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
         Swal.fire({
@@ -55,8 +57,9 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         return;
       }
+
       const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-]).{8,}$/;
-      if ((!editMode && !passRegex.test(password)) || (editMode && password && !passRegex.test(password))) {
+      if (passwordInput && password && !passRegex.test(password)) {
         Swal.fire({
           icon: "error",
           title: "Contraseña insegura",
@@ -65,11 +68,11 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         return;
       }
+
       form.submit();
     });
   }
 
-  // -------- ELIMINAR USUARIO --------
   document.querySelectorAll(".btn-delete-user").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-id");
@@ -90,11 +93,11 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // -------- ORDENAMIENTO DE TABLA USUARIOS --------
   const sortableHeaders = document.querySelectorAll('.sortable-header');
   const orderByInput = document.getElementById('order_by');
   const orderInput = document.getElementById('order');
   const searchForm = document.getElementById('searchForm');
+
   if (sortableHeaders && orderByInput && orderInput && searchForm) {
     sortableHeaders.forEach(header => {
       header.addEventListener('click', function() {
@@ -115,7 +118,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
-  // -------- AUTO-SUBMIT PAGINADOR --------
   const pagSize = document.getElementById("pag_size");
   if (pagSize && searchForm) {
     pagSize.addEventListener("change", function() {
@@ -124,31 +126,20 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 </script>
+
 <style>
-.card {
-  border-radius: 16px !important;
-}
-input, select {
-  border-radius: 8px !important;
-}
-.table th, .table td {
-  vertical-align: middle;
-}
-.table-hover tbody tr:hover {
-  background-color: #f8f9fa;
-}
-.btn-acciones {
-  min-width: 85px;
-}
+.card { border-radius: 16px !important; }
+input, select { border-radius: 8px !important; }
+.table th, .table td { vertical-align: middle; }
+.table-hover tbody tr:hover { background-color: #f8f9fa; }
+.btn-acciones { min-width: 85px; }
 .sortable-header {
   cursor: pointer;
   user-select: none;
   position: relative;
   padding-right: 20px !important;
 }
-.sortable-header:hover {
-  background-color: #e9ecef;
-}
+.sortable-header:hover { background-color: #e9ecef; }
 .sort-icon {
   position: absolute;
   right: 8px;
@@ -157,8 +148,12 @@ input, select {
   opacity: 0.4;
   font-size: 0.75rem;
 }
-.sortable-header.active .sort-icon {
-  opacity: 1;
+.sortable-header.active .sort-icon { opacity: 1; }
+.badge-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
 }
 </style>
 
@@ -175,59 +170,97 @@ input, select {
           {% if edit_mode %}
             <input type="hidden" name="edit_id" value="{{ edit_id }}">
           {% endif %}
-          <!-- FOTO DE PERFIL ELIMINADA COMPLETAMENTE -->
+
           <div class="mb-3">
             <label class="form-label">Username <span class="text-muted small">(requerido, único)</span></label>
-            <input type="text" class="form-control" name="username" value="{{ form.username.value|default_if_none:'' }}" required>
+            <input type="text" class="form-control" name="username"
+                   value="{{ form.username.value|default_if_none:'' }}" required>
           </div>
+
           <div class="mb-3">
             <label class="form-label">Email <span class="text-muted small">(requerido, único)</span></label>
-            <input type="email" class="form-control" name="email" value="{{ form.email.value|default_if_none:'' }}" required>
+            <input type="email" class="form-control" name="email"
+                   value="{{ form.email.value|default_if_none:'' }}" required>
           </div>
+
+          {% if edit_mode %}
           <div class="mb-3">
-            <label class="form-label">Contraseña <span class="text-muted small">(mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo)</span></label>
+            <label class="form-label">
+              Nueva contraseña
+              <span class="text-muted small">(opcional; mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo)</span>
+            </label>
             <div class="input-group">
               <input type="password" class="form-control" name="password" id="passwordField"
-                     placeholder="Ingrese una contraseña segura" {% if not edit_mode %}required{% endif %}>
+                     placeholder="Dejar en blanco para mantener la actual">
               <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                 <i class="bi bi-eye"></i>
               </button>
             </div>
           </div>
+          {% else %}
+          <div class="mb-3">
+            <label class="form-label">Contraseña provisoria</label>
+            <div class="form-control" disabled>
+              La clave provisoria se generará automáticamente.
+            </div>
+            <div class="form-text">
+              Se generará una contraseña robusta (mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo)
+              y se marcará como temporal para obligar el cambio en el primer ingreso.
+            </div>
+          </div>
+          {% endif %}
+
           <div class="row">
             <div class="col">
               <label class="form-label">Nombres <span class="text-muted small">(requerido)</span></label>
-              <input type="text" class="form-control" name="nombre" value="{{ form.nombre.value|default_if_none:'' }}" required>
+              <input type="text" class="form-control" name="nombre"
+                     value="{{ form.nombre.value|default_if_none:'' }}" required>
             </div>
             <div class="col">
               <label class="form-label">Apellidos <span class="text-muted small">(requerido)</span></label>
-              <input type="text" class="form-control" name="apellido" value="{{ form.apellido.value|default_if_none:'' }}" required>
+              <input type="text" class="form-control" name="apellido"
+                     value="{{ form.apellido.value|default_if_none:'' }}" required>
             </div>
           </div>
+
           <div class="mb-3 mt-2">
             <label class="form-label">Rol</label>
+            {% with current_rol=form.rol.value|default_if_none:'' %}
             <select class="form-select" name="rol" required>
-              {% for value, text in form.rol.field.choices %}
-                <option value="{{ value }}"{% if form.rol.value == value %} selected{% endif %}>{{ text }}</option>
-              {% endfor %}
+              <option value="">Seleccione rol...</option>
+              <option value="administrador"{% if current_rol == 'administrador' %} selected{% endif %}>Administrador</option>
+              <option value="operador_compras"{% if current_rol == 'operador_compras' %} selected{% endif %}>Operador Compras</option>
+              <option value="operador_inventario"{% if current_rol == 'operador_inventario' %} selected{% endif %}>Operador Inventario</option>
+              <option value="operador_produccion"{% if current_rol == 'operador_produccion' %} selected{% endif %}>Operador Producción</option>
+              <option value="operador_ventas"{% if current_rol == 'operador_ventas' %} selected{% endif %}>Operador Ventas</option>
+              <option value="analista_financiero"{% if current_rol == 'analista_financiero' %} selected{% endif %}>Analista Financiero</option>
             </select>
+            {% endwith %}
           </div>
+
           <div class="mb-3">
             <label class="form-label">Estado</label>
+            {% with current_estado=form.estado.value|default_if_none:'' %}
             <select class="form-select" name="estado" required>
-              {% for value, text in form.estado.field.choices %}
-                <option value="{{ value }}"{% if form.estado.value == value %} selected{% endif %}>{{ text }}</option>
-              {% endfor %}
+              <option value="">Seleccione estado...</option>
+              <option value="activo"{% if current_estado == 'activo' %} selected{% endif %}>Activo</option>
+              <option value="inactivo"{% if current_estado == 'inactivo' %} selected{% endif %}>Inactivo</option>
+              <option value="bloqueado"{% if current_estado == 'bloqueado' %} selected{% endif %}>Bloqueado</option>
             </select>
+            {% endwith %}
           </div>
+
           <div class="mb-3">
             <label class="form-label">MFA habilitado</label>
+            {% with current_mfa=form.mfa_habilitado.value|default_if_none:'' %}
             <select class="form-select" name="mfa_habilitado" required>
-              {% for value, text in form.mfa_habilitado.field.choices %}
-                <option value="{{ value }}"{% if form.mfa_habilitado.value == value %} selected{% endif %}>{{ text }}</option>
-              {% endfor %}
+              <option value="">Seleccione...</option>
+              <option value="habilitado"{% if current_mfa == 'habilitado' %} selected{% endif %}>Habilitado</option>
+              <option value="deshabilitado"{% if current_mfa == 'deshabilitado' %} selected{% endif %}>Deshabilitado</option>
             </select>
+            {% endwith %}
           </div>
+
           <div class="d-flex justify-content-end mt-4">
             <button type="submit" class="btn btn-primary me-2">
               {% if edit_mode %}Actualizar{% else %}Guardar{% endif %}
@@ -241,22 +274,24 @@ input, select {
         </form>
       </div>
     </div>
-  
     {% else %}
     <div class="alert alert-info">
       <i class="bi bi-info-circle me-2"></i>
-      <strong>No tienes Los Permisos</strong> - Solo ver datos y editar perfil.
+      <strong>No tienes los permisos</strong> - Solo puedes ver datos y editar tu propio perfil.
     </div>
     {% endif %}
   </div>
+
   <div class="col-md-8">
     <div class="card shadow-sm border-0">
       <div class="card-body">
         <h5 class="card-title mb-3 fw-bold">Usuarios</h5>
+
         <form method="get" class="d-flex flex-wrap mb-3 gap-2" id="searchForm">
           <input type="text" class="form-control me-2 mb-2" name="buscar"
                  value="{{ request.GET.buscar|default_if_none:'' }}"
                  placeholder="Buscar por..." style="max-width:130px;">
+
           <select class="form-select me-2 mb-2" name="rol" style="max-width:130px;">
             <option value="">Rol: todos</option>
             <option value="administrador" {% if request.GET.rol == 'administrador' %}selected{% endif %}>Administrador</option>
@@ -266,29 +301,33 @@ input, select {
             <option value="operador_ventas" {% if request.GET.rol == 'operador_ventas' %}selected{% endif %}>Operador Ventas</option>
             <option value="analista_financiero" {% if request.GET.rol == 'analista_financiero' %}selected{% endif %}>Analista Financiero</option>
           </select>
+
           <select class="form-select me-2 mb-2" name="estado" style="max-width:130px;">
             <option value="">Estado: todos</option>
             <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>Activo</option>
             <option value="inactivo" {% if request.GET.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
             <option value="bloqueado" {% if request.GET.estado == 'bloqueado' %}selected{% endif %}>Bloqueado</option>
           </select>
+
           <select class="form-select me-2 mb-2" name="pag_size" id="pag_size" style="max-width:90px;">
             <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
             <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
             <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
             <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
           </select>
-          <!-- Campos ocultos para mantener orden -->
+
           <input type="hidden" name="order_by" id="order_by" value="{{ order_by|default:'username' }}">
           <input type="hidden" name="order" id="order" value="{{ order|default:'asc' }}">
+
           <button type="submit" class="btn btn-outline-primary mb-2">
             <i class="bi bi-search"></i> Buscar
           </button>
           <button type="submit" class="btn btn-outline-success ms-auto mb-2"
                   name="export_excel" value="1">
-            <i class="bi bi-file-earmark-excel"></i>Exportar al Excel
+            <i class="bi bi-file-earmark-excel"></i> Exportar al Excel
           </button>
         </form>
+
         <div class="table-responsive">
           <table class="table align-middle table-hover table-bordered rounded">
             <thead class="table-light">
@@ -298,9 +337,7 @@ input, select {
                   <span class="sort-icon">
                     {% if order_by == 'username' %}
                       {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                    {% else %}
-                      ⇅
-                    {% endif %}
+                    {% else %}⇅{% endif %}
                   </span>
                 </th>
                 <th class="sortable-header" data-field="email">
@@ -308,9 +345,7 @@ input, select {
                   <span class="sort-icon">
                     {% if order_by == 'email' %}
                       {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                    {% else %}
-                      ⇅
-                    {% endif %}
+                    {% else %}⇅{% endif %}
                   </span>
                 </th>
                 <th class="sortable-header" data-field="nombre">
@@ -318,9 +353,7 @@ input, select {
                   <span class="sort-icon">
                     {% if order_by == 'nombre' %}
                       {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                    {% else %}
-                      ⇅
-                    {% endif %}
+                    {% else %}⇅{% endif %}
                   </span>
                 </th>
                 <th class="sortable-header" data-field="apellido">
@@ -328,9 +361,7 @@ input, select {
                   <span class="sort-icon">
                     {% if order_by == 'apellido' %}
                       {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                    {% else %}
-                      ⇅
-                    {% endif %}
+                    {% else %}⇅{% endif %}
                   </span>
                 </th>
                 <th class="sortable-header" data-field="rol">
@@ -338,9 +369,7 @@ input, select {
                   <span class="sort-icon">
                     {% if order_by == 'rol' %}
                       {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                    {% else %}
-                      ⇅
-                    {% endif %}
+                    {% else %}⇅{% endif %}
                   </span>
                 </th>
                 <th class="sortable-header" data-field="estado">
@@ -348,9 +377,7 @@ input, select {
                   <span class="sort-icon">
                     {% if order_by == 'estado' %}
                       {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                    {% else %}
-                      ⇅
-                    {% endif %}
+                    {% else %}⇅{% endif %}
                   </span>
                 </th>
                 <th class="sortable-header" data-field="mfa_habilitado">
@@ -358,9 +385,7 @@ input, select {
                   <span class="sort-icon">
                     {% if order_by == 'mfa_habilitado' %}
                       {% if order == 'asc' %}▲{% else %}▼{% endif %}
-                    {% else %}
-                      ⇅
-                    {% endif %}
+                    {% else %}⇅{% endif %}
                   </span>
                 </th>
                 {% if can_edit or can_delete %}
@@ -375,16 +400,42 @@ input, select {
                 <td>{{ usuario.email }}</td>
                 <td>{{ usuario.nombre }}</td>
                 <td>{{ usuario.apellido }}</td>
-                <td>{{ usuario.get_rol_display }}</td>
                 <td>
-                  <span class="badge {% if usuario.estado == 'activo' %}bg-success{% elif usuario.estado == 'inactivo' %}bg-danger{% else %}bg-warning{% endif %}">
-                    {{ usuario.get_estado_display }}
-                  </span>
+                  {% if usuario.rol == 'administrador' %}
+                    Administrador
+                  {% elif usuario.rol == 'operador_compras' %}
+                    Operador Compras
+                  {% elif usuario.rol == 'operador_inventario' %}
+                    Operador Inventario
+                  {% elif usuario.rol == 'operador_produccion' %}
+                    Operador Producción
+                  {% elif usuario.rol == 'operador_ventas' %}
+                    Operador Ventas
+                  {% elif usuario.rol == 'analista_financiero' %}
+                    Analista Financiero
+                  {% else %}
+                    {{ usuario.rol }}
+                  {% endif %}
                 </td>
                 <td>
-                  <span class="badge {% if usuario.mfa_habilitado == 'habilitado' %}bg-primary{% else %}bg-secondary{% endif %}">
-                    {{ usuario.get_mfa_habilitado_display }}
-                  </span>
+                  {% if usuario.estado|lower == "activo" %}
+                    <span class="badge-dot bg-success me-1"></span>Activo
+                  {% elif usuario.estado|lower == "inactivo" %}
+                    <span class="badge-dot bg-danger me-1"></span>Inactivo
+                  {% elif usuario.estado|lower == "bloqueado" %}
+                    <span class="badge-dot bg-secondary me-1"></span>Bloqueado
+                  {% else %}
+                    <span class="badge-dot bg-secondary me-1"></span>{{ usuario.estado }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if usuario.mfa_habilitado == "habilitado" %}
+                    <span class="badge-dot bg-success me-1"></span>Habilitado
+                  {% elif usuario.mfa_habilitado == "deshabilitado" %}
+                    <span class="badge-dot bg-secondary me-1"></span>Deshabilitado
+                  {% else %}
+                    <span class="badge-dot bg-secondary me-1"></span>{{ usuario.mfa_habilitado }}
+                  {% endif %}
                 </td>
                 {% if can_edit or can_delete %}
                 <td class="text-center btn-acciones">
@@ -409,6 +460,7 @@ input, select {
             </tbody>
           </table>
         </div>
+
         {% if usuarios.has_other_pages %}
         <nav>
           <ul class="pagination justify-content-end">

@@ -22,21 +22,21 @@ class Usuario(models.Model):
         ("habilitado", "Habilitado"),
         ("deshabilitado", "Deshabilitado"),
     ]
-    idUsuario = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=100, blank=True, null=True, unique=True)
-    email = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    idusuario = models.AutoField(db_column='idUsuario', primary_key=True)
+    username = models.CharField(max_length=100, blank=True, null=True)
+    email = models.CharField(max_length=100, blank=True, null=True)
     nombre = models.CharField(max_length=100, blank=True, null=True)
     apellido = models.CharField(max_length=100, blank=True, null=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
-    rol = models.CharField(max_length=50, choices=ROLES, default="operador_ventas")
-    estado = models.CharField(max_length=50, choices=ESTADOS, default="activo")
-    mfa_habilitado = models.CharField(max_length=50, choices=MFA_OPTIONS, default="deshabilitado")
+    rol = models.CharField(max_length=50, blank=True, null=True)
+    estado = models.CharField(max_length=50, blank=True, null=True)
+    mfa_habilitado = models.CharField(max_length=50, blank=True, null=True)
     password = models.CharField(max_length=255, blank=True, null=True)
+    password_temporal = models.BooleanField(db_column='password_temporal', default=False)
+    avatar = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'Usuario'
-
     def __str__(self):
         return f"{self.username} - {self.nombre} {self.apellido}"
 
