@@ -462,15 +462,60 @@ def gestionProveedores(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Exportar a Excel
+        # Exportar a Excel
     if "export_excel" in request.GET:
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "Proveedores"
-        headers_excel = ["RUT/NIF", "Razón Social", "Estado", "Email", "País"]
+
+        headers_excel = [
+            "RUT/NIF",
+            "Razón Social",
+            "Estado",
+            "Email",
+            "País",
+            "Condiciones de pago",
+            "Moneda",
+            "Producto",
+            "Lead time (días)",
+            "Costo promedio",
+        ]
         sheet.append(headers_excel)
+
+        # Todas las relaciones producto-proveedor, sin .only() para evitar errores de nombres
+        rels = (
+            ProductoProveedor.objects
+            .select_related("producto", "proveedor")
+            .all()
+        )
+
+        # Mapear por proveedor_id (primer producto por proveedor)
+        rels_por_proveedor = {}
+        for r in rels:
+            if r.proveedor_id not in rels_por_proveedor:
+                rels_por_proveedor[r.proveedor_id] = r
+
         for p in proveedores:
-            sheet.append([p.rut_nif, p.razon_social, p.get_estado_display(), p.email, p.pais])
+            rel = rels_por_proveedor.get(p.idProveedor)
+
+            producto_nombre = rel.producto.nombre if rel and rel.producto else ""
+            lead_time = rel.lead_time_dias if rel and getattr(rel, "lead_time_dias", None) is not None else ""
+            costo_prom = getattr(rel, "costo_promedio", None)
+            costo_prom = costo_prom if (rel and costo_prom is not None) else ""
+
+            sheet.append([
+                p.rut_nif,
+                p.razon_social,
+                p.get_estado_display(),
+                p.email,
+                p.pais,
+                p.condiciones_pago or "",
+                p.moneda or "",
+                producto_nombre,
+                lead_time,
+                costo_prom,
+            ])
+
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
@@ -607,22 +652,53 @@ def moduloTransaccional(request):
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "Movimientos"
-        headers = ["Fecha", "Tipo", "Producto", "Proveedor", "Cantidad"]
+
+        headers = [
+            "Fecha",
+            "Tipo",
+            "Producto",
+            "Proveedor",
+            "Bodega",
+            "Cantidad",
+            "Manejo lotes",
+            "Manejo series",
+            "Perecible",
+            "Lote",
+            "Serie",
+            "Fecha vencimiento",
+            "Doc. referencia",
+            "Motivo",
+            "Observaciones",
+        ]
         sheet.append(headers)
+
         for m in movimientos:
             sheet.append([
-                timezone.localtime(m.fecha_movimiento).strftime("%Y-%m-%d %H:%M"),
+                timezone.localtime(m.fecha_movimiento).strftime("%Y-%m-%d %H:%M") if m.fecha_movimiento else "",
                 m.get_tipo_movimiento_display(),
-                m.producto.nombre,
-                m.proveedor.razon_social,
-                m.cantidad,
+                m.producto.nombre if m.producto else "",
+                m.proveedor.razon_social if m.proveedor else "",
+                m.bodega or "",
+                m.cantidad or 0,
+                "Sí" if getattr(m, "manejo_lotes", False) else "No",
+                "Sí" if getattr(m, "manejo_series", False) else "No",
+                "Sí" if getattr(m, "perecible", False) else "No",
+                m.lote or "",
+                m.serie or "",
+                m.fecha_vencimiento.strftime("%Y-%m-%d") if m.fecha_vencimiento else "",
+                m.doc_referencia or "",
+                m.motivo or "",
+                m.observaciones or "",
             ])
+
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
         response['Content-Disposition'] = 'attachment; filename="movimientos.xlsx"'
         workbook.save(response)
         return response
+
+
 
     # Verificar permisos CRUD
     can_add = user_can_add_module(request.user, 'producto_proveedor')

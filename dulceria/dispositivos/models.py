@@ -184,7 +184,15 @@ class ProductoProveedor(models.Model):
     fecha_movimiento = models.DateTimeField(blank=True, null=True)
     producto = models.ForeignKey('Producto', models.DO_NOTHING, db_column='Producto_idProducto')
     proveedor = models.ForeignKey('Proveedor', models.DO_NOTHING, db_column='Proveedor_idProveedor')
-    bodega = models.ForeignKey('Bodega', models.DO_NOTHING, db_column='Bodega_idBodega', blank=True, null=True)
+
+    # Usa la columna Bodega_idBodega como texto
+    bodega = models.CharField(
+        max_length=100,
+        db_column='Bodega_idBodega',
+        blank=True,
+        null=True,
+    )
+
     manejo_lotes = models.BooleanField(default=False)
     manejo_series = models.BooleanField(default=False)
     perecible = models.BooleanField(default=False)
