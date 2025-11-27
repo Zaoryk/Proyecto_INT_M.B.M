@@ -1,46 +1,39 @@
 {% extends "accounts/base.html" %}
 {% block content %}
+
 <style>
 .card { border-radius: 16px !important; }
 input, select { border-radius: 8px !important; }
 .table th, .table td { vertical-align: middle; }
-.sortable-header {
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-  padding-right: 20px !important;
-}
-.sortable-header:hover {
-  background-color: #e9ecef;
-}
-.sort-icon {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0.4;
-  font-size: 0.75rem;
-}
-.sortable-header.active .sort-icon {
-  opacity: 1;
-}
-.vermas-btn { padding: 2px 8px; font-size:0.9rem; }
+.sortable-header { cursor:pointer; user-select:none; position:relative; padding-right:20px!important; }
+.sortable-header:hover { background-color:#e9ecef; }
+.sort-icon { position:absolute; right:8px; top:50%; transform:translateY(-50%); opacity:0.4; font-size:0.75rem; }
+.sortable-header.active .sort-icon { opacity:1; }
+.vermas-btn { padding:2px 8px; font-size:0.9rem; }
 </style>
+
+
+<!-- ========================================================= -->
+<!-- =============== FORMULARIO (condicional por permisos) =============== -->
+<!-- ========================================================= -->
 
 {% if can_add or edit_mode %}
 <div class="card mb-4 shadow-sm border-0">
   <div class="card-body">
+
     <h5 class="card-title mb-3 fw-bold">
       {% if edit_mode %}Editar producto{% else %}Nuevo producto{% endif %}
       {% if not can_add and not edit_mode %}
         <span class="badge bg-warning">Solo visualización</span>
       {% endif %}
     </h5>
+
     <form id="productoForm" method="post" autocomplete="off" novalidate>
       {% csrf_token %}
       {% if edit_mode %}
         <input type="hidden" name="edit_id" value="{{ edit_id }}">
       {% endif %}
+
       {% if form.errors %}
       <div class="alert alert-danger mb-3">
         <ul style="margin-bottom:0;">
@@ -55,159 +48,199 @@ input, select { border-radius: 8px !important; }
         </ul>
       </div>
       {% endif %}
+
+      <!-- ========================= -->
+      <!-- NAV TABS -->
+      <!-- ========================= -->
       <ul class="nav nav-tabs mb-3" id="productTab" role="tablist">
         <li class="nav-item">
-          <button class="nav-link active" id="tab-id-precios" data-bs-toggle="tab"
-                  data-bs-target="#id-precios" type="button" role="tab">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#id-precios" type="button" role="tab">
             1. Identificación y precios
           </button>
         </li>
         <li class="nav-item">
-          <button class="nav-link" id="tab-stock" data-bs-toggle="tab"
-                  data-bs-target="#stock-control" type="button" role="tab">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#stock-control" type="button" role="tab">
             2. Stock y control
           </button>
         </li>
         <li class="nav-item">
-          <button class="nav-link" id="tab-relaciones" data-bs-toggle="tab"
-                  data-bs-target="#relaciones-derivados" type="button" role="tab">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#relaciones-derivados" type="button" role="tab">
             3. Relaciones y derivados
           </button>
         </li>
       </ul>
+
       <div class="tab-content" id="productTabContent">
-        <!-- TAB 1: Identificación y precios -->
+
+        <!-- ========================================================= -->
+        <!-- TAB 1 -->
+        <!-- ========================================================= -->
         <div class="tab-pane fade show active" id="id-precios" role="tabpanel">
+
           <div class="row mb-3">
             <div class="col-md-3">
               <label class="form-label">Categoría<span class="text-danger">*</span></label>
               <select class="form-select" name="categoria" id="categoriaSelect" required>
-                <option value="">Seleccione...</option>
-                {% for value, text in categorias %}
-                  <option value="{{ value }}" {% if form.categoria.value == value %}selected{% endif %}>{{ text }}</option>
-                {% endfor %}
-                {% with found=0 %}
+                  <option value="">Seleccione...</option>
+
                   {% for value, text in categorias %}
-                    {% if form.categoria.value == value %}
-                      {% with found=1 %}{% endwith %}
-                    {% endif %}
+                    <option value="{{ value }}" {% if form.categoria.value == value %}selected{% endif %}>
+                      {{ text }}
+                    </option>
                   {% endfor %}
-                  {% if form.categoria.value and form.categoria.value != "Otras" and not found %}
-                    <option value="{{ form.categoria.value }}" selected>{{ form.categoria.value }}</option>
-                  {% endif %}
-                {% endwith %}
               </select>
+
+
+
               <div id="input-categoria-nueva" style="display:none; margin-top:5px;">
-                <input type="text" name="categoria_nueva" class="form-control"
+                <input id="categoria_nueva" type="text" name="categoria_nueva" class="form-control"
                        placeholder="Ingrese nueva categoría" value="{{ request.POST.categoria_nueva }}">
               </div>
             </div>
+
             <div class="col-md-3">
               <label class="form-label">SKU<span class="text-danger">*</span></label>
               <input type="text" class="form-control" name="sku" required value="{{ form.sku.value|default_if_none:'' }}">
             </div>
+
             <div class="col-md-6">
               <label class="form-label">Nombre<span class="text-danger">*</span></label>
               <input type="text" class="form-control" name="nombre" required value="{{ form.nombre.value|default_if_none:'' }}">
             </div>
           </div>
+
           <div class="row mb-3">
             <div class="col-md-2">
               <label class="form-label">Unidad compra<span class="text-danger">*</span></label>
-              <select class="form-select" name="uom_compra" required>
-                <option value="">Seleccione...</option>
-                <option value="KG" {% if form.uom_compra.value == "KG" %}selected{% endif %}>Kilogramo</option>
-                <option value="LT" {% if form.uom_compra.value == "LT" %}selected{% endif %}>Litro</option>
-                <option value="CJ" {% if form.uom_compra.value == "CJ" %}selected{% endif %}>Caja</option>
-                <option value="PQ" {% if form.uom_compra.value == "PQ" %}selected{% endif %}>Paquete</option>
-                <option value="BL" {% if form.uom_compra.value == "BL" %}selected{% endif %}>Bloque</option>
-                <option value="BG" {% if form.uom_compra.value == "BG" %}selected{% endif %}>Bolsa</option>
+              <select class="form-select" name="uom_compra" id="uom_compra" required>
+                <option value="" disabled selected>Seleccione unidad</option>
+                  <option value="KG" {% if form.uom_compra.value == "KG" %}selected{% endif %}>KG</option>
+                  <option value="GR" {% if form.uom_compra.value == "GR" %}selected{% endif %}>GR</option>
+                  <option value="UND" {% if form.uom_compra.value == "UND" %}selected{% endif %}>UND</option>
+                  <option value="CJ" {% if form.uom_compra.value == "CJ" %}selected{% endif %}>CJ</option>
+                  <option value="PQ" {% if form.uom_compra.value == "PQ" %}selected{% endif %}>PQ</option>
+                  <option value="BL" {% if form.uom_compra.value == "BL" %}selected{% endif %}>BL</option>
               </select>
+
             </div>
+
             <div class="col-md-2">
               <label class="form-label">Unidad venta<span class="text-danger">*</span></label>
-              <select class="form-select" name="uom_venta" required>
-                <option value="">Seleccione...</option>
-                <option value="UN" {% if form.uom_venta.value == "UN" %}selected{% endif %}>Unidad</option>
-                <option value="BL" {% if form.uom_venta.value == "BL" %}selected{% endif %}>Bolsa</option>
-                <option value="GR" {% if form.uom_venta.value == "GR" %}selected{% endif %}>Gramos</option>
-                <option value="KG" {% if form.uom_venta.value == "KG" %}selected{% endif %}>Kilogramo</option>
-                <option value="LT" {% if form.uom_venta.value == "LT" %}selected{% endif %}>Litro</option>
-                <option value="PD" {% if form.uom_venta.value == "PD" %}selected{% endif %}>Pack</option>
-                <option value="CJ" {% if form.uom_venta.value == "CJ" %}selected{% endif %}>Caja</option>
+              <select class="form-select" name="uom_venta" id="uom_venta" required>
+                <option value="" disabled selected>Seleccione unidad</option>
+                  <option value="KG" {% if form.uom_venta.value == "KG" %}selected{% endif %}>KG</option>
+                  <option value="GR" {% if form.uom_venta.value == "GR" %}selected{% endif %}>GR</option>
+                  <option value="UND" {% if form.uom_venta.value == "UND" %}selected{% endif %}>UND</option>
+                  <option value="CJ" {% if form.uom_venta.value == "CJ" %}selected{% endif %}>CJ</option>
+                  <option value="PQ" {% if form.uom_venta.value == "PQ" %}selected{% endif %}>PQ</option>
+                  <option value="BL" {% if form.uom_venta.value == "BL" %}selected{% endif %}>BL</option>
               </select>
             </div>
+
             <div class="col-md-2">
               <label class="form-label">Conversión<span class="text-danger">*</span></label>
-              <input type="number" class="form-control" name="factor_conversion" value="{{ form.factor_conversion.value|default_if_none:1 }}" min="1" required>
+              <input type="number" class="form-control" name="factor_conversion" min="1"
+                     value="{{ form.factor_conversion.value|default_if_none:1 }}" required>
             </div>
+
             <div class="col-md-2">
               <label class="form-label">IVA (%)</label>
-              <input type="number" class="form-control" name="impuesto_iva" value="{{ form.impuesto_iva.value|default_if_none:19 }}">
+              <input type="number" class="form-control" name="impuesto_iva"
+                     value="{{ form.impuesto_iva.value|default_if_none:19 }}">
             </div>
+
             <div class="col-md-2">
-              <label class="form-label">Marca (opcional)</label>
+              <label class="form-label">Marca</label>
               <input type="text" class="form-control" name="marca" value="{{ form.marca.value|default_if_none:'' }}">
             </div>
+
             <div class="col-md-2">
-              <label class="form-label">Modelo (opcional)</label>
+              <label class="form-label">Modelo</label>
               <input type="text" class="form-control" name="modelo" value="{{ form.modelo.value|default_if_none:'' }}">
             </div>
           </div>
+
           <div class="mb-3">
-            <label class="form-label">Descripción (opcional)</label>
+            <label class="form-label">Descripción</label>
             <textarea class="form-control" name="descripcion" rows="2">{{ form.descripcion.value|default_if_none:'' }}</textarea>
           </div>
+
         </div>
-        <!-- TAB 2: Stock y control -->
+
+        <!-- ========================================================= -->
+        <!-- TAB 2 -->
+        <!-- ========================================================= -->
         <div class="tab-pane fade" id="stock-control" role="tabpanel">
+
           <div class="row mb-3">
             <div class="col-md-2">
               <label class="form-label">Stock mínimo<span class="text-danger">*</span></label>
-              <input type="number" class="form-control" name="stock_minimo" min="0" value="{{ form.stock_minimo.value|default_if_none:0 }}" required>
+              <input type="number" class="form-control" min="0" required
+                     name="stock_minimo" value="{{ form.stock_minimo.value|default_if_none:0 }}">
             </div>
+
             <div class="col-md-2">
-              <label class="form-label">Stock máximo (opcional)</label>
-              <input type="number" class="form-control" name="stock_maximo" min="0" value="{{ form.stock_maximo.value|default_if_none:'' }}">
+              <label class="form-label">Stock máximo</label>
+              <input type="number" class="form-control" min="0"
+                     name="stock_maximo" value="{{ form.stock_maximo.value|default_if_none:'' }}">
             </div>
+
             <div class="col-md-2">
-              <label class="form-label">Punto reorden (opcional)</label>
-              <input type="number" class="form-control" name="punto_reorden" min="0" value="{{ form.punto_reorden.value|default_if_none:'' }}">
+              <label class="form-label">Punto reorden</label>
+              <input type="number" class="form-control" min="0"
+                     name="punto_reorden" value="{{ form.punto_reorden.value|default_if_none:'' }}">
             </div>
+
             <div class="col-md-2 d-flex align-items-center">
-              <input type="checkbox" class="form-check-input me-2" id="perishableCheck" name="perishable" {% if form.perishable.value %}checked{% endif %}>
-              <label class="form-check-label" for="perishableCheck">Perecible</label>
+              <input type="checkbox" class="form-check-input me-2" id="perishableCheck" name="perishable"
+                     {% if form.perishable.value %}checked{% endif %}>
+              <label class="form-check-label">Perecible</label>
             </div>
           </div>
+
           <div class="row mb-3">
             <div class="col-md-2 d-flex align-items-center">
-              <input type="checkbox" class="form-check-input me-2" id="loteCheck" name="control_por_lote" {% if form.control_por_lote.value %}checked{% endif %}>
-              <label class="form-check-label" for="loteCheck">Control por lote</label>
+              <input type="checkbox" class="form-check-input me-2" id="loteCheck" name="control_por_lote"
+                     {% if form.control_por_lote.value %}checked{% endif %}>
+              <label class="form-check-label">Control por lote</label>
             </div>
+
             <div class="col-md-2 d-flex align-items-center">
-              <input type="checkbox" class="form-check-input me-2" id="serieCheck" name="control_por_serie" {% if form.control_por_serie.value %}checked{% endif %}>
-              <label class="form-check-label" for="serieCheck">Control por serie</label>
+              <input type="checkbox" class="form-check-input me-2" id="serieCheck" name="control_por_serie"
+                     {% if form.control_por_serie.value %}checked{% endif %}>
+              <label class="form-check-label">Control por serie</label>
             </div>
           </div>
+
         </div>
-        <!-- TAB 3: Relaciones y derivados -->
+
+        <!-- ========================================================= -->
+        <!-- TAB 3 -->
+        <!-- ========================================================= -->
         <div class="tab-pane fade" id="relaciones-derivados" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label">Imagen URL (opcional)</label>
-              <input type="url" class="form-control" name="imagen_url" placeholder="https://...jpg" value="{{ form.imagen_url.value|default_if_none:'' }}">
+              <label class="form-label">Imagen URL</label>
+              <input type="url" class="form-control" name="imagen_url"
+                     value="{{ form.imagen_url.value|default_if_none:'' }}">
             </div>
+
             <div class="col-md-6">
-              <label class="form-label">Ficha técnica URL (opcional)</label>
-              <input type="url" class="form-control" name="ficha_tecnica_url" placeholder="https://...pdf" value="{{ form.ficha_tecnica_url.value|default_if_none:'' }}">
+              <label class="form-label">Ficha técnica URL</label>
+              <input type="url" class="form-control" name="ficha_tecnica_url"
+                     value="{{ form.ficha_tecnica_url.value|default_if_none:'' }}">
             </div>
           </div>
-          <h6 class="fw-bold">Derivados (editable)</h6>
+
+          <h6 class="fw-bold">Derivados</h6>
           <div class="row mb-2">
+
             <div class="col-md-4">
               <label class="form-label">Stock actual</label>
-              <input class="form-control" type="number" name="stock_actual" value="{{ form.stock_actual.value|default_if_none:0 }}">
+              <input type="number" class="form-control" name="stock_actual"
+                     value="{{ form.stock_actual.value|default_if_none:0 }}">
             </div>
+
             <div class="col-md-4">
               <label class="form-label">Alerta bajo stock</label>
               <select class="form-select" name="alerta_bajo_stock">
@@ -215,6 +248,7 @@ input, select { border-radius: 8px !important; }
                 <option value="SI" {% if form.alerta_bajo_stock.value == "SI" %}selected{% endif %}>SI</option>
               </select>
             </div>
+
             <div class="col-md-4">
               <label class="form-label">Alerta por vencer</label>
               <select class="form-select" name="alerta_por_vencer">
@@ -222,75 +256,110 @@ input, select { border-radius: 8px !important; }
                 <option value="SI" {% if form.alerta_por_vencer.value == "SI" %}selected{% endif %}>SI</option>
               </select>
             </div>
+
           </div>
         </div>
+
+      </div> <!-- FIN TAB-CONTENT -->
+
+      <!-- ========================================================= -->
+      <!-- BOTONES DEL FORMULARIO -->
+      <!-- ========================================================= -->
       <div class="d-flex justify-content-end mt-4">
         <button type="submit" class="btn btn-primary me-2">
           {% if edit_mode %}Actualizar{% else %}Guardar{% endif %}
         </button>
+
         {% if edit_mode %}
           <a href="{% url 'Productos' %}" class="btn btn-outline-secondary">Cancelar</a>
         {% else %}
           <button type="reset" class="btn btn-outline-secondary">Limpiar</button>
         {% endif %}
       </div>
+
     </form>
   </div>
 </div>
+
 {% else %}
 <div class="alert alert-info mb-4">
-  <i class="bi bi-info-circle me-2"></i>
-  <strong>No tienes Los Permisos</strong> - Solo visualizar datos.
+  <strong>No tienes los permisos</strong> — Solo visualización.
 </div>
 {% endif %}
 
-<!-- Tabla de Productos abajo -->
+
+
+
+<!-- ========================================================= -->
+<!-- ======================= TABLA =========================== -->
+<!-- ========================================================= -->
+
 <div class="card shadow-sm border-0">
   <div class="card-body">
     <h5 class="card-title fw-bold">Productos</h5>
+
+    <!-- FILTRO Y BUSQUEDA -->
     <form method="get" class="d-flex align-items-center flex-wrap mb-3 gap-2" id="searchForm">
+
       <input class="form-control me-2" type="text" name="buscar"
-             placeholder="Buscar por SKU o nombre..." value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:170px;">
+             placeholder="Buscar por SKU o nombre..."
+             value="{{ request.GET.buscar|default_if_none:'' }}" style="max-width:170px;">
+
       <select name="pag_size" id="pag_size" class="form-select me-2" style="width:auto;">
         <option value="5"{% if pag_size == '5' %} selected{% endif %}>5</option>
         <option value="15"{% if pag_size == '15' %} selected{% endif %}>15</option>
         <option value="30"{% if pag_size == '30' %} selected{% endif %}>30</option>
         <option value="100"{% if pag_size == '100' %} selected{% endif %}>100</option>
       </select>
-      <!-- Campos ocultos para mantener orden -->
+
       <input type="hidden" name="order_by" id="order_by" value="{{ order_by|default:'nombre' }}">
       <input type="hidden" name="order" id="order" value="{{ order|default:'asc' }}">
-      <button type="submit" class="btn btn-outline-primary me-2">
+
+      <button type="submit" class="btn btn-outline-primary">
         <i class="bi bi-search"></i> Buscar
       </button>
-      <button type="submit" class="btn btn-outline-success ms-auto" name="export_excel" value="1"
-              style="margin-left:auto; white-space:nowrap;">
-        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+
+      <button type="submit" class="btn btn-outline-success ms-auto" name="export_excel" value="1">
+        <i class="bi bi-file-earmark-excel"></i> Exportar
       </button>
+
     </form>
+
+    <!-- TABLA -->
     <div class="table-responsive">
       <table class="table table-bordered table-hover rounded">
         <thead class="table-light text-center">
+
           <tr>
             <th class="sortable-header" data-field="sku">SKU
               <span class="sort-icon">{% if order_by == 'sku' %}{% if order == 'asc' %}▲{% else %}▼{% endif %}{% else %}⇅{% endif %}</span>
             </th>
+
             <th class="sortable-header" data-field="nombre">Nombre
               <span class="sort-icon">{% if order_by == 'nombre' %}{% if order == 'asc' %}▲{% else %}▼{% endif %}{% else %}⇅{% endif %}</span>
             </th>
+
             <th class="sortable-header" data-field="categoria">Categoría
               <span class="sort-icon">{% if order_by == 'categoria' %}{% if order == 'asc' %}▲{% else %}▼{% endif %}{% else %}⇅{% endif %}</span>
             </th>
+
             <th class="sortable-header" data-field="stock_minimo">Stock mínimo
               <span class="sort-icon">{% if order_by == 'stock_minimo' %}{% if order == 'asc' %}▲{% else %}▼{% endif %}{% else %}⇅{% endif %}</span>
             </th>
+
             <th class="sortable-header" data-field="impuesto_iva">IVA (%)
               <span class="sort-icon">{% if order_by == 'impuesto_iva' %}{% if order == 'asc' %}▲{% else %}▼{% endif %}{% else %}⇅{% endif %}</span>
             </th>
-            <th class="sortable-header" data-field="descripcion">Descripción</th>
-            {% if can_edit or can_delete %}<th>Acciones</th>{% endif %}
+
+            <th>Descripción</th>
+
+            {% if can_edit or can_delete %}
+              <th>Acciones</th>
+            {% endif %}
           </tr>
+
         </thead>
+
         <tbody>
           {% for producto in productos %}
           <tr>
@@ -299,27 +368,34 @@ input, select { border-radius: 8px !important; }
             <td>{{ producto.categoria }}</td>
             <td>{{ producto.stock_minimo }}</td>
             <td>{{ producto.impuesto_iva }}%</td>
+
             <td>
               {% if producto.descripcion and producto.descripcion|length > 40 %}
                 {{ producto.descripcion|slice:":37" }}...
                 <button class="btn btn-outline-info vermas-btn" type="button"
-                  onclick="verMasDescripcion('{{ producto.nombre|escapejs }}', '{{ producto.descripcion|escapejs }}')">Ver más</button>
+                        onclick="verMasDescripcion('{{ producto.nombre|escapejs }}', '{{ producto.descripcion|escapejs }}')">
+                  Ver más
+                </button>
               {% else %}
                 {{ producto.descripcion }}
               {% endif %}
             </td>
+
             {% if can_edit or can_delete %}
             <td class="text-center">
+
               {% if can_edit %}
-                <a href="?edit_id={{ producto.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
-                  <i class="bi bi-pencil-square"></i>
-                </a>
+              <a href="?edit_id={{ producto.pk }}" class="btn btn-sm btn-outline-secondary mb-1" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </a>
               {% endif %}
+
               {% if can_delete %}
-                <a href="?delete_id={{ producto.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
-                  <i class="bi bi-trash"></i>
-                </a>
+              <a href="?delete_id={{ producto.pk }}" class="btn btn-sm btn-outline-danger mb-1 delete-btn" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </a>
               {% endif %}
+
             </td>
             {% endif %}
           </tr>
@@ -331,111 +407,77 @@ input, select { border-radius: 8px !important; }
           </tr>
           {% endfor %}
         </tbody>
+
       </table>
     </div>
+
+    <!-- PAGINACIÓN -->
     {% if productos.has_other_pages %}
     <nav>
       <ul class="pagination justify-content-end">
+
         {% if productos.has_previous %}
-          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ productos.previous_page_number }}">Anterior</a></li>
+          <li class="page-item">
+            <a class="page-link"
+               href="?page={{ productos.previous_page_number }}&order_by={{ order_by }}&order={{ order }}&pag_size={{ pag_size }}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">
+              Anterior
+            </a>
+          </li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">Anterior</span></li>
         {% endif %}
+
         {% for i in productos.paginator.page_range %}
-          <li class="page-item {% if productos.number == i %}active{% endif %}">
-            <a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ i }}">{{ i }}</a>
-          </li>
+        <li class="page-item {% if productos.number == i %}active{% endif %}">
+          <a class="page-link"
+             href="?page={{ i }}&order_by={{ order_by }}&order={{ order }}&pag_size={{ pag_size }}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">
+            {{ i }}
+          </a>
+        </li>
         {% endfor %}
+
         {% if productos.has_next %}
-          <li class="page-item"><a class="page-link" href="?{% if request.GET.buscar %}buscar={{ request.GET.buscar }}&{% endif %}order_by={{ order_by }}&order={{ order }}{% if pag_size %}&pag_size={{ pag_size }}{% endif %}&page={{ productos.next_page_number }}">Siguiente</a></li>
+          <li class="page-item">
+            <a class="page-link"
+               href="?page={{ productos.next_page_number }}&order_by={{ order_by }}&order={{ order }}&pag_size={{ pag_size }}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">
+              Siguiente
+            </a>
+          </li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
         {% endif %}
+
       </ul>
     </nav>
     {% endif %}
+
   </div>
 </div>
 
 
+
+
+<!-- ========================================================= -->
+<!-- ======================= SCRIPTS ========================== -->
+<!-- ========================================================= -->
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
 function verMasDescripcion(nombre, descripcion){
   Swal.fire({
     icon: 'info',
     title: `Descripción de ${nombre}`,
-    html: `<div style='text-align:left; max-width: 350px; word-break:break-word;'>${descripcion}</div>`,
+    html: `<div style='text-align:left; max-width:350px; word-break:break-word;'>${descripcion}</div>`,
     confirmButtonText: "Cerrar"
   });
 }
-
-document.addEventListener("DOMContentLoaded", function() {
-  const productoForm = document.getElementById("productoForm");
-  if (productoForm) {
-    productoForm.addEventListener("submit", function(e){
-      let errores = [];
-      if (!this.categoria.value.trim()) errores.push("Categoría");
-      if (this.categoria.value === "Otras") {
-        const inputNueva = document.querySelector('input[name="categoria_nueva"]');
-        if (!inputNueva.value || !inputNueva.value.trim()) {
-          errores.push("Debe ingresar el nombre de la nueva categoría.");
-        }
-      }
-      if (!this.sku.value.trim()) errores.push("SKU");
-      if (!this.nombre.value.trim()) errores.push("Nombre");
-      if (!this.uom_compra.value.trim()) errores.push("Unidad de compra");
-      if (!this.uom_venta.value.trim()) errores.push("Unidad de venta");
-      if (!this.factor_conversion.value.trim() || parseInt(this.factor_conversion.value) < 1) errores.push("Conversión (mínimo 1)");
-      if (!this.stock_minimo.value.trim() || parseInt(this.stock_minimo.value) < 0) errores.push("Stock mínimo");
-      if (this.nombre.value && !/^[\wÁÉÍÓÚáéíóúÜüÑñ .,-]+$/.test(this.nombre.value)) {
-        errores.push("Nombre (solo letras/números y .,- )");
-      }
-      if (errores.length) {
-        e.preventDefault();
-        Swal.fire({
-          icon: "warning",
-          title: "Campos obligatorios o inválidos",
-          html: "<ul style='text-align:left;margin:0;'>" + errores.map(f => "<li>" + f + "</li>").join("") + "</ul>",
-          confirmButtonText: "OK"
-        });
-        return false;
-      }
-      let perishable = document.getElementById("perishableCheck");
-      let controlLote = document.getElementById("loteCheck");
-      if(perishable && !perishable.checked){
-        let input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "perishable";
-        input.value = "0";
-        this.appendChild(input);
-      } else if(perishable && perishable.checked) {
-        perishable.value = "1";
-      }
-      if(controlLote && !controlLote.checked){
-        let input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "control_por_lote";
-        input.value = "0";
-        this.appendChild(input);
-      } else if(controlLote && controlLote.checked) {
-        controlLote.value = "1";
-      }
-    });
-  }
-});
 </script>
-<script>
-function verMasDescripcion(nombre, descripcion){
-  Swal.fire({
-    icon: 'info',
-    title: `Descripción de ${nombre}`,
-    html: `<div style='text-align:left; max-width: 350px; word-break:break-word;'>${descripcion}</div>`,
-    confirmButtonText: "Cerrar"
-  });
-}
 
+<script>
 document.addEventListener("DOMContentLoaded", function() {
-  // ====== ORDENAMIENTO DE TABLA (Order By) ======
+
+  /* ================= ORDENAMIENTO ================= */
   const sortableHeaders = document.querySelectorAll('.sortable-header');
   const orderByInput = document.getElementById('order_by');
   const orderInput = document.getElementById('order');
@@ -443,88 +485,123 @@ document.addEventListener("DOMContentLoaded", function() {
 
   sortableHeaders.forEach(header => {
     header.addEventListener('click', function() {
-      const field = this.getAttribute('data-field');
-      if (orderByInput && orderInput && searchForm) {
-        if (orderByInput.value === field) {
-          orderInput.value = orderInput.value === 'asc' ? 'desc' : 'asc';
-        } else {
-          orderByInput.value = field;
-          orderInput.value = 'asc';
-        }
-        searchForm.submit();
+      const field = this.dataset.field;
+      if (orderByInput.value === field) {
+        orderInput.value = (orderInput.value === 'asc') ? 'desc' : 'asc';
+      } else {
+        orderByInput.value = field;
+        orderInput.value = 'asc';
       }
+      searchForm.submit();
     });
   });
 
-  // Destacar el header activo
-  if (orderByInput && orderByInput.value) {
+  if (orderByInput.value) {
     const activeHeader = document.querySelector(`[data-field='${orderByInput.value}']`);
-    if (activeHeader) {
-      activeHeader.classList.add('active');
-    }
+    if (activeHeader) activeHeader.classList.add('active');
   }
 
-  // VALIDACIÓN Y ENVÍO PRODUCTO FORM
-  const productoForm = document.getElementById("productoForm");
-  if (productoForm) {
+
+  /* ================= VALIDACIÓN DEL FORM ================= */
+const productoForm = document.getElementById("productoForm");
+
+if (productoForm) {
     productoForm.addEventListener("submit", function(e){
-      let errores = [];
-      if (!this.categoria.value.trim()) errores.push("Categoría");
-      if (this.categoria.value === "Otras") {
-        const inputNueva = document.querySelector('input[name="categoria_nueva"]');
-        if (!inputNueva.value || !inputNueva.value.trim()) {
-          errores.push("Debe ingresar el nombre de la nueva categoría.");
-        }
-      }
-      if (!this.sku.value.trim()) errores.push("SKU");
-      if (!this.nombre.value.trim()) errores.push("Nombre");
-      if (!this.uom_compra.value.trim()) errores.push("Unidad de compra");
-      if (!this.uom_venta.value.trim()) errores.push("Unidad de venta");
-      if (!this.factor_conversion.value.trim() || parseInt(this.factor_conversion.value) < 1) errores.push("Conversión (mínimo 1)");
-      if (!this.stock_minimo.value.trim() || parseInt(this.stock_minimo.value) < 0) errores.push("Stock mínimo");
-      if (this.nombre.value && !/^[\wÁÉÍÓÚáéíóúÜüÑñ .,-]+$/.test(this.nombre.value)) {
-        errores.push("Nombre (solo letras/números y .,- )");
-      }
-      if (errores.length) {
-        e.preventDefault();
-        Swal.fire({
-          icon: "warning",
-          title: "Campos obligatorios o inválidos",
-          html: "<ul style='text-align:left;margin:0;'>" + errores.map(f => "<li>" + f + "</li>").join("") + "</ul>",
-          confirmButtonText: "OK"
-        });
-        return false;
-      }
-      let perishable = document.getElementById("perishableCheck");
-      let controlLote = document.getElementById("loteCheck");
-      if(perishable && !perishable.checked){
-        let input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "perishable";
-        input.value = "0";
-        this.appendChild(input);
-      } else if(perishable && perishable.checked) {
-        perishable.value = "1";
-      }
-      if(controlLote && !controlLote.checked){
-        let input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "control_por_lote";
-        input.value = "0";
-        this.appendChild(input);
-      } else if(controlLote && controlLote.checked) {
-        controlLote.value = "1";
-      }
-    });
-  }
 
-  // ========== AUTO-SUBMIT PAGINADOR ==========
+        let errores = [];
+
+        if (!this.categoria.value.trim()) errores.push("<b>Categoría</b> es obligatoria");
+
+        if (this.categoria.value === "Otras") {
+            const inputNueva = document.querySelector('input[name="categoria_nueva"]');
+            if (!inputNueva.value.trim()) errores.push("Debe ingresar la <b>nueva categoría</b>.");
+        }
+
+        if (!this.sku.value.trim()) errores.push("Debe ingresar el <b>SKU</b>.");
+        if (!this.nombre.value.trim()) errores.push("Debe ingresar el <b>nombre del producto</b>.");
+        if (!this.uom_compra.value.trim()) errores.push("Debe seleccionar <b>unidad de compra</b>.");
+        if (!this.uom_venta.value.trim()) errores.push("Debe seleccionar la <b>unidad de venta</b>.");
+
+        if (!this.factor_conversion.value.trim() || parseInt(this.factor_conversion.value) < 1)
+            errores.push("El <b>factor de conversión</b> debe ser mínimo 1.");
+
+        if (!this.stock_minimo.value.trim())
+          errores.push("Debe ingresar el <b>stock mínimo</b>.");
+
+        else if (parseInt(this.stock_minimo.value) <= 0)
+          errores.push("El <b>stock mínimo</b> debe ser mayor a 0.");
+
+
+        if (this.nombre.value && !/^[\wÁÉÍÓÚáéíóúÜüÑñ .,-]+$/.test(this.nombre.value))
+            errores.push("El <b>nombre</b> contiene caracteres inválidos.");
+
+        if (errores.length > 0) {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: "error",
+                title: "Corrige los siguientes errores",
+                html: `
+                    <ul style="text-align:left; margin-left:15px;">
+                        ${errores.map(err => `<li>${err}</li>`).join("")}
+                    </ul>
+                `,
+                confirmButtonText: "Aceptar",
+                confirmButtonColor: "#3085d6"
+            });
+
+            return false;
+        }
+
+
+        let perish = document.getElementById("perishableCheck");
+        if (perish && !perish.checked) {
+            let input = document.createElement("input");
+            input.type = "hidden"; input.name="perishable"; input.value="0";
+            this.appendChild(input);
+        }
+
+        let lote = document.getElementById("loteCheck");
+        if (lote && !lote.checked) {
+            let input = document.createElement("input");
+            input.type = "hidden"; input.name="control_por_lote"; input.value="0";
+            this.appendChild(input);
+        }
+
+    });
+}
+
+
+  /* ================= PAGINACIÓN ================= */
   const pagSize = document.getElementById("pag_size");
   if (pagSize && searchForm) {
-    pagSize.addEventListener("change", function() {
-      searchForm.submit();
-    });
+    pagSize.addEventListener("change", () => searchForm.submit());
   }
+
 });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const categoriaSelect = document.getElementById("categoriaSelect");
+    const divNuevaCat = document.getElementById("input-categoria-nueva");
+
+    function toggleNuevaCategoria() {
+        if (categoriaSelect.value === "Otras") {
+            divNuevaCat.style.display = "block";
+        } else {
+            divNuevaCat.style.display = "none";
+            document.getElementById("categoria_nueva").value = "";
+        }
+    }
+
+    categoriaSelect.addEventListener("change", toggleNuevaCategoria);
+
+    // Ejecutar al cargar (por si viene preseleccionado en edición)
+    toggleNuevaCategoria();
+});
+</script>
+
+
 {% endblock %}

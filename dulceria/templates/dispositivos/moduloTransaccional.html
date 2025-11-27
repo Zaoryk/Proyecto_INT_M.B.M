@@ -67,13 +67,19 @@ input, select, textarea { border-radius: 8px !important; }
 
       <ul class="nav nav-tabs mb-3" id="movimientoTab" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="tab-datos" data-bs-toggle="tab" data-bs-target="#datos-movimiento" type="button" role="tab">1. Datos del movimiento</button>
+          <button class="nav-link active" id="tab-datos" data-bs-toggle="tab" data-bs-target="#datos-movimiento" type="button" role="tab">
+            1. Datos del movimiento
+          </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-control" data-bs-toggle="tab" data-bs-target="#control-avanzado" type="button" role="tab">2. Control avanzado</button>
+          <button class="nav-link" id="tab-control" data-bs-toggle="tab" data-bs-target="#control-avanzado" type="button" role="tab">
+            2. Control avanzado
+          </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-ref" data-bs-toggle="tab" data-bs-target="#referencias" type="button" role="tab">3. Referencias / Observaciones</button>
+          <button class="nav-link" id="tab-ref" data-bs-toggle="tab" data-bs-target="#referencias" type="button" role="tab">
+            3. Referencias / Observaciones
+          </button>
         </li>
       </ul>
 
@@ -105,9 +111,9 @@ input, select, textarea { border-radius: 8px !important; }
               <label class="form-label">Bodega</label>
               <select class="form-select" name="bodega" id="bodega">
                 <option value="">Seleccione...</option>
-                <option value="1">Bodega 1</option>
-                <option value="2">Bodega 2</option>
-                <option value="3">Bodega 3</option>
+                <option value="1" {% if form.instance.bodega == "1" %}selected{% endif %}>Bodega 1</option>
+                <option value="2" {% if form.instance.bodega == "2" %}selected{% endif %}>Bodega 2</option>
+                <option value="3" {% if form.instance.bodega == "3" %}selected{% endif %}>Bodega 3</option>
               </select>
             </div>
           </div>
@@ -199,7 +205,9 @@ input, select, textarea { border-radius: 8px !important; }
       </div>
 
       <div class="d-flex justify-content-end mt-4">
-        <button type="submit" class="btn btn-primary me-2">{% if edit_mode %}Actualizar{% else %}Guardar{% endif %}</button>
+        <button type="submit" class="btn btn-primary me-2">
+          {% if edit_mode %}Actualizar{% else %}Guardar{% endif %}
+        </button>
         {% if edit_mode %}
           <a href="{% url 'Transaccional' %}" class="btn btn-outline-secondary">Cancelar</a>
         {% else %}
@@ -240,93 +248,94 @@ input, select, textarea { border-radius: 8px !important; }
         <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
       </button>
     </form>
-      <div class="table-responsive">
-    <table class="table table-bordered table-hover rounded">
-      <thead class="table-light text-center">
-        <tr>
-          <th class="sortable-header" data-field="fecha_movimiento">
-            Fecha
-            <span class="sort-icon">
-              {% if order_by == 'fecha_movimiento' %}
-                {% if order == 'asc' %}▲{% else %}▼{% endif %}
-              {% else %}⇅{% endif %}
-            </span>
-          </th>
-          <th class="sortable-header" data-field="tipo_movimiento">
-            Tipo
-            <span class="sort-icon">
-              {% if order_by == 'tipo_movimiento' %}
-                {% if order == 'asc' %}▲{% else %}▼{% endif %}
-              {% else %}⇅{% endif %}
-            </span>
-          </th>
-          <th class="sortable-header" data-field="producto__sku">
-            SKU
-            <span class="sort-icon">
-              {% if order_by == 'producto__sku' %}
-                {% if order == 'asc' %}▲{% else %}▼{% endif %}
-              {% else %}⇅{% endif %}
-            </span>
-          </th>
-          <th class="sortable-header" data-field="proveedor__razon_social">
-            Proveedor
-            <span class="sort-icon">
-              {% if order_by == 'proveedor__razon_social' %}
-                {% if order == 'asc' %}▲{% else %}▼{% endif %}
-              {% else %}⇅{% endif %}
-            </span>
-          </th>
-          <th class="sortable-header" data-field="bodega__nombre">
-            Bodega
-            <span class="sort-icon">
-              {% if order_by == 'bodega__nombre' %}
-                {% if order == 'asc' %}▲{% else %}▼{% endif %}
-              {% else %}⇅{% endif %}
-            </span>
-          </th>
-          <th class="sortable-header" data-field="cantidad">
-            Cantidad
-            <span class="sort-icon">
-              {% if order_by == 'cantidad' %}
-                {% if order == 'asc' %}▲{% else %}▼{% endif %}
-              {% else %}⇅{% endif %}
-            </span>
-          </th>
-          <th class="sortable-header" data-field="lote">
-            Lote
-            <span class="sort-icon">
-              {% if order_by == 'lote' %}
-                {% if order == 'asc' %}▲{% else %}▼{% endif %}
-              {% else %}⇅{% endif %}
-            </span>
-          </th>
-          <th class="sortable-header" data-field="serie">
-            Serie
-            <span class="sort-icon">
-              {% if order_by == 'serie' %}
-                {% if order == 'asc' %}▲{% else %}▼{% endif %}
-              {% else %}⇅{% endif %}
-            </span>
-          </th>
-          <th class="sortable-header" data-field="fecha_vencimiento">
-            Vence
-            <span class="sort-icon">
-              {% if order_by == 'fecha_vencimiento' %}
-                {% if order == 'asc' %}▲{% else %}▼{% endif %}
-              {% else %}⇅{% endif %}
-            </span>
-          </th>
-          <th class="sortable-header" data-field="doc_referencia">
-            Doc Ref
-            <span class="sort-icon">
-              {% if order_by == 'doc_referencia' %}
-                {% if order == 'asc' %}▲{% else %}▼{% endif %}
-              {% else %}⇅{% endif %}
-            </span>
-          </th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover rounded">
+        <thead class="table-light text-center">
+          <tr>
+            <th class="sortable-header" data-field="fecha_movimiento">
+              Fecha
+              <span class="sort-icon">
+                {% if order_by == 'fecha_movimiento' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="tipo_movimiento">
+              Tipo
+              <span class="sort-icon">
+                {% if order_by == 'tipo_movimiento' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="producto__sku">
+              SKU
+              <span class="sort-icon">
+                {% if order_by == 'producto__sku' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="proveedor__razon_social">
+              Proveedor
+              <span class="sort-icon">
+                {% if order_by == 'proveedor__razon_social' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="bodega">
+              Bodega
+              <span class="sort-icon">
+                {% if order_by == 'bodega' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="cantidad">
+              Cantidad
+              <span class="sort-icon">
+                {% if order_by == 'cantidad' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="lote">
+              Lote
+              <span class="sort-icon">
+                {% if order_by == 'lote' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="serie">
+              Serie
+              <span class="sort-icon">
+                {% if order_by == 'serie' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="fecha_vencimiento">
+              Vence
+              <span class="sort-icon">
+                {% if order_by == 'fecha_vencimiento' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th class="sortable-header" data-field="doc_referencia">
+              Doc Ref
+              <span class="sort-icon">
+                {% if order_by == 'doc_referencia' %}
+                  {% if order == 'asc' %}▲{% else %}▼{% endif %}
+                {% else %}⇅{% endif %}
+              </span>
+            </th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
         <tbody id="tabla-movimientos-body">
         {% for m in movimientos %}
         <tr>
@@ -338,7 +347,7 @@ input, select, textarea { border-radius: 8px !important; }
           </td>
           <td>{{ m.producto.sku }}</td>
           <td>{{ m.proveedor.razon_social }}</td>
-          <td>{{ m.bodega.nombre }}</td>
+          <td>{{ m.bodega|default:"—" }}</td>
           <td>{{ m.cantidad }}</td>
           <td>{{ m.lote|default:"—" }}</td>
           <td>{{ m.serie|default:"—" }}</td>
