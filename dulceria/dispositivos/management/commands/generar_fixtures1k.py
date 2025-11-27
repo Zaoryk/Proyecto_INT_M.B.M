@@ -4,12 +4,21 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = 'Genera fixtures creativos para la dulcería Lilis (≈5000 registros)'
+    help = 'Genera fixtures para la dulcería Lilis: N productos, N proveedores, N movimientos'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--size',
+            type=int,
+            default=5000,
+            help='Cantidad por tipo: productos, proveedores y movimientos (ej: 5000, 10000)',
+        )
 
     def handle(self, *args, **options):
+        size = options['size']
         fixtures = []
 
-        # 1. Usuarios base (4)
+        # ---- 1. Usuarios base (4) ----
         usuarios = [
             {
                 "model": "dispositivos.usuario",
@@ -70,7 +79,7 @@ class Command(BaseCommand):
         ]
         fixtures.extend(usuarios)
 
-        # 2. Categorías (6)
+        # ---- 2. Categorías fijas ----
         categorias_lista = [
             {"nombre": "Chocolates", "descripcion": "Producto a base de cacao", "estado": "activo"},
             {"nombre": "Caramelos", "descripcion": "Golosinas duras y blandas variadas", "estado": "activo"},
@@ -88,7 +97,7 @@ class Command(BaseCommand):
             })
         fixtures.extend(categorias_fixture)
 
-        # 3. Bodegas (200)
+        # ---- 3. Bodegas fijas (puedes subir a size si quieres) ----
         nombres_bodegas = [
             "Central Norte", "Alimentaria Sur", "Dulce Oriente", "ChocoStore", "Galletilandia",
             "Candy Box", "Depósito Frutal", "Fiesta Express", "Stock Express", "Bodega Fantasía"
@@ -99,7 +108,8 @@ class Command(BaseCommand):
             "Mall Center Piso 3", "Camino Real 127"
         ]
         bodegas_fixture = []
-        for i in range(1, 201):
+        n_bodegas = 100  # fijo, pero puedes usar size si quieres 1:1
+        for i in range(1, n_bodegas + 1):
             bodega = {
                 "model": "dispositivos.bodega",
                 "pk": i,
@@ -113,7 +123,7 @@ class Command(BaseCommand):
             bodegas_fixture.append(bodega)
         fixtures.extend(bodegas_fixture)
 
-        # 4. Listas base
+        # ---- 4. Listas comunes para variedad ----
         nombres_productos = [
             "Trufas de Avellana", "Alfajor Cordobés", "Turrón de Maní", "Chocolate Rubí 75g",
             "Cinta de Caramelo", "Barra de Cacao 80%", "Confites Turquesa", "Bombones del Bosque",
@@ -235,16 +245,16 @@ class Command(BaseCommand):
             "Bombón de edición limitada aniversario 2025."
         ]
 
-        # 5. Productos (1000)
+        # ---- 5. Productos: size ----
         productos = []
-        for i in range(1, 1001):
+        for i in range(1, size + 1):
             nombre = nombres_productos[(i-1) % len(nombres_productos)]
             categoria = categorias[(i-1) % len(categorias)]
             prod = {
                 "model": "dispositivos.producto",
                 "pk": i,
                 "fields": {
-                    "sku": f"SKU-{categoria[:3].upper()}-{str(i).zfill(4)}",
+                    "sku": f"SKU-{categoria[:3].upper()}-{str(i).zfill(5)}",
                     "nombre": nombre,
                     "categoria": categoria,
                     "uom_compra": "kg" if i % 2 == 0 else "caja",
@@ -260,7 +270,7 @@ class Command(BaseCommand):
             productos.append(prod)
         fixtures.extend(productos)
 
-        # 6. Proveedores (500)
+        # ---- 6. Proveedores: size ----
         nombres_proveedores = [
             "Exportadora", "Comercial", "Distribuidora", "Central", "Mayorista",
             "Emporio", "Proveedoría", "Bebestible", "Fábrica", "Importadora"
@@ -270,7 +280,7 @@ class Command(BaseCommand):
             "Merken", "Chocolito", "CandyHouse", "Mansión Dulce", "SnacksLab"
         ]
         proveedores = []
-        for i in range(1, 501):
+        for i in range(1, size + 1):
             razon_social = f"{nombres_proveedores[i % len(nombres_proveedores)]} {fantasia_extras[i % len(fantasia_extras)]} S.A."
             fantasia = f"{fantasia_extras[i % len(fantasia_extras)]} {i}"
             proveedor = {
@@ -291,43 +301,38 @@ class Command(BaseCommand):
             proveedores.append(proveedor)
         fixtures.extend(proveedores)
 
-        # 7. Relaciones producto-proveedor / movimientos (≈4300)
+        # ---- 7. Movimientos: size ----
         producto_proveedor = []
         base_fecha = datetime(2025, 1, 1, 10, 0, 0)
-        pk_mov = 1
-        # 3 movimientos por producto aprox, con proveedores rotando
-        for prod_id in range(1, 1001):
-            for j in range(3):  # 3 movimientos por producto
-                proveedor_id = ((prod_id * (j+1)) % 500) + 1
-                mov = {
-                    "model": "dispositivos.productoproveedor",
-                    "pk": pk_mov,
-                    "fields": {
-                        "tipo_movimiento": "entrada" if j % 2 == 0 else "salida",
-                        "cantidad": 50 + (prod_id % 30) + j * 10,
-                        "fecha_movimiento": (base_fecha + timedelta(days=prod_id, hours=j)).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                        "producto": prod_id,
-                        "proveedor": proveedor_id
-                    }
+        for pk_mov in range(1, size + 1):
+            # producto y proveedor rotando dentro del rango size
+            prod_id = ((pk_mov - 1) % size) + 1
+            prov_id = ((pk_mov * 7) % size) + 1  # salto 7 para mezclar
+            tipo = "entrada" if pk_mov % 3 != 0 else "salida"
+            mov = {
+                "model": "dispositivos.productoproveedor",
+                "pk": pk_mov,
+                "fields": {
+                    "tipo_movimiento": tipo,
+                    "cantidad": 50 + (pk_mov % 50),
+                    "fecha_movimiento": (base_fecha + timedelta(minutes=pk_mov)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    "producto": prod_id,
+                    "proveedor": prov_id
                 }
-                pk_mov += 1
-                producto_proveedor.append(mov)
+            }
+            producto_proveedor.append(mov)
         fixtures.extend(producto_proveedor)
 
-        # Guardar fixtures
-        with open('fixtures_dulceria.json', 'w', encoding='utf-8') as f:
+        # ---- Guardar ----
+        filename = f'fixtures_dulceria_{size}.json'
+        with open(filename, 'w', encoding='utf-8') as f:
             json.dump(fixtures, f, indent=2, ensure_ascii=False)
 
-        self.stdout.write(
-            self.style.SUCCESS(f'Fixtures generados: {len(fixtures)} registros en fixtures_dulceria.json')
-        )
-        self.stdout.write(
-            self.style.SUCCESS(
-                f'Desglose: {len(usuarios)} usuarios, '
-                f'{len(categorias_fixture)} categorías, '
-                f'{len(bodegas_fixture)} bodegas, '
-                f'{len(productos)} productos, '
-                f'{len(proveedores)} proveedores, '
-                f'{len(producto_proveedor)} relaciones/movimientos'
-            )
-        )
+        self.stdout.write(self.style.SUCCESS(
+            f'Fixtures generados: {len(fixtures)} registros en {filename}'
+        ))
+        self.stdout.write(self.style.SUCCESS(
+            f'Usuarios: {len(usuarios)}, Categorías: {len(categorias_fixture)}, '
+            f'Bodegas: {len(bodegas_fixture)}, Productos: {len(productos)}, '
+            f'Proveedores: {len(proveedores)}, Movimientos: {len(producto_proveedor)}'
+        ))
