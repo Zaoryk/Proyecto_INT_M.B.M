@@ -118,11 +118,36 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
+  // BÚSQUEDA Y FILTROS EN TIEMPO REAL
+  const searchInput = document.querySelector('input[name="buscar"]');
+  const rolSelect = document.querySelector('select[name="rol"]');
+  const estadoSelect = document.querySelector('select[name="estado"]');
   const pagSize = document.getElementById("pag_size");
-  if (pagSize && searchForm) {
-    pagSize.addEventListener("change", function() {
+
+  function submitFormRealTime() {
+    if (searchForm) {
       searchForm.submit();
+    }
+  }
+
+  if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(submitFormRealTime, 500);
     });
+  }
+
+  if (rolSelect) {
+    rolSelect.addEventListener('change', submitFormRealTime);
+  }
+
+  if (estadoSelect) {
+    estadoSelect.addEventListener('change', submitFormRealTime);
+  }
+
+  if (pagSize) {
+    pagSize.addEventListener("change", submitFormRealTime);
   }
 });
 </script>

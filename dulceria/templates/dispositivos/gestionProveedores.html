@@ -54,19 +54,20 @@ input, select, textarea { border-radius: 8px !important; }
         <div class="tab-pane fade show active" id="id-contacto" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-3">
-              <label class="form-label">RUT/NIF *</label>
+              <label class="form-label">RUT/NIF<span class="text-danger">*</label>
               <input type="text" class="form-control" name="rut_nif" id="rutField" value="{{ form.rut_nif.value|default_if_none:'' }}" required maxlength="12">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Razón social *</label>
+              <label class="form-label">Razón social<span class="text-danger">*</label>
               <input type="text" class="form-control" name="razon_social" value="{{ form.razon_social.value|default_if_none:'' }}" required>
             </div>
             <div class="col-md-3">
-              <label class="form-label">Estado *</label>
+              <label class="form-label">Estado<span class="text-danger">*</label>
               <select class="form-select" name="estado" required>
-                {% for value, text in form.estado.field.choices %}
-                  <option value="{{ value }}" {% if form.estado.value == value %}selected{% endif %}>{{ text }}</option>
-                {% endfor %}
+                  <option value="">Seleccione...</option>
+                  <option value="Activo" {% if form.estado.value == "Activo" %}selected{% endif %}>Activo</option>
+                  <option value="Inactivo" {% if form.estado.value == "Inactivo" %}selected{% endif %}>Inactivo</option>
+                  <option value="Bloqueado" {% if form.estado.value == "Bloqueado" %}selected{% endif %}>Bloqueado</option>
               </select>
             </div>
           </div>
@@ -76,7 +77,7 @@ input, select, textarea { border-radius: 8px !important; }
               <input type="text" class="form-control" name="nombre_fantasia" value="{{ form.nombre_fantasia.value|default_if_none:'' }}">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Email *</label>
+              <label class="form-label">Email<span class="text-danger">*</label>
               <input type="email" class="form-control" name="email" id="emailField" value="{{ form.email.value|default_if_none:'' }}" required maxlength="255">
             </div>
           </div>
@@ -84,7 +85,7 @@ input, select, textarea { border-radius: 8px !important; }
         <div class="tab-pane fade" id="direccion-comercial" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-4">
-              <label class="form-label">País *</label>
+              <label class="form-label">País<span class="text-danger">*</label>
               <select class="form-select me-2 mb-2 flag-select" name="pais" style="max-width:200px;">
                 <option value="">Seleccione el país</option>
                 <option value="Chile" {% if form.pais.value == "Chile" %}selected{% endif %}>🇨🇱 Chile</option>
@@ -97,7 +98,7 @@ input, select, textarea { border-radius: 8px !important; }
               </select>
             </div>
             <div class="col-md-4">
-              <label class="form-label">Condiciones de pago *</label>
+              <label class="form-label">Condiciones de pago<span class="text-danger">*</label>
               <select class="form-select" name="condiciones_pago" required>
                 <option value="">Seleccione...</option>
                 <option value="Contado" {% if form.condiciones_pago.value == "Contado" %}selected{% endif %}>Contado</option>
@@ -108,7 +109,7 @@ input, select, textarea { border-radius: 8px !important; }
               </select>
             </div>
             <div class="col-md-4">
-              <label class="form-label">Moneda *</label>
+              <label class="form-label">Moneda<span class="text-danger">*</label>
               <select class="form-select" name="moneda" required>
                 <option value="">Seleccione...</option>
                 <option value="CLP" {% if form.moneda.value == "CLP" %}selected{% endif %}>CLP - Peso chileno</option>
@@ -126,12 +127,13 @@ input, select, textarea { border-radius: 8px !important; }
         <div class="tab-pane fade" id="rel-productos" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-4">
-              <label class="form-label">Producto *</label>
-              <select class="form-select" name="producto" required>
+              <label class="form-label">Producto<span class="text-danger">*</label>
+              <select class="form-select select2-producto" name="producto" id="producto_select" required>
                 <option value="">Seleccione...</option>
                 {% for prod in productos %}
-                <option value="{{ prod.pk }}" {% if form.producto.value == prod.pk %}selected{% endif %}>
-                  {{ prod.nombre }} ({{ prod.sku }})
+                <option value="{{ prod.pk }}" 
+                        {% if form.instance.producto_id == prod.pk or form.producto.value == prod.pk %}selected{% endif %}>
+                  {{ prod.sku }} - {{ prod.nombre }}
                 </option>
                 {% endfor %}
               </select>
@@ -146,14 +148,14 @@ input, select, textarea { border-radius: 8px !important; }
               </div>
             </div>
             <div class="col-md-4">
-              <label class="form-label">Costo promedio *</label>
+              <label class="form-label">Costo promedio<span class="text-danger">*</label>
               <input type="number" class="form-control" name="costo_promedio" id="costo_promedio"
                      min="0" required>
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-4">
-              <label class="form-label">Lead time (días) *</label>
+              <label class="form-label">Lead time (días)<span class="text-danger">*</label>
               <input type="number" class="form-control" name="lead_time_dias" id="lead_time_dias"
                      min="0" required>
             </div>
@@ -374,6 +376,28 @@ document.addEventListener("DOMContentLoaded", function(){
     if (activeHeader) activeHeader.classList.add("active");
   }
 
+  // BÚSQUEDA Y FILTROS EN TIEMPO REAL
+  const searchInput = document.querySelector('input[name="buscar"]');
+  const pagSize = document.getElementById("pag_size");
+
+  function submitFormRealTime() {
+    if (searchForm) {
+      searchForm.submit();
+    }
+  }
+
+  if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(submitFormRealTime, 500);
+    });
+  }
+
+  if (pagSize) {
+    pagSize.addEventListener("change", submitFormRealTime);
+  }
+
   document.querySelectorAll(".delete-btn").forEach(btn => {
     btn.addEventListener("click", function() {
       const id = btn.getAttribute("data-id");
@@ -397,15 +421,25 @@ document.addEventListener("DOMContentLoaded", function(){
   const form = document.getElementById("proveedorForm");
   if (!form) return;
 
-  const pagSize = document.getElementById("pag_size");
-  if (pagSize && searchForm) {
-    pagSize.addEventListener("change", function() {
-      searchForm.submit();
-    });
-  }
-
   const tabTriggerList = [].slice.call(document.querySelectorAll("#proveedorTab button[data-bs-toggle='tab']"));
   tabTriggerList.forEach(tabEl => new bootstrap.Tab(tabEl));
+
+  // VALIDACIÓN DE RUT CHILENO
+  function validarRutChileno(rut){
+    let r = rut.replace(/\./g, "").replace(/-/g, "").toUpperCase();
+    if (!/^[0-9]+[0-9K]$/.test(r)) return false;
+    let cuerpo = r.slice(0, -1);
+    let dv = r.slice(-1);
+    let suma = 0;
+    let multiplo = 2;
+    for (let i = cuerpo.length - 1; i >= 0; i--) {
+      suma += parseInt(cuerpo[i], 10) * multiplo;
+      multiplo = multiplo === 7 ? 2 : multiplo + 1;
+    }
+    let resto = 11 - (suma % 11);
+    let dvCalc = resto === 11 ? "0" : resto === 10 ? "K" : String(resto);
+    return dv === dvCalc;
+  }
 
   const rutField = document.getElementById("rutField");
   if (rutField) {
@@ -460,8 +494,8 @@ document.addEventListener("DOMContentLoaded", function(){
     });
   }
 
-  const inpCosto = document.getElementById("costo_promedio"); // 10 dígitos
-  const inpLead  = document.getElementById("lead_time_dias"); // 4 dígitos
+  const inpCosto = document.getElementById("costo_promedio");
+  const inpLead  = document.getElementById("lead_time_dias");
   if (inpCosto) {
     bloqueaNegativosYExponente(inpCosto);
     limitarDigitos(inpCosto, 10);
@@ -470,7 +504,6 @@ document.addEventListener("DOMContentLoaded", function(){
     bloqueaNegativosYExponente(inpLead);
     limitarDigitos(inpLead, 4);
   }
-
 
   const nf = form.querySelector('[name="nombre_fantasia"]');
   if (nf) {
@@ -491,21 +524,47 @@ document.addEventListener("DOMContentLoaded", function(){
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  function validarRut(rut){
-    let r = rut.replace(/\./g, "").replace(/-/g, "").toUpperCase();
-    if (!/^[0-9]+[0-9K]$/.test(r)) return false;
-    let cuerpo = r.slice(0, -1);
-    let dv = r.slice(-1);
-    let suma = 0;
-    let multiplo = 2;
-    for (let i = cuerpo.length - 1; i >= 0; i--) {
-      suma += parseInt(cuerpo[i], 10) * multiplo;
-      multiplo = multiplo === 7 ? 2 : multiplo + 1;
+  // VALIDACIÓN DE CAMPOS OBLIGATORIOS CON BORDE ROJO
+  const requiredFields = [
+    'rut_nif', 'razon_social', 'email', 'pais', 
+    'condiciones_pago', 'moneda', 'estado', 'producto'
+  ];
+
+  function validateField(fieldName) {
+    const field = form.querySelector(`[name="${fieldName}"]`);
+    if (!field) return true;
+
+    const isEmpty = !field.value || field.value.trim() === '';
+    
+    if (isEmpty) {
+      field.style.border = '2px solid red';
+      return false;
+    } else {
+      field.style.border = '';
+      return true;
     }
-    let resto = 11 - (suma % 11);
-    let dvCalc = resto === 11 ? "0" : resto === 10 ? "K" : String(resto);
-    return dv === dvCalc;
   }
+
+  function validateAllFields() {
+    let allValid = true;
+    requiredFields.forEach(fieldName => {
+      if (!validateField(fieldName)) {
+        allValid = false;
+      }
+    });
+    return allValid;
+  }
+
+  requiredFields.forEach(fieldName => {
+    const field = form.querySelector(`[name="${fieldName}"]`);
+    if (field) {
+      field.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+          this.style.border = '';
+        }
+      });
+    }
+  });
 
   form.setAttribute("novalidate", "true");
   form.addEventListener("submit", function(e){
@@ -541,7 +600,7 @@ document.addEventListener("DOMContentLoaded", function(){
     } else {
       const rutPlano = rut.replace(/\./g, "").replace(/-/g, "").toUpperCase();
       if (rutPlano.length > 20) errores.push("El <b>RUT/NIF</b> no debe superar los 20 caracteres.");
-      if (!validarRut(rut)) errores.push("El <b>RUT</b> ingresado no es válido.");
+      if (!validarRutChileno(rut)) errores.push("El <b>RUT</b> ingresado no es válido.");
     }
 
     if (!razon) {
@@ -601,6 +660,8 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
     if (errores.length > 0) {
+      validateAllFields(); // Marcar campos vacíos
+
       Swal.fire({
         icon: "error",
         title: "Corrige los siguientes errores",
@@ -611,6 +672,25 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
     form.submit();
+  });
+
+    $(document).ready(function() {
+    if ($('#producto_select').length) {
+      $('#producto_select').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Buscar producto por SKU o nombre...',
+        allowClear: true,
+        width: '100%',
+        language: {
+          noResults: function() {
+            return "No se encontraron productos";
+          },
+          searching: function() {
+            return "Buscando...";
+          }
+        }
+      });
+    }
   });
 });
 </script>

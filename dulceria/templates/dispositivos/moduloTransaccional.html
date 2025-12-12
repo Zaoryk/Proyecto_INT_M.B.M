@@ -88,13 +88,13 @@ input, select, textarea { border-radius: 8px !important; }
         <div class="tab-pane fade show active" id="datos-movimiento" role="tabpanel">
           <div class="row mb-3">
             <div class="col-md-3">
-              <label class="form-label">Fecha</label>
+              <label class="form-label">Fecha<span class="text-danger">*</label>
               <input type="datetime-local" class="form-control" name="fecha_movimiento"
                      id="fecha_movimiento"
                      value="{% if form.fecha_movimiento.value %}{{ form.fecha_movimiento.value|date:'Y-m-d\\TH:i' }}{% endif %}">
             </div>
             <div class="col-md-3">
-              <label class="form-label">Tipo</label>
+              <label class="form-label">Tipo<span class="text-danger">*</label>
               <select class="form-select" name="tipo_movimiento" id="tipo_movimiento">
                 <option value="">Seleccione...</option>
                 {% for value, text in form.tipo_movimiento.field.choices %}
@@ -103,28 +103,29 @@ input, select, textarea { border-radius: 8px !important; }
               </select>
             </div>
             <div class="col-md-3">
-              <label class="form-label">Cantidad</label>
+              <label class="form-label">Cantidad<span class="text-danger">*</label>
               <input type="number" class="form-control" name="cantidad" id="cantidadInput"
                      value="{{ form.cantidad.value|default_if_none:'' }}">
             </div>
             <div class="col-md-3">
-              <label class="form-label">Bodega</label>
-              <select class="form-select" name="bodega" id="bodega">
+              <label class="form-label">Bodega<span class="text-danger">*</label>
+              <select class="form-select" name="bodega" id="bodega" required>
                 <option value="">Seleccione...</option>
-                <option value="1" {% if form.instance.bodega == "1" %}selected{% endif %}>Bodega 1</option>
-                <option value="2" {% if form.instance.bodega == "2" %}selected{% endif %}>Bodega 2</option>
-                <option value="3" {% if form.instance.bodega == "3" %}selected{% endif %}>Bodega 3</option>
+                <option value="1" {% if form.instance.bodega == "1" or form.bodega.value == "1" %}selected{% endif %}>Bodega 1</option>
+                <option value="2" {% if form.instance.bodega == "2" or form.bodega.value == "2" %}selected{% endif %}>Bodega 2</option>
+                <option value="3" {% if form.instance.bodega == "3" or form.bodega.value == "3" %}selected{% endif %}>Bodega 3</option>
               </select>
             </div>
           </div>
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label">Producto</label>
-              <select class="form-select" name="producto" id="producto">
+              <label class="form-label">Producto<span class="text-danger">*</label>
+              <select class="form-select select2-producto" name="producto" id="producto">
                 <option value="">Seleccione...</option>
                 {% for p in form.producto.field.queryset %}
-                  <option value="{{ p.pk }}"{% if form.producto.value == p.pk %} selected{% endif %}>
+                  <option value="{{ p.pk }}"
+                          {% if form.producto.value == p.pk or form.instance.producto_id == p.pk %}selected{% endif %}>
                     {{ p.sku }} - {{ p.nombre }}
                   </option>
                 {% endfor %}
@@ -132,10 +133,11 @@ input, select, textarea { border-radius: 8px !important; }
             </div>
             <div class="col-md-6">
               <label class="form-label">Proveedor</label>
-              <select class="form-select" name="proveedor" id="proveedor">
+              <select class="form-select select2-proveedor" name="proveedor" id="proveedor">
                 <option value="">Seleccione...</option>
                 {% for pr in form.proveedor.field.queryset %}
-                  <option value="{{ pr.pk }}"{% if form.proveedor.value == pr.pk %} selected{% endif %}>
+                  <option value="{{ pr.pk }}"
+                          {% if form.proveedor.value == pr.pk or form.instance.proveedor_id == pr.pk %}selected{% endif %}>
                     {{ pr.rut_nif }} - {{ pr.razon_social }}
                   </option>
                 {% endfor %}
@@ -396,6 +398,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const orderInput = document.getElementById("order");
   const searchForm = document.getElementById("searchForm");
 
+  // ORDENAMIENTO
   document.querySelectorAll(".sortable-header").forEach(header => {
     header.addEventListener("click", function() {
       const field = this.getAttribute("data-field");
@@ -411,6 +414,34 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
+  // BÚSQUEDA Y FILTROS EN TIEMPO REAL
+  const searchInput = document.querySelector('input[name="buscar"]');
+  const tipoSelect = document.querySelector('select[name="tipo"]');
+  const pagSize = document.getElementById("pag_size");
+
+  function submitFormRealTime() {
+    if (searchForm) {
+      searchForm.submit();
+    }
+  }
+
+  if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(submitFormRealTime, 500);
+    });
+  }
+
+  if (tipoSelect) {
+    tipoSelect.addEventListener('change', submitFormRealTime);
+  }
+
+  if (pagSize) {
+    pagSize.addEventListener("change", submitFormRealTime);
+  }
+
+  // TOGGLE DE CAMPOS CONDICIONALES
   const toggle = (chk, input) => {
     if (!chk || !input) return;
     input.disabled = !chk.checked;
@@ -425,6 +456,7 @@ document.addEventListener("DOMContentLoaded", function() {
   toggle(document.getElementById("manejo_series"), document.getElementById("serie"));
   toggle(document.getElementById("perecible"), document.getElementById("fecha_vencimiento"));
 
+  // BOTONES DE ELIMINAR
   document.querySelectorAll(".delete-btn").forEach(btn => {
     btn.addEventListener("click", e => {
       e.preventDefault();
@@ -437,12 +469,59 @@ document.addEventListener("DOMContentLoaded", function() {
         cancelButtonColor: "#6c757d",
         confirmButtonText: "Sí, eliminar",
         cancelButtonText: "Cancelar"
-      }).then(r => { if (r.isConfirmed) window.location.href = btn.getAttribute("href"); });
+      }).then(r => { 
+        if (r.isConfirmed) window.location.href = btn.getAttribute("href"); 
+      });
     });
   });
 
+  // VALIDACIÓN DEL FORMULARIO
   const form = document.getElementById("movimientoForm");
   if (form) {
+    // CAMPOS OBLIGATORIOS
+    const requiredFields = [
+      'fecha_movimiento', 'tipo_movimiento', 'producto', 
+      'proveedor', 'bodega', 'cantidad'
+    ];
+
+    function validateField(fieldName) {
+      const field = form.querySelector(`[name="${fieldName}"]`);
+      if (!field) return true;
+
+      const isEmpty = !field.value || field.value.trim() === '';
+      
+      if (isEmpty) {
+        field.style.border = '2px solid red';
+        return false;
+      } else {
+        field.style.border = '';
+        return true;
+      }
+    }
+
+    function validateAllFields() {
+      let allValid = true;
+      requiredFields.forEach(fieldName => {
+        if (!validateField(fieldName)) {
+          allValid = false;
+        }
+      });
+      return allValid;
+    }
+
+
+    requiredFields.forEach(fieldName => {
+      const field = form.querySelector(`[name="${fieldName}"]`);
+      if (field) {
+        field.addEventListener('input', function() {
+          if (this.value.trim() !== '') {
+            this.style.border = '';
+          }
+        });
+      }
+    });
+
+    // VALIDACIÓN AL ENVIAR
     form.addEventListener("submit", function(e) {
       const errores = [];
       const fecha = document.getElementById("fecha_movimiento").value.trim();
@@ -503,6 +582,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
       if (errores.length > 0) {
         e.preventDefault();
+        validateAllFields(); // Marcar campos vacíos
+
         Swal.fire({
           icon: "error",
           title: "Corrige los siguientes errores",
@@ -512,6 +593,44 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
   }
+
+  $(document).ready(function() {
+    // Select2 para Producto
+    if ($('#producto').length) {
+      $('#producto').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Buscar producto por SKU o nombre...',
+        allowClear: true,
+        width: '100%',
+        language: {
+          noResults: function() {
+            return "No se encontraron productos";
+          },
+          searching: function() {
+            return "Buscando...";
+          }
+        }
+      });
+    }
+
+    // Select2 para Proveedor
+    if ($('#proveedor').length) {
+      $('#proveedor').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Buscar proveedor por RUT o razón social...',
+        allowClear: true,
+        width: '100%',
+        language: {
+          noResults: function() {
+            return "No se encontraron proveedores";
+          },
+          searching: function() {
+            return "Buscando...";
+          }
+        }
+      });
+    }
+  });
 });
 </script>
 

@@ -155,9 +155,9 @@ class Proveedor(models.Model):
     razon_social = models.CharField(max_length=255)
     nombre_fantasia = models.CharField(max_length=255, blank=True, null=True)
     email = models.CharField(max_length=254)
-    pais = models.CharField(max_length=64, default="Chile")
+    pais = models.CharField(max_length=64)
     condiciones_pago = models.CharField(max_length=45, blank=True, null=True)
-    moneda = models.CharField(max_length=8, default="CLP")
+    moneda = models.CharField(max_length=8)
     estado = models.CharField(max_length=15, choices=ESTADOS, default="activo")
     usuario = models.ForeignKey(
         Usuario, models.DO_NOTHING, db_column="Usuario_idUsuario", blank=True, null=True
